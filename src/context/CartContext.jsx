@@ -1,9 +1,13 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 const CartContext = createContext();
 
 export function CartProvider({ children }){
-    const [cart, setCart] = useState([]);
+    const [cart, setCart] = useState(() => {
+        const savedcart = localStorage.getItem("cart");
+
+        return savedcart ? JSON.parse(savedcart) : [];
+    });
 
     const addToCart = (animal) => {
         setCart((currentCart) => {
@@ -24,6 +28,10 @@ export function CartProvider({ children }){
             currentCart.filter((item) => item.id !== animalId)
         );
     };
+
+    useEffect(() => {
+        localStorage.setItem("cart", JSON.stringify(cart));
+    }, [cart])
     return (
         <CartContext.Provider 
         value={{

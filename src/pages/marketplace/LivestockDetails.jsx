@@ -64,9 +64,14 @@ function LivestockDetails() {
         <p>Status: {animal.availability}</p>
 
         {/* add to cart */}
-        <button onClick={() => addToCart(animal)}>
-          Add to Cart
-        </button>
+        {animal.availability?.toLowerCase() === "available" ? (
+          <button onClick={() => addToCart(animal)}>
+            Add to Cart
+          </button>
+        ) : (
+          <p>This Animal is currently unavailable</p>
+        )}
+        
     </div>
   )
 }

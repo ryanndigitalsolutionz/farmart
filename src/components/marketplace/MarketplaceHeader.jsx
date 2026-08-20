@@ -1,3 +1,6 @@
+import { Link } from "react-router-dom"
+import { TiShoppingCart } from "react-icons/ti";
+
 function MarketplaceHeader({ 
   showFilters, 
   setShowFilters,
@@ -11,7 +14,16 @@ function MarketplaceHeader({
           Browser healthy livestock from trusted farmers.
         </p>
 
-        <p>Cart: {cartCount}</p>
+        {/* cart link directory */}
+        <div>
+          <TiShoppingCart /> 
+          <Link to="/cart">
+            
+            Cart: {cartCount}
+          </Link>
+        </div>
+        
+
         <button 
           onClick={() => setShowFilters(!showFilters)}
           className=""
