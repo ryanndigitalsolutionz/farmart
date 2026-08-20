@@ -29,6 +29,10 @@ export function CartProvider({ children }){
         );
     };
 
+    const clearCart = () => {
+        setCart([])
+    }
+
     useEffect(() => {
         localStorage.setItem("cart", JSON.stringify(cart));
     }, [cart])
@@ -38,6 +42,7 @@ export function CartProvider({ children }){
             cart,
             addToCart,
             removeFromCart,
+            clearCart,
         }}
         >
             {children}

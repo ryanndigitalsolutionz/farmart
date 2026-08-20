@@ -42,7 +42,12 @@ function Cart() {
 
                 <h2 className="font-bold">Total: Ksh {total.toLocaleString()}</h2>
 
-                <button className="">Checkout</button>
+                <Link 
+                    to="/checkout" 
+                    className=""
+                >
+                    <button >Checkout</button>
+                </Link>
 
                 <Link 
                     to="/marketplace"
