@@ -1,14 +1,16 @@
-
-import { LivestockProvider } from "./context/LivestockContext";
-import Livestock from "./pages/marketplace/Livestock";
+import AppRoutes from "./routes/AppRoutes"
+import { LivestockProvider } from "./context/LivestockContext"
+import { CartProvider } from "./context/CartContext"
 
 function App() {
 
   return (
-    
-    <LivestockProvider>   
-      <Livestock/>
+    <LivestockProvider>
+      <CartProvider>
+        <AppRoutes/>
+      </CartProvider>      
     </LivestockProvider>
+    
   )
 }
 

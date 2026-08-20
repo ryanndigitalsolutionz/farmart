@@ -1,6 +1,8 @@
-import React from 'react'
+import { useNavigate } from "react-router-dom"
 
-function LivestockCard({ animal }) {
+function LivestockCard({ animal, onViewDetails }) {
+  const navigate = useNavigate();
+
   return (
     <div className='livestockcard'>
         <img 
@@ -15,6 +17,13 @@ function LivestockCard({ animal }) {
         <p>{animal.age} years</p>
         <p>Ksh {animal.price}</p>
         <p>{animal.availability}</p>
+
+        <button 
+          onClick={() => navigate(`/marketplace/${animal.id}`)}
+          className=""
+        >
+          View Details
+        </button>
     </div>
   )
 }

@@ -20,7 +20,10 @@ function Livestock() {
     const [maxPrice, setMaxPrice] = useState("");
     const [sort, setSort] = useState("");
     const [showFilters, setShowFilters] = useState(false);
+    const [selectedAnimal, setSelectedAnimal] = useState(null);
+
     const debouncedSearch = useDebounce(search);
+    
 
     const filteredLivestock = livestock.filter((animal) => {
         const name = animal.name?.toLowerCase() || "";
@@ -36,6 +39,7 @@ function Livestock() {
         const selectedAge = age === "" ? "" : Number(age);
         const selectedMinPrice = minPrice === "" ? "" : Number(minPrice);
         const selectedMaxPrice = maxPrice === "" ? "" : Number(maxPrice);
+        
 
         const matchesSearch = 
         name.includes(searchTerm) || 
@@ -117,7 +121,10 @@ function Livestock() {
         )}
         
 
-        <LivestockGrid livestock={sortedLivestock}/>
+        <LivestockGrid 
+            livestock={sortedLivestock}
+            onViewDetails={selectedAnimal}
+        />
         
     </div>
   )
