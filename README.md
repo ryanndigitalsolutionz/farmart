@@ -15,3 +15,6 @@
 - **`components/common/` (Button, Modal, Input, etc.) is used by every single page in the app.** Rome should treat this as day-one priority even before finishing the Auth pages themselves, since Faith, Martin, and Yoshua are all blocked on it for their own UI.
 - **Cart.jsx (Faith) covers checkout + payment in one page** — no separate Checkout.jsx or Payment.jsx files exist in this trimmed structure.
 - **buyer/Orders.jsx (Faith) has Orders and Wishlist as tabs on the same page** — no separate Wishlist.jsx file.
+
+
+This is our Farmart Project
