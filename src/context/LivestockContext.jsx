@@ -1,10 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { getLivestock } from "../api/livestockApi";
 
-const livestockcontext = createContext();
+const Livestockcontext = createContext();
 
-export const livestockProvider = ({ children }) => {
-    const [livestock, setLivestock] = useState([])
+export const LivestockProvider = ({ children }) => {
+    const [livestock, setLivestock] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -18,9 +18,9 @@ export const livestockProvider = ({ children }) => {
     }, []);
 
     return (
-        <livestockcontext.Provider value={{ livestock, loading }}>
+        <Livestockcontext.Provider value={{ livestock, loading }}>
             {children}
-        </livestockcontext.Provider>
+        </Livestockcontext.Provider>
     );
 };
 

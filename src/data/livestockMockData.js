@@ -19,7 +19,7 @@ const livestockMockData = [
             id: "S004",
             name: "Malaika Farm",
         },
-        image: [mariaGoat],
+        images: [mariaGoat],
         description: "Healthy mature goat with good breeding characteristics.",
         health: {
             vaccinated: true,
