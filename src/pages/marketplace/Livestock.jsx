@@ -9,6 +9,7 @@ import BreedFilter from "../../components/marketplace/BreedFilter";
 import AgeFilter from "../../components/marketplace/AgeFilter";
 import PriceFilter from "../../components/marketplace/PriceFilter";
 import SortDropdown from "../../components/marketplace/SortDropdown";
+import { useCart } from "../../context/CartContext";
 
 function Livestock() {
     const { livestock, loading } = useLivestock();
@@ -20,8 +21,8 @@ function Livestock() {
     const [maxPrice, setMaxPrice] = useState("");
     const [sort, setSort] = useState("");
     const [showFilters, setShowFilters] = useState(false);
-    const [selectedAnimal, setSelectedAnimal] = useState(null);
 
+    const { cart } = useCart();
     const debouncedSearch = useDebounce(search);
     
 
@@ -95,6 +96,7 @@ function Livestock() {
         <MarketplaceHeader 
             showFilters={showFilters} 
             setShowFilters={setShowFilters}
+            cartCount={cart.length}
         />
         {/* searchbar */}
         <SearchBar search={search} setSearch={setSearch}/>
@@ -123,7 +125,7 @@ function Livestock() {
 
         <LivestockGrid 
             livestock={sortedLivestock}
-            onViewDetails={selectedAnimal}
+            
         />
         
     </div>

@@ -1,10 +1,12 @@
 import { useParams } from "react-router-dom";
 import { useState } from "react";
 import useLivestock from "../../hooks/useLivestock";
+import { useCart } from "../../context/CartContext";
 
 function LivestockDetails() {
   const { id } = useParams();
   const { livestock, loading } = useLivestock();
+  const { addToCart } = useCart();
   const { selectedImage, setSelectedImage} = useState(null);
 
   if (loading) {
@@ -62,7 +64,7 @@ function LivestockDetails() {
         <p>Status: {animal.availability}</p>
 
         {/* add to cart */}
-        <button>
+        <button onClick={() => addToCart(animal)}>
           Add to Cart
         </button>
     </div>

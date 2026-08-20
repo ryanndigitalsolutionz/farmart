@@ -1,4 +1,8 @@
-function MarketplaceHeader({ showFilters, setShowFilters }) {
+function MarketplaceHeader({ 
+  showFilters, 
+  setShowFilters,
+  cartCount
+ }) {
   return (
     <div>
         <h2>Find Livestock</h2>
@@ -7,6 +11,7 @@ function MarketplaceHeader({ showFilters, setShowFilters }) {
           Browser healthy livestock from trusted farmers.
         </p>
 
+        <p>Cart: {cartCount}</p>
         <button 
           onClick={() => setShowFilters(!showFilters)}
           className=""
