@@ -14,16 +14,18 @@ function MarketplaceHeader({
           Browser healthy livestock from trusted farmers.
         </p>
 
+        {/* My orders navigation */}
+        <Link to="/orders">My Orders</Link>
+
         {/* cart link directory */}
-        <div>
+        <div className="flex">
           <TiShoppingCart /> 
           <Link to="/cart">
             
             Cart: {cartCount}
-          </Link>
-        </div>
+          </Link>  
+        </div>      
         
-
         <button 
           onClick={() => setShowFilters(!showFilters)}
           className="bg-lime-200 p-2 rounded-2xl"

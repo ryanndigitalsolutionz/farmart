@@ -21,7 +21,7 @@ function Cart() {
                     to="/marketplace"
                     className="bg-green-500 p-2 rounded-lg "
                 >
-                    Back to Marketplace
+                    Continue Shopping
                 </Link>
 
             </div>

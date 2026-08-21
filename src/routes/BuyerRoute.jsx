@@ -4,6 +4,8 @@ import LivestockDetails from "../pages/marketplace/LivestockDetails";
 import Cart from "../pages/buyer/Cart";
 import Checkout from "../pages/buyer/Checkout";
 import OrderConfirmation from "../pages/buyer/orderConfirmation";
+import Orders from "../pages/buyer/Orders";
+import OrderDetails from "../pages/buyer/OrderDetails";
 
 function BuyerRoute() {
   return (
@@ -14,6 +16,8 @@ function BuyerRoute() {
         <Route path="/cart" element={<Cart/>}/>
         <Route path="/checkout" element={<Checkout/>}/>
         <Route path="/order-confirmation" element={<OrderConfirmation/>}/>
+        <Route path="/orders" element={<Orders />}/>
+        <Route path="/orders/:id" element={<OrderDetails/>}/>
     </Routes>
   )
 }

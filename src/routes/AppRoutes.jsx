@@ -1,4 +1,3 @@
-
 import BuyerRoute from "./BuyerRoute"
 
 function AppRoutes() {

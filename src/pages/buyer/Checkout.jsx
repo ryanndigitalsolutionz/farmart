@@ -12,6 +12,7 @@ function Checkout() {
     const [error, setError] = useState("");
 
     const [submitting, setSubmitting] = useState(false);
+    const [success, setSuccess] = useState("");
 
     const navigate = useNavigate();
   
@@ -31,7 +32,7 @@ function Checkout() {
         }
 
         // create order
-        submitting(true);
+        setSubmitting(true);
         setError("");
 
         const order = {
@@ -53,7 +54,12 @@ function Checkout() {
 
         const updateOrders = [...existingOrders, order];
 
-        localStorage.setItem("orders", JSON.stringify(updateOrders));
+        localStorage.setItem(
+            "orders", 
+            JSON.stringify(updateOrders)
+        );
+
+        setSuccess("order saved successfully.");
 
         clearCart();
 
