@@ -1,27 +1,37 @@
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useCart } from "../../context/CartContext";
 
 function Checkout() {
     const { cart, clearCart } = useCart();
 
+    const [name, setName] = useState("");
+    const [phone, setPhone] = useState("");
+    const [location, setLocation] = useState("");
+    // information error 
+    const [error, setError] = useState("");
+
+    const [submitting, setSubmitting] = useState(false);
+
+    const navigate = useNavigate();
+  
+
     const total = cart.reduce(
         (sum, animal) => sum + Number(animal.price),
         0
     );
 
-    const [name, setName] = useState("");
-    const [phone, setPhone] = useState("");
-    const [location, setLocation] = useState("");
-
-    // information error 
-    const [error, setError] = useState("");
-
+    // arrow function to handle order placement
     const handlePlaceOrder = () => {
+        if (submitting) return;
+
         if(!name.trim() || !phone.trim() || !location.trim()){
             setError("Please fill all buyer information.");
             return;
         }
 
+        // create order
+        submitting(true);
         setError("");
 
         const order = {
@@ -47,14 +57,18 @@ function Checkout() {
 
         clearCart();
 
-        console.log("Order saved:", order)
+        console.log("Order saved:", order);
+
+        navigate("/order-confirmation", {
+            state: { orderId: order.id},
+        });
     };    
 
   return (
     <div className="p-4">
-        <h1 className="font-bold text-2xl text-center">Checkout</h1>
+        <h1 className="font-bold text-2xl text-center tracking-wide">Checkout</h1>
 
-        <h2>Order Summary</h2>
+        <h2 className="font-semibold">Order Summary</h2>
 
         {cart.map((animal) => (
             <div key={animal.id}>
@@ -113,9 +127,10 @@ function Checkout() {
 
         <button 
             onClick={handlePlaceOrder} 
-            className="p-2 bg-green-600 rounded-lg"
+            disabled={submitting}
+            className="text-green-600 rounded-lg mt-2 font-semibold"
         >
-            Place Order
+            {submitting ? "Placing order" : "Place Order"}
         </button>
 
     </div>

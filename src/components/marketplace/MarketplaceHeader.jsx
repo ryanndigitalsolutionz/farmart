@@ -26,7 +26,7 @@ function MarketplaceHeader({
 
         <button 
           onClick={() => setShowFilters(!showFilters)}
-          className=""
+          className="bg-lime-200 p-2 rounded-2xl"
         >
           {showFilters ? "Hide Filter" : "Show Filter"}
         </button>

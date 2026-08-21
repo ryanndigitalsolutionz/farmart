@@ -90,8 +90,8 @@ function Livestock() {
     }
 
   return (
-    <div>
-        <h1>Livestock Marketplace</h1>
+    <div className="p-4">
+        <h1 className="font-bold text-center tracking-wide text-2xl">Livestock Marketplace</h1>
 
         <MarketplaceHeader 
             showFilters={showFilters} 
@@ -102,7 +102,7 @@ function Livestock() {
         <SearchBar search={search} setSearch={setSearch}/>
 
         {showFilters && (
-            <div>
+            <div className="flex mt-2 mb-2  gap-2">
                 <h3>Filter Livestock</h3>
                 {/* livestock filter */}
                 <LivestockTypeFilter type={type} setType={setType}/>

@@ -9,11 +9,23 @@ function Cart() {
     )
 
   return (
-    <div className="p-4 min-h-screen">
+    <div className="p-4 ">
         <h1 className="text-2xl text-center font-bold">Shopping Cart ({cart.length})</h1>
 
         {cart.length === 0 ? (
-            <p>Your cart is empty</p>
+            <div>
+                <p>Your cart is empty</p>
+
+                <p className="mb-3">Add livestock to your cart before checking out</p>
+                <Link 
+                    to="/marketplace"
+                    className="bg-green-500 p-2 rounded-lg "
+                >
+                    Back to Marketplace
+                </Link>
+
+            </div>
+            
         ): (
             <div>
                 {cart.map((animal) => (
@@ -33,7 +45,9 @@ function Cart() {
                             <p>Breed: {animal.breed}</p>
                             <p>Price: Ksh {Number(animal.price).toLocaleString()}</p>
 
-                            <button onClick={() => removeFromCart(animal.id)} className="border">
+                            <button 
+                                onClick={() => removeFromCart(animal.id)} 
+                                className="border bg-green-100 p-1 rounded-lg mt-1">
                                 Remove
                             </button>
                             </div>
@@ -42,19 +56,22 @@ function Cart() {
 
                 <h2 className="font-bold">Total: Ksh {total.toLocaleString()}</h2>
 
-                <Link 
-                    to="/checkout" 
-                    className=""
-                >
-                    <button >Checkout</button>
-                </Link>
+                <div className="flex gap-3">
 
+                
                 <Link 
                     to="/marketplace"
-                    className="bg-green-600 p-2 text-white rounded-lg"
+                    className="bg-green-600 p-2 text-white rounded-lg cursor-pointer"
                 >
                     Continue Shopping
                 </Link>
+                <Link 
+                    to="/checkout" 
+                    className="bg-yellow-500 p-2 rounded-lg font-semibold cursor-pointer text-green-600"
+                >
+                    <button >Checkout</button>
+                </Link>
+                </div>
             </div>
         )}
 
