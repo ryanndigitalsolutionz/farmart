@@ -38,8 +38,10 @@ function OrderDetails() {
             <div>
                 <p>Order status</p>
                 <strong>
-                    {order.status.charAt(0).toUpperCase() + 
-                        order.status.slice(1)}
+                    {order.paymentStatus
+                        ? order.status.charAt(0).toUpperCase() + 
+                            order.status.slice(1) 
+                        : "unpaid"}
                 </strong>
 
             </div>

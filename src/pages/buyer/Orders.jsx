@@ -22,8 +22,7 @@ function Orders() {
             Marketplace
         </Link>
 
-        </div>
-        
+        </div>        
         
 
         {orders.length === 0 ? (
@@ -41,7 +40,14 @@ function Orders() {
                             Total: Ksh {order.total.toLocaleString()}
                         </p>
 
-                        <p>Status: {order.status}</p>
+                        <p>
+                            Payment:{" "}
+                            {order.paymentStatus
+                                ? order.status.charAt(0).toUpperCase() + 
+                                    order.status.slice(1) 
+                                : "unpaid"}
+                        
+                        </p>
 
                         <p>
                             Date:{""}
