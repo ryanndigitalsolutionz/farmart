@@ -101,3 +101,17 @@ select:focus-visible {
     transition-duration: 0.01ms !important;
   }
 }
+[data-theme="dark"] {
+  --white: #14201a;
+  --green-900: #eaf3e6;
+  --green-700: #6fc98a;
+  --green-100: #1c2b22;
+  --text-dark: #eaf3e6;
+  --text-muted: #9db3a4;
+  --border: #2a3b30;
+}
+
+[data-theme="dark"] body {
+  background: var(--white);
+  color: var(--text-dark);
+}
