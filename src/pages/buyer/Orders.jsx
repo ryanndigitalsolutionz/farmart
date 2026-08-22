@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom'
 
 function Orders() {
-    const [orders, setOrders] = useState("");
+    const [orders, setOrders] = useState([]);
 
     useEffect(() => {
         const saveOrders = JSON.parse(
@@ -43,8 +43,8 @@ function Orders() {
                         <p>
                             Payment:{" "}
                             {order.paymentStatus
-                                ? order.status.charAt(0).toUpperCase() + 
-                                    order.status.slice(1) 
+                                ? order.paymentStatus.charAt(0).toUpperCase() + 
+                                    order.paymentStatus.slice(1) 
                                 : "unpaid"}
                         
                         </p>
