@@ -30,11 +30,20 @@ function OrderDetails() {
     }
 
     return (
-        <div>
-            <h1>Order Details</h1>
+        <div className="p-4 text-center">
+            <h1 className="font-bold">Order Details</h1>
 
             <h2>{order.id}</h2>
-            <p>Status: {order.status}</p>
+
+            <div>
+                <p>Order status</p>
+                <strong>
+                    {order.status.charAt(0).toUpperCase() + 
+                        order.status.slice(1)}
+                </strong>
+
+            </div>
+            
 
             <p>
                 Date:{" "}
@@ -46,6 +55,33 @@ function OrderDetails() {
             <p>Name: {order.buyer.name}</p>
             <p>Phone: {order.buyer.phone}</p>
             <p>Location: {order.buyer.location}</p>
+
+            <h2 className="font-semibold">Items</h2>
+            {order.items.map((animal) => (
+                <div key={animal.id}>
+                    <h3 className="font-medium">{animal.name}</h3>
+
+                    <p>Type: {animal.type}</p>
+                    <p>Breed: {animal.breed}</p>
+
+                    <p>
+                        Price: Ksh {Number(animal.price).toLocaleString()}
+                    </p>
+
+                </div>
+            ))}
+
+            <h2 className="font-bold">
+                Total: Ksh {Number(order.total).toLocaleString()}
+            </h2>
+
+            <Link 
+                to="/marketplace"
+                className="bg-yellow-500 p-2 rounded-lg"
+            >
+                Continue shopping
+            </Link>
+
         </div>
     )
 

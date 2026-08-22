@@ -3,6 +3,8 @@ import { useCart } from "../../context/CartContext"
 
 function Cart() {
     const { cart, removeFromCart} = useCart();
+    const itemCount = cart.length;
+
     const total = cart.reduce(
         (sum, animal) => sum + Number(animal.price),
         0
@@ -10,7 +12,12 @@ function Cart() {
 
   return (
     <div className="p-4 ">
-        <h1 className="text-2xl text-center font-bold">Shopping Cart ({cart.length})</h1>
+        <div className="text-center">
+            <h1 className="text-2xl font-bold">Shopping Cart ({cart.length})</h1>
+            <p className="font-medium">{itemCount} item{itemCount !== 1 ? "s" : ""}</p>
+
+        </div>
+        
 
         {cart.length === 0 ? (
             <div>

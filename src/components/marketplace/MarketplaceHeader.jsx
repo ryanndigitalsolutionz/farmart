@@ -13,17 +13,23 @@ function MarketplaceHeader({
         <p>
           Browser healthy livestock from trusted farmers.
         </p>
+        <div className="flex justify-around">
+            {/*  */}
+          <Link to="/marketplace">Marketplace</Link>
 
-        {/* My orders navigation */}
-        <Link to="/orders">My Orders</Link>
+          {/* My orders navigation */}
+          <Link to="/orders">My Orders</Link>
 
-        {/* cart link directory */}
-        <div className="flex">
-          <TiShoppingCart /> 
-          <Link to="/cart">
-            
-            Cart: {cartCount}
-          </Link>  
+          {/* cart link directory */}
+          <div className="flex gap-1">
+            <TiShoppingCart size={24}/> 
+            {/* naviagtion to cart */}
+            <Link to="/cart">            
+              Cart: {cartCount}
+            </Link>
+
+        </div>
+          
         </div>      
         
         <button 

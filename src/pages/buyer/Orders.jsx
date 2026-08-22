@@ -12,13 +12,24 @@ function Orders() {
     }, []);
 
   return (
-    <div>
-        <h1>My orders</h1>
+    <div className='p-4'>
+        <div className='flex justify-between'>
+            <h1 className='font-bold'>My orders</h1>
+        <Link 
+            to="/marketplace"
+            className="bg-yellow-500 p-2 rounded-lg"
+        >
+            Marketplace
+        </Link>
+
+        </div>
+        
+        
 
         {orders.length === 0 ? (
             <div>
                 <p>You have no orders yet.</p>
-                <Link>Start Shopping</Link>
+                <Link to="/marketplace">Start Shopping</Link>
             </div>
         ): (
             <div>
@@ -36,6 +47,15 @@ function Orders() {
                             Date:{""}
                             {new Date(order.createdAt).toLocaleDateString()}
                         </p>
+
+                        <div className='mt-3 flex gap-3'>
+                            <Link 
+                                to={`/orders/${order.id}`} 
+                                className='bg-green-400 p-2 rounded-lg'
+                            >View Details</Link>
+
+                            
+                        </div>
                     </div>
                 ))}
             </div>

@@ -16,9 +16,9 @@ function Checkout() {
 
     const navigate = useNavigate();
   
-
+    // calculate total in shopping cart
     const total = cart.reduce(
-        (sum, animal) => sum + Number(animal.price),
+        (sum, animal) => sum + (Number(animal.price) || 0),
         0
     );
 
@@ -45,6 +45,7 @@ function Checkout() {
             items: cart,
             total,
             status: "pending",
+            paymentStatus: "unpaid",
             createdAt: new Date().toISOString(),
         };
 
