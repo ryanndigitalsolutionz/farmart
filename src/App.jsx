@@ -1,3 +1,6 @@
+import AppRoutes from "./routes/AppRoutes"
+import { LivestockProvider } from "./context/LivestockContext"
+import { CartProvider } from "./context/CartContext"
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
 
@@ -34,41 +37,51 @@ function BuyerDashboard() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Welcome />} />
+    <LivestockProvider>
+      <CartProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Welcome />} />
 
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
-        <Route path="/farm-setup" element={<FarmSetup />} />
+            <Route path="/farm-setup" element={<FarmSetup />} />
 
-        <Route path="/farmer/*" element={<FarmerDashboard />} />
-        <Route path="/buyer/*" element={<BuyerDashboard />} />
+            <Route path="/farmer/*" element={<FarmerDashboard />} />
+            <Route path="/buyer/*" element={<BuyerDashboard />} />
 
-        <Route path="/admin" element={<AdminRoute />}>
-          <Route element={<DashboardLayout />}>
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="users" element={<Users />} />
-            <Route path="farmers" element={<Farmers />} />
-            <Route path="farmers/:farmerId" element={<FarmerDetails />} />
-            <Route path="listings" element={<Listings />} />
-            <Route path="orders" element={<Orders />} />
-            <Route path="transactions" element={<Transactions />} />
-            <Route path="disputes" element={<Disputes />} />
-            <Route path="reports" element={<Reports />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="announcements" element={<Announcements />} />
-            <Route path="buyers/:buyerId" element={<BuyerDetails />} />
-          </Route>
-        </Route>
+            <Route path="/admin" element={<AdminRoute />}>
+              <Route element={<DashboardLayout />}>
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="users" element={<Users />} />
+                <Route path="farmers" element={<Farmers />} />
+                <Route
+                  path="farmers/:farmerId"
+                  element={<FarmerDetails />}
+                />
+                <Route path="listings" element={<Listings />} />
+                <Route path="orders" element={<Orders />} />
+                <Route path="transactions" element={<Transactions />} />
+                <Route path="disputes" element={<Disputes />} />
+                <Route path="reports" element={<Reports />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="announcements" element={<Announcements />} />
+                <Route
+                  path="buyers/:buyerId"
+                  element={<BuyerDetails />}
+                />
+              </Route>
+            </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </CartProvider>
+    </LivestockProvider>
   )
 }
 
