@@ -3,7 +3,7 @@ import Livestock from "../pages/marketplace/Livestock";
 import LivestockDetails from "../pages/marketplace/LivestockDetails";
 import Cart from "../pages/buyer/Cart";
 import Checkout from "../pages/buyer/Checkout";
-import OrderConfirmation from "../pages/buyer/orderConfirmation";
+import OrderConfirmation from "../pages/buyer/OrderConfirmation";
 import Orders from "../pages/buyer/Orders";
 import OrderDetails from "../pages/buyer/OrderDetails";
 import Payments from "../pages/buyer/Payments";

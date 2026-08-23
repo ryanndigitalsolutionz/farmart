@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 
-function orderConfirmation() {
+function OrderConfirmation() {
     const location = useLocation();
     const orderId = location.state?.orderId;
 
@@ -14,19 +14,26 @@ function orderConfirmation() {
                 <p>
                     Order #: <strong>{orderId}</strong>
                 </p>
-            )}
+            )}            
 
         </div>
+        <div className="flex gap-3">       
         
-
+        <Link 
+            to={`/payments/${orderId}`}
+            className="bg-yellow-400 p-2 rounded-2xl text-orange-900"
+        >
+            Pay Now
+        </Link>
         <Link 
             to="/marketplace"
             className="bg-green-600 p-2 rounded-lg "
         >
             Continue Shopping
         </Link>
+        </div>
     </div>
   )
 }
 
-export default orderConfirmation
+export default OrderConfirmation

@@ -19,28 +19,6 @@ function Payments() {
         setOrder(foundOrder)
     }, [id])
 
-    const handlePayment = () => {
-        const saveOrders = JSON.parse(
-            localStorage.getItem("orders") || "[]"
-        );
-
-        const updatedOrders = saveOrders.map((saveOrders) => 
-            saveOrders.id === order.id
-                ?{
-                    ...saveOrders,
-                    paymentStatus: "paid"
-                }
-                : saveOrders
-        );
-        localStorage.setItem(
-            "orders",
-            JSON.stringify(updatedOrders)
-        );
-        setOrder({
-            ...order,
-            paymentStatus: "paid"
-        })
-    }
 
   if (!order){
     return (
@@ -56,7 +34,16 @@ function Payments() {
         <h1 className="font-bold">Payment</h1>
         
         <PaymentSummary order={order}/>
-        <PaymentForm onPay={handlePayment} />
+        <PaymentForm 
+            order={order}
+            onPay={(phone) => {
+                console.log("Payment request:", {
+                    orderId: order.id,
+                    phone,
+                    amount: order.total,
+                })
+            }} 
+        />
 
         <br />
 
@@ -70,4 +57,4 @@ function Payments() {
   )
 }
 
-export default Payments
+export default Payments;
