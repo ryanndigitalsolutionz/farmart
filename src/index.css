@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  font-family: "IBM Plex Serif", serif;
+  --font-display: 'IBM Plex Serif', serif;
+  --font-body: 'Modern Antiqua', serif;
+
   color: #173c29;
   background: #f3f8ef;
   font-synthesis: none;
@@ -23,6 +25,16 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
 }
 
 button,

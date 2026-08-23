@@ -1,30 +1,30 @@
-/**
- * Sidebar.jsx
- * ------------------------------------------------------------------
- * Admin-only left nav. Pulls live badge counts (pending farmers, open
- * disputes, flagged listings) from AdminContext so the sidebar always
- * reflects reality without each page managing its own count.
- *
- * Note: this is the ADMIN sidebar specifically. It's separate from
- * whatever generic Navbar/Footer Shadrack builds for the public/buyer/
- * farmer shell — admin has its own left-nav dashboard layout instead
- * of a top navbar, matching the design board.
- * ------------------------------------------------------------------
- */
 import { NavLink } from "react-router-dom";
 import { useAdmin } from "../../context/AdminContext";
+import {
+  LayoutDashboard,
+  Users,
+  Tractor,
+  Beef,
+  Package,
+  CreditCard,
+  Scale,
+  BarChart3,
+  Settings,
+  Megaphone,
+  LogOut,
+} from "lucide-react";
 
 const NAV_ITEMS = [
-  { to: "/admin/dashboard", label: "Dashboard", icon: "📊" },
-  { to: "/admin/users", label: "Users", icon: "👥" },
-  { to: "/admin/farmers", label: "Farmers", icon: "🚜", countKey: "pendingFarmerCount" },
-  { to: "/admin/listings", label: "Listings", icon: "🐄", countKey: "flaggedListingCount" },
-  { to: "/admin/orders", label: "Orders", icon: "📦" },
-  { to: "/admin/transactions", label: "Transactions", icon: "💳" },
-  { to: "/admin/disputes", label: "Disputes", icon: "⚖️", countKey: "openDisputeCount" },
-  { to: "/admin/reports", label: "Reports", icon: "📈" },
-  { to: "/admin/settings", label: "Settings", icon: "⚙️" },
-  { to: "/admin/announcements", label: "Announcements", icon: "📣" },
+  { to: "/admin/dashboard", label: "Dashboard", Icon: LayoutDashboard },
+  { to: "/admin/users", label: "Users", Icon: Users },
+  { to: "/admin/farmers", label: "Farmers", Icon: Tractor, countKey: "pendingFarmerCount" },
+  { to: "/admin/listings", label: "Listings", Icon: Beef, countKey: "flaggedListingCount" },
+  { to: "/admin/orders", label: "Orders", Icon: Package },
+  { to: "/admin/transactions", label: "Transactions", Icon: CreditCard },
+  { to: "/admin/disputes", label: "Disputes", Icon: Scale, countKey: "openDisputeCount" },
+  { to: "/admin/reports", label: "Reports", Icon: BarChart3 },
+  { to: "/admin/settings", label: "Settings", Icon: Settings },
+  { to: "/admin/announcements", label: "Announcements", Icon: Megaphone },
 ];
 
 export default function Sidebar() {
@@ -46,7 +46,7 @@ export default function Sidebar() {
     >
       <div
         style={{
-          fontFamily: "var(--font-display, 'Fraunces', serif)",
+          fontFamily: "var(--font-display, 'IBM Plex Serif', serif)",
           fontWeight: 700,
           fontSize: 18,
           color: "var(--green-900, #163420)",
@@ -58,6 +58,7 @@ export default function Sidebar() {
 
       {NAV_ITEMS.map((item) => {
         const count = item.countKey ? counts[item.countKey] : 0;
+        const { Icon } = item;
         return (
           <NavLink
             key={item.to}
@@ -75,8 +76,8 @@ export default function Sidebar() {
               background: isActive ? "var(--green-100, #EAF3E6)" : "transparent",
             })}
           >
-            <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span aria-hidden="true">{item.icon}</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <Icon size={17} strokeWidth={2} />
               {item.label}
             </span>
             {!!count && (
@@ -106,9 +107,13 @@ export default function Sidebar() {
           fontWeight: 600,
           color: "var(--text-muted, #66766A)",
           textDecoration: "none",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
         }}
       >
-        🚪 Logout
+        <LogOut size={17} strokeWidth={2} />
+        Logout
       </NavLink>
     </aside>
   );
