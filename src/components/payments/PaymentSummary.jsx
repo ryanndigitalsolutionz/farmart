@@ -6,13 +6,15 @@ function PaymentSummary({ order }) {
         <h2>Payment Summary</h2>
         <p>Order ID: {order.id}</p>
 
-        <p>
+        <p className="font-semibold">
             Total: Ksh {Number(order.total).toLocaleString()}
         </p>
 
-        <p>
+        <p className="font-semibold">
             Payment Status:{" "}
-            {order.paymentStatus || "unpaid"}
+            <span className={order.paymentStatus === "unpaid" ? "text-red-500" : "text-green-500"}>
+                {order.paymentStatus || "unpaid"}
+            </span>
         </p>
     </div>
   );

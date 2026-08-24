@@ -91,7 +91,7 @@ function Livestock() {
 
   return (
     <div className="p-4">
-        <h1 className="font-bold text-center tracking-wide text-2xl">Livestock Marketplace</h1>
+        <h1 className="font-bold text-center tracking-wider text-green-900 text-3xl">Livestock Marketplace</h1>
 
         <MarketplaceHeader 
             showFilters={showFilters} 
@@ -101,10 +101,12 @@ function Livestock() {
         {/* searchbar */}
         <SearchBar search={search} setSearch={setSearch}/>
 
+
         {showFilters && (
-            <div className="flex mt-2 mb-2  gap-2">
-                <h3>Filter Livestock</h3>
+            <div className="flex p-3 mt-2 mb-4 gap-4 justify-center flex-wrap rounded-2xl shadow-lg bg-gray-200">
+                <h3 className="font-semibold">Filter Livestock</h3>
                 {/* livestock filter */}
+                <div className="flex gap-2 flex-wrap ">
                 <LivestockTypeFilter type={type} setType={setType}/>
                 {/* breed filter */}
                 <BreedFilter breed={breed} setBreed={setBreed} />
@@ -118,6 +120,7 @@ function Livestock() {
                     setMaxPrice={setMaxPrice}
                 />
                 <SortDropdown sort={sort} setSort={setSort}/>
+                </div>
 
             </div>
         )}

@@ -2,7 +2,7 @@ import React from 'react'
 
 function BreedFilter({ breed, setBreed }) {
   return (
-    <div>
+    <div className=''>
         <select value={breed} onChange={(e) => setBreed(e.target.value)}>
             <option value="">All Breeds</option>
             <option value="Boer">Boer</option>

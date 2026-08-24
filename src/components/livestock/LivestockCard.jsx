@@ -8,19 +8,28 @@ function LivestockCard({ animal, onViewDetails }) {
         <img 
             src={animal.images?.[0]} 
             alt={animal.name} 
-            className="w-full h-80 object-cover rounded-xl"
+            className="w-full h-65 object-cover rounded-xl"
         />
 
         <h2 className="font-bold">{animal.name}</h2>
         <p>{animal.type}</p>
         <p>{animal.breed}</p>
         <p>{animal.age} years</p>
+        <p>{animal.weight} kg</p>
         <p className="font-bold">Ksh {animal.price}</p>
-        <p>{animal.availability}</p>
+        <p className={`font-semibold ${
+          animal.availability === "Available"
+            ? "text-green-500"
+            : animal.availability === "Sold"
+            ? "text-red-500"
+            : "text-yellow-500"
+        }`}>
+          {animal.availability}
+        </p>
 
         <button 
           onClick={() => navigate(`/marketplace/${animal.id}`)}
-          className="bg-yellow-200 p-2 text-yellow-600 font-medium rounded-lg mb-2"
+          className="bg-yellow-200 p-2 text-yellow-600 font-medium rounded-lg mb-2 mt-2"
         >
           View Details
         </button>

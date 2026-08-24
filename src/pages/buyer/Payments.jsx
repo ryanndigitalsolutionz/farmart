@@ -23,7 +23,7 @@ function Payments() {
   if (!order){
     return (
     <div>
-        <h1>order Not found</h1>
+        <h1 className='text-red-400'>order Not found</h1>
 
         <Link to="/orders">Back to My orders</Link>
     </div>
@@ -36,7 +36,7 @@ function Payments() {
 
             <p>This order has already been paid.</p>
 
-            <Link to={`/orders/${order.id}`}>
+            <Link to={`/orders/${order.id}`} >
                 Back to order
             </Link>
         </div>
@@ -44,8 +44,8 @@ function Payments() {
   }
 
   return (
-    <div className='p-4'>
-        <h1 className="font-bold">Payment</h1>
+    <div className='p-4 max-w-2xl mx-auto flex flex-col gap-4 m-3 border shadow-2xl rounded-lg '>
+        <h1 className="font-bold text-center text-2xl">Payment</h1>
         
         <PaymentSummary order={order}/>
         <PaymentForm 
@@ -63,7 +63,7 @@ function Payments() {
 
         <Link 
             to={`/orders/${order.id}`}
-            className='bg-yellow-500 p-2 rounded-lg'
+            className='bg-green-500 p-2 rounded-lg w-40 text-center text-white font-semibold'
         >
             Back to My Orders
         </Link>

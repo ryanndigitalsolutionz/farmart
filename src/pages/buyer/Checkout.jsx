@@ -73,24 +73,24 @@ function Checkout() {
 
   return (
     <div className="p-4">
-        <h1 className="font-bold text-2xl text-center tracking-wide">Checkout</h1>
+        <h1 className="font-bold text-2xl text-center tracking-wide mb-6">Checkout</h1>
 
-        <h2 className="font-semibold">Order Summary</h2>
+        <h2 className="font-bold">Order Summary</h2>
 
         {cart.map((animal) => (
-            <div key={animal.id}>
-                <p>{animal.name}</p>
+            <div key={animal.id}>                
+                <p className="font-bold">{animal.name} {animal.type}</p>
                 <p>
-                    Ksh {Number(animal.price).toLocaleString()}
+                   Price: Ksh {Number(animal.price).toLocaleString()}
                 </p>                
             </div>
         ))}
 
         <h2>Total: ksh {total.toLocaleString()}</h2>
-        <h2>Buyer information</h2>
+        <h2 className="font-semibold">Enter your information below</h2>
 
         {/* buyer information inputs */}
-        <div className="">
+        <div className="mt-2">
             <label>
                 Full Name
                 <input 
@@ -98,12 +98,12 @@ function Checkout() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Enter your full name"
-                    className=""
+                    className="border px-2 w-60 mx-3"
                     required
                 />
             </label>
         </div>
-        <div className="">
+        <div className="mt-2">
             <label>
                 Phone Number
                 <input 
@@ -111,12 +111,12 @@ function Checkout() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Enter your phone number"
-                    className=""
+                    className="border px-2 w-60 mx-3"
                     required
                 />
             </label>
         </div>
-        <div className="">
+        <div className="mt-2">
             <label>
                 Location
                 <input 
@@ -124,7 +124,7 @@ function Checkout() {
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     placeholder="Enter your Location"
-                    className=""
+                    className="border px-2 w-60 mx-3"
                     required
                 />
             </label>
@@ -135,7 +135,7 @@ function Checkout() {
         <button 
             onClick={handlePlaceOrder} 
             disabled={submitting}
-            className="text-green-600 rounded-lg mt-2 font-semibold"
+            className="text-green-600 mt-2 font-semibold border-3 p-1 px-4 py-1 rounded-lg"
         >
             {submitting ? "Placing order" : "Place Order"}
         </button>

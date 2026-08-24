@@ -142,26 +142,28 @@ function PaymentForm({ order, onPay}) {
             {message}
           </p>
         )}
+        <div className='flex gap-5 mt-3'>
 
-        <button
-          type='submit'
-          disabled={processing}
-          className='bg-green-600 p-2 rounded-lg '
-        >
-          {processing
-            ? "Processing Payment..."
-            : submitted
-            ? "Payment Request Sent"
-            : `Pay ksh ${Number(order.total).toLocaleString()}`
-          }
-        </button>
+          <button
+            type='submit'
+            disabled={processing}
+            className='bg-yellow-500  text-yellow-100  p-2 rounded-lg '
+          >
+            {processing
+              ? "Processing Payment..."
+              : submitted
+              ? "Payment Request Sent"
+              : `Pay ksh ${Number(order.total).toLocaleString()}`
+            }
+          </button>
 
-        <Link 
-          to={`/orders/${order.id}`}
-          className='bg-gray-400 p-2 rounded-lg inline-block mt-3'
-        >
-          Cancel Payment
-        </Link>
+          <Link 
+            to={`/orders/${order.id}`}
+            className='bg-gray-400 p-2 rounded-lg inline-block '
+          >
+            Cancel Payment
+          </Link>
+        </div>
       </form>
        
     </div>
