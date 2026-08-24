@@ -29,6 +29,20 @@ function Payments() {
     </div>
   )}
 
+  if (order.paymentStatus === "paid") {
+    return (
+        <div>
+            <h1>Payment Complete</h1>
+
+            <p>This order has already been paid.</p>
+
+            <Link to={`/orders/${order.id}`}>
+                Back to order
+            </Link>
+        </div>
+    )
+  }
+
   return (
     <div className='p-4'>
         <h1 className="font-bold">Payment</h1>
@@ -48,7 +62,7 @@ function Payments() {
         <br />
 
         <Link 
-            to="/orders"
+            to={`/orders/${order.id}`}
             className='bg-yellow-500 p-2 rounded-lg'
         >
             Back to My Orders

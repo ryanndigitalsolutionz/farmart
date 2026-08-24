@@ -38,9 +38,17 @@ function OrderDetails() {
             <div>
                 <p>Order status</p>
                 <strong>
+                    {order.status.charAt(0).toUpperCase() + 
+                        order.status.slice(1)}             
+                </strong>
+
+            </div>
+            <div>
+                <p>Payment status</p>
+                <strong>
                     {order.paymentStatus
-                        ? order.status.charAt(0).toUpperCase() + 
-                            order.status.slice(1) 
+                        ? order.paymentStatus.charAt(0).toUpperCase() + 
+                            order.paymentStatus.slice(1) 
                         : "unpaid"}
                 </strong>
 
@@ -76,13 +84,22 @@ function OrderDetails() {
             <h2 className="font-bold">
                 Total: Ksh {Number(order.total).toLocaleString()}
             </h2>
+            <div className=" flex justify-center gap-2 mt-2">
+                {order.paymentStatus !== "paid" && (<Link 
+                    to={`/payments/${order.id}`}
+                    className="bg-yellow-400 p-2 rounded-2xl text-orange-900"
+                >
+                    Pay Now
+                </Link>
 
-            <Link 
-                to="/marketplace"
-                className="bg-yellow-500 p-2 rounded-lg"
-            >
-                Continue shopping
-            </Link>
+                )}
+                <Link 
+                    to="/marketplace"
+                    className="bg-green-600 p-2 rounded-lg"
+                >
+                    Continue shopping
+                </Link>
+            </div>
 
         </div>
     )
