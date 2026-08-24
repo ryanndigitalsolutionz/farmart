@@ -203,7 +203,6 @@ function ForgotPassword() {
         }
 
         .forgot-submit:hover {
-          transform: translateY(-2px);
           background: #236b3d;
           box-shadow: 0 10px 24px rgba(39, 122, 68, 0.20);
         }

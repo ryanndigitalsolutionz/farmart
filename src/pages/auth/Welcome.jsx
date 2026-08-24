@@ -113,10 +113,6 @@ function Welcome() {
             background 180ms ease;
         }
 
-        .role-button:hover {
-          transform: translateY(-2px);
-        }
-
         .role-button-primary {
           border: 1px solid #277a44;
           background: #277a44;

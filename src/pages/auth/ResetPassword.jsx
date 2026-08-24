@@ -78,7 +78,6 @@ function ResetPassword() {
           left: 50%;
           width: 110px;
           height: 4px;
-          transform: translateX(-50%);
           background: #277a44;
           border-radius: 0 0 8px 8px;
         }
@@ -269,7 +268,6 @@ function ResetPassword() {
         }
 
         .reset-submit:hover {
-          transform: translateY(-2px);
           background: #236b3d;
           box-shadow: 0 10px 24px rgba(39, 122, 68, 0.20);
         }

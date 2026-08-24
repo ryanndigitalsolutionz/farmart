@@ -94,7 +94,6 @@ function Register() {
           left: 50%;
           width: 110px;
           height: 4px;
-          transform: translateX(-50%);
           border-radius: 0 0 8px 8px;
           background: #277a44;
         }
@@ -263,7 +262,6 @@ function Register() {
         }
 
         .register-submit:hover {
-          transform: translateY(-2px);
           background: #216b3b;
           box-shadow:
             0 12px 28px rgba(39, 122, 68, 0.18);

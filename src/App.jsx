@@ -11,7 +11,6 @@ import FarmSetup from './pages/auth/FarmSetup'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import VerifyEmail from './pages/auth/VerifyEmail'
 import ResetPassword from './pages/auth/ResetPassword'
-
 import AdminRoute from './routes/AdminRoute'
 import DashboardLayout from './components/layout/DashboardLayout'
 import Dashboard from './pages/admin/Dashboard'
@@ -39,7 +38,6 @@ function App() {
   return (
     <LivestockProvider>
       <CartProvider>
-        <BrowserRouter>
           <Routes>
             <Route path="/" element={<Welcome />} />
 
@@ -79,7 +77,6 @@ function App() {
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </BrowserRouter>
       </CartProvider>
     </LivestockProvider>
   )
