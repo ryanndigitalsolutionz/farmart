@@ -6,7 +6,7 @@ import { useCart } from "../../context/CartContext";
 import { LuWeight, LuMapPinned } from "react-icons/lu";
 import { GrStatusInfo } from "react-icons/gr";
 import { GiFarmTractor, GiDna2, GiHealthNormal } from "react-icons/gi";
-import { FaCalendarAlt } from "react-icons/fa";
+import { FaCalendarAlt, FaStar } from "react-icons/fa";
 
 function LivestockDetails() {
   const { id } = useParams();
@@ -116,14 +116,23 @@ function LivestockDetails() {
             {animal.health?.vaccinated ? "Vaccinated, Healthy" : "Not Vaccinated"} 
           </span>
         </p>
+        {/* farm info */}
         <p className="flex items-center justify-between">
           <span className="flex items-center gap-5">
             <GiFarmTractor size={20} />
             Farm
+            
           </span>
-          <span>
+          <div className="flex flex-col">
+          <span className="font-bold text-end">
             {animal.seller.name}
           </span>
+          <div className="flex gap-2 text-sm items-center">
+            <FaStar size={20} color="gold" />
+            <span>{animal.seller.rating}</span>
+            <span>{animal.seller.reviewCount} reviews</span>
+          </div>
+          </div>
         </p>  
         <p className="flex flex-col gap-2"> 
           <span className="font-bold text-2xl mt-2">About this animal</span> 
@@ -140,7 +149,9 @@ function LivestockDetails() {
             <Link 
               to="/cart"
               className="bg-green-100 p-2 rounded-lg font-medium"
-              >View cart</Link>
+              >
+                View cart
+              </Link>
           </div>
         ) : (
           <p className="text-red-500 mb-3 font-semibold mt-2">This Animal is currently unavailable</p>

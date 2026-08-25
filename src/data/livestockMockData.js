@@ -18,6 +18,8 @@ const livestockMockData = [
         seller: {
             id: "S004",
             name: "Malaika Farm",
+            rating: 4.6,
+            reviewCount: 120,
         },
         images: [mariaGoat],
         description: "Healthy mature goat with good breeding characteristics.",
@@ -38,8 +40,11 @@ const livestockMockData = [
         price: 185000,
         location: "Nakuru",
         seller: {
-        id: "S002",
-        name: "Sunrise Dairy Farm",
+            id: "S002",
+            name: "Sunrise Dairy Farm",
+            rating: 5,
+            reviewCount: 212
+
         },
         images: [freshian],
         description:
@@ -61,8 +66,10 @@ const livestockMockData = [
         price: 10000,
         location: "Kajiado",
         seller: {
-        id: "S003",
-        name: "Kajiado Livestock Farm",
+            id: "S003",
+            name: "Kajiado Livestock Farm",
+            rating: 3.5,
+            reviewCount: 25,
         },
         images: [mimi],
         description:
@@ -84,8 +91,10 @@ const livestockMockData = [
         price: 1200,
         location: "Muranga",
         seller: {
-        id: "S004",
-        name: "Kuku Farm",
+            id: "S004",
+            name: "Kuku Farm",
+            rating: 4.8,
+            reviewCount: 125,
         },
         images: [kito],
         description:
@@ -107,8 +116,10 @@ const livestockMockData = [
         price: 18000,
         location: "Kiambu",
         seller: {
-        id: "S006",
-        name: "KwaNgu Farm",
+            id: "S006",
+            name: "KwaNgu Farm",
+            rating: 3.9,
+            reviewCount: 50,
         },
         images: [kasuku],
         description:

@@ -7,6 +7,7 @@ function Payments() {
     const { id } = useParams();
     const [order, setOrder] = useState(null);
 
+
     useEffect(() => {
         const savedOrders = JSON.parse(
             localStorage.getItem("orders") || "[]"
@@ -23,9 +24,16 @@ function Payments() {
   if (!order){
     return (
     <div>
-        <h1 className='text-red-400'>order Not found</h1>
+        <h1 className='text-red-400 font-semibold mb-4'>Order Not found!</h1>
 
-        <Link to="/orders">Back to My orders</Link>
+        <Link 
+            to="/orders" 
+            className='bg-green-500 p-2 rounded-lg text-white 
+                transition-all duration-200 hover:-translate-y-1 
+                hover:scale-105 hover:shadow-lg'
+        >
+            Back to My orders
+        </Link>
     </div>
   )}
 
@@ -36,7 +44,10 @@ function Payments() {
 
             <p>This order has already been paid.</p>
 
-            <Link to={`/orders/${order.id}`} >
+            <Link 
+                to={`/orders/${order.id}`} 
+                className='transition-all duration-200 hover:-translate-y-1 hover:scale-105 hover:shadow-lg'
+            >
                 Back to order
             </Link>
         </div>
@@ -59,11 +70,11 @@ function Payments() {
             }} 
         />
 
-        <br />
-
         <Link 
             to={`/orders/${order.id}`}
-            className='bg-green-500 p-2 rounded-lg w-40 text-center text-white font-semibold'
+            className='bg-green-500 p-2 rounded-lg w-40 text-center
+                 text-white font-semibold mt-3 hover:bg-green-700
+                 transition-all duration-200 hover:-translate-y-1 hover:scale-105 hover:shadow-lg'
         >
             Back to My Orders
         </Link>

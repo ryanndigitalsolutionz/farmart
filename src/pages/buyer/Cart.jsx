@@ -1,17 +1,14 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../../context/CartContext"
+import CartSummary from "../../components/cart/CartSummary";
 
 function Cart() {
     const { cart, removeFromCart} = useCart();
     const itemCount = cart.length;
 
-    const total = cart.reduce(
-        (sum, animal) => sum + Number(animal.price),
-        0
-    )
-
   return (
-    <div className="p-4 ">
+    <div className="p-4 shadow-2xl max-h-screen max-w-4xl mx-auto mt-3 ">
+        
         <div className="text-center">
             <h1 className="text-2xl font-bold">Shopping Cart ({cart.length})</h1>
             <p className="font-medium">{itemCount} item{itemCount !== 1 ? "s" : ""}</p>
@@ -38,7 +35,7 @@ function Cart() {
                 {cart.map((animal) => (
                     <div 
                     key={animal.id}
-                    className="flex gap-2 mb-2 p-3 border-black"
+                    className="flex gap-3 mb-2 p-3 border-black"
                     >
                         <img 
                             src={animal.images?.[0]} 
@@ -61,26 +58,10 @@ function Cart() {
                     </div>
                 ))}
 
-                <h2 className="font-bold">Total: Ksh {total.toLocaleString()}</h2>
-
-                <div className="flex gap-3">
-
-                
-                <Link 
-                    to="/marketplace"
-                    className="bg-green-600 p-2 text-white rounded-lg cursor-pointer"
-                >
-                    Continue Shopping
-                </Link>
-                <Link 
-                    to="/checkout" 
-                    className="bg-yellow-500 p-2 rounded-lg font-semibold cursor-pointer text-green-600"
-                >
-                    <button >Checkout</button>
-                </Link>
-                </div>
+                <CartSummary />
             </div>
         )}
+        
 
     </div>
   );

@@ -5,7 +5,7 @@ function OrderConfirmation() {
     const orderId = location.state?.orderId;
 
   return (
-    <div className="p-4 ">
+    <div className=" ">
         <div className="mb-4">
             <h1 className="font-semibold">Order Confirmed!</h1>
 
@@ -19,18 +19,8 @@ function OrderConfirmation() {
         </div>
         <div className="flex gap-3">       
         
-        <Link 
-            to={`/payments/${orderId}`}
-            className="bg-yellow-400 p-2 rounded-2xl text-orange-900"
-        >
-            Pay Now
-        </Link>
-        <Link 
-            to="/marketplace"
-            className="bg-green-600 p-2 rounded-lg "
-        >
-            Continue Shopping
-        </Link>
+        
+
         </div>
     </div>
   )

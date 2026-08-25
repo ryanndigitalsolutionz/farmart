@@ -142,12 +142,14 @@ function PaymentForm({ order, onPay}) {
             {message}
           </p>
         )}
-        <div className='flex gap-5 mt-3'>
+        <div className='flex gap-5 mt-4'>
 
           <button
             type='submit'
             disabled={processing}
-            className='bg-yellow-500  text-yellow-100  p-2 rounded-lg '
+            className='bg-yellow-300 text-green-900  p-2 rounded-lg 
+              font-semibold hover:text-green-600 hover:bg-yellow-400 cursor-pointer
+              transition-all duration-200 hover:-translate-y-1 hover:scale-105 hover:shadow-lg'
           >
             {processing
               ? "Processing Payment..."
@@ -159,7 +161,9 @@ function PaymentForm({ order, onPay}) {
 
           <Link 
             to={`/orders/${order.id}`}
-            className='bg-gray-400 p-2 rounded-lg inline-block '
+            className='bg-gray-300 text-gray-400 p-2 
+              rounded-lg inline-block hover:bg-gray-400 hover:text-gray-50 font-semibold
+              transition-all duration-200 hover:-translate-y-1 hover:scale-105 hover:shadow-lg'
           >
             Cancel Payment
           </Link>

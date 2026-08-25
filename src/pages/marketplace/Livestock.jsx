@@ -10,6 +10,7 @@ import AgeFilter from "../../components/marketplace/AgeFilter";
 import PriceFilter from "../../components/marketplace/PriceFilter";
 import SortDropdown from "../../components/marketplace/SortDropdown";
 import { useCart } from "../../context/CartContext";
+import ShowFilter from "../../components/marketplace/ShowFilter";
 
 function Livestock() {
     const { livestock, loading } = useLivestock();
@@ -21,6 +22,16 @@ function Livestock() {
     const [maxPrice, setMaxPrice] = useState("");
     const [sort, setSort] = useState("");
     const [showFilters, setShowFilters] = useState(false);
+
+    const resetFilters = () => {
+        setSearch("");
+        setType("");
+        setBreed("");
+        setAge("");
+        setMinPrice("");
+        setMaxPrice("");
+        setSort("");
+    };
 
     const { cart } = useCart();
     const debouncedSearch = useDebounce(search);
@@ -101,12 +112,18 @@ function Livestock() {
         {/* searchbar */}
         <SearchBar search={search} setSearch={setSearch}/>
 
+        <ShowFilter showFilters={showFilters} setShowFilters={setShowFilters}/>
+
 
         {showFilters && (
-            <div className="flex p-3 mt-2 mb-4 gap-4 justify-center flex-wrap rounded-2xl shadow-lg bg-gray-200">
-                <h3 className="font-semibold">Filter Livestock</h3>
+            <div className="mt-2 mb-4 rounded-2xl border border-green-100 bg-green-50 shadow-xl p-4">
+                {/* filter title */}
+                <div className="mb-4 text-center gap-2 ">
+                    <h3 className="font-semibold text-green-900 text-xl">Filter Livestock</h3>
+                    <p className="text-gray-600 text-sm">Narrow down your search</p>
+                </div>
                 {/* livestock filter */}
-                <div className="flex gap-2 flex-wrap ">
+                <div className="grid grid-cols-3 lg:grid-cols-5 gap-2 items-end">
                 <LivestockTypeFilter type={type} setType={setType}/>
                 {/* breed filter */}
                 <BreedFilter breed={breed} setBreed={setBreed} />
@@ -120,6 +137,15 @@ function Livestock() {
                     setMaxPrice={setMaxPrice}
                 />
                 <SortDropdown sort={sort} setSort={setSort}/>
+                </div>
+
+                <div className="flex justify-end mt-3">
+                <button 
+                    onClick={resetFilters} 
+                    className=' rounded-xl bg-gray-100 px-4 py-2 font-medium text-gray-700 hover:bg-gray-400 transition-colors duration-300 flex '
+                >
+                    Reset
+                </button>
                 </div>
 
             </div>

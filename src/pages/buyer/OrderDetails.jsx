@@ -30,8 +30,8 @@ function OrderDetails() {
     }
 
     return (
-        <div className="p-4 text-center">
-            <h1 className="font-bold">Order Details</h1>
+        <div className="p-4 text-center m-2 shadow-2xl h-screen flex flex-col">
+            <h1 className="font-bold text-2xl mb-3 tracking-widest text-green-900">Order Details</h1>
 
             <h2>{order.id}</h2>
 
@@ -45,7 +45,7 @@ function OrderDetails() {
             </div>
             <div>
                 <p>Payment status</p>
-                <strong>
+                <strong >
                     {order.paymentStatus
                         ? order.paymentStatus.charAt(0).toUpperCase() + 
                             order.paymentStatus.slice(1) 
@@ -84,18 +84,21 @@ function OrderDetails() {
             <h2 className="font-bold">
                 Total: Ksh {Number(order.total).toLocaleString()}
             </h2>
-            <div className=" flex justify-center gap-2 mt-2">
-                {order.paymentStatus !== "paid" && (<Link 
-                    to={`/payments/${order.id}`}
-                    className="bg-yellow-400 p-2 rounded-2xl text-orange-900"
-                >
-                    Pay Now
-                </Link>
+            <div className=" flex justify-center gap-5 mt-4">
+                {order.paymentStatus !== "paid" && (
+                    <Link 
+                        to={`/payments/${order.id}`}
+                        className="bg-yellow-400 p-2 rounded-lg text-orange-900
+                            transition-all duration-200 hover:-translate-y-1 hover:scale-105 hover:shadow-lg"
+                    >
+                        Pay Now
+                    </Link>
 
                 )}
                 <Link 
                     to="/marketplace"
-                    className="bg-green-600 p-2 rounded-lg"
+                    className="bg-green-500 p-2 rounded-lg text-white
+                        transition-all duration-200 hover:-translate-y-1 hover:scale-105 hover:shadow-lg"
                 >
                     Continue shopping
                 </Link>
@@ -107,4 +110,4 @@ function OrderDetails() {
   
 }
 
-export default OrderDetails
+export default OrderDetails;

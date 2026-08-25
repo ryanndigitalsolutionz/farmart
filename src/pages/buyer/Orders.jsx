@@ -12,26 +12,26 @@ function Orders() {
     }, []);
 
   return (
-    <div className='p-4'>
+    <div className='p-4 max-w-4xl mx-auto shadow-2xl m-3 flex flex-col items-center justify-center'>
         <div className='flex justify-between'>
-            <h1 className='font-bold'>My orders</h1>
-        <Link 
-            to="/marketplace"
-            className="bg-yellow-500 p-2 rounded-lg"
-        >
-            Marketplace
-        </Link>
+            <h1 className='font-bold text-xl'>My orders</h1>
 
         </div>        
         
 
         {orders.length === 0 ? (
-            <div>
-                <p>You have no orders yet.</p>
-                <Link to="/marketplace">Start Shopping</Link>
+            <div className='mt-3'>
+                <p className='text-red-700 text-lg  mb-3'>You have no orders yet.</p>
+                <Link 
+                    to="/marketplace"
+                    className="text-green-100  font-semibold bg-green-600 border p-2 px-2  rounded-lg 
+                transition-all duration-200 hover:-translate-y-1 hover:scale-105 hover:shadow-lg "
+                >
+                    Start Shopping
+                </Link>
             </div>
         ): (
-            <div>
+            <div className=''>
                 {orders.map((order) => (
                     <div key={order.id}>
                         <h2>{order.id}</h2>
@@ -58,7 +58,9 @@ function Orders() {
                             <Link 
                                 to={`/orders/${order.id}`} 
                                 className='bg-green-400 p-2 rounded-lg'
-                            >View Details</Link>
+                            >
+                                View Details
+                            </Link>
 
                             
                         </div>

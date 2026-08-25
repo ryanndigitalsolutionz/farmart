@@ -2,8 +2,6 @@ import { Link } from "react-router-dom"
 import { TiShoppingCart } from "react-icons/ti";
 
 function MarketplaceHeader({ 
-  showFilters, 
-  setShowFilters,
   cartCount
  }) {
   return (
@@ -46,12 +44,7 @@ function MarketplaceHeader({
           
         </div>      
         
-        <button 
-          onClick={() => setShowFilters(!showFilters)}
-          className="flex justify-end p-2 rounded-2xl "
-        >
-          {showFilters ? "Hide Filter" : "Show Filter"}
-        </button>
+        
 
     </div>
   )
