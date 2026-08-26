@@ -24,9 +24,11 @@ import Reports from './pages/admin/Reports'
 import Settings from './pages/admin/Settings'
 import Announcements from './pages/admin/Announcements'
 
-function FarmerDashboard() {
-  return <h1>Farmer Dashboard</h1>
-}
+// Import your actual Farmer pages
+import FarmerDashboard from './pages/farmer/Dashboard'
+import CreateListings from './pages/farmer/CreateListings'
+import FarmerOrders from './pages/farmer/Orders'
+import FarmerAnalytics from './pages/farmer/Analytics'
 
 function BuyerDashboard() {
   return <h1>Buyer Dashboard</h1>
@@ -46,7 +48,13 @@ function App() {
 
         <Route path="/farm-setup" element={<FarmSetup />} />
 
+        {/* Farmer Flow Routes */}
+        <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
+        <Route path="/farmer/create-listing" element={<CreateListings />} />
+        <Route path="/farmer/orders" element={<FarmerOrders />} />
+        <Route path="/farmer/analytics" element={<FarmerAnalytics />} />
         <Route path="/farmer/*" element={<FarmerDashboard />} />
+
         <Route path="/buyer/*" element={<BuyerDashboard />} />
 
         <Route path="/admin" element={<AdminRoute />}>
