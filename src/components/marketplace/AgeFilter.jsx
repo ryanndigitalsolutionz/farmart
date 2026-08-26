@@ -8,7 +8,7 @@ function AgeFilter({age, setAge}) {
             min="0"
             value={age}
             onChange={(e) => setAge(e.target.value)}
-            className='border block rounded-2xl px-4 py-1 w-30 text-center'
+            className='border block rounded-2xl px-4 py-1 w-40 text-center bg-white'
         />
     </div>
   )

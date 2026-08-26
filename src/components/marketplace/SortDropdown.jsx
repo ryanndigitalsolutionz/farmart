@@ -4,7 +4,7 @@ function SortDropdown({ sort, setSort }) {
         <select 
           value={sort} 
           onChange={(e) => setSort(e.target.value)}
-          className="outline-0 border rounded-2xl px-2 py-1"
+          className="outline-0 border rounded-2xl px-2 py-1 bg-white"
         >
             <option value="">Sort by</option>
             <option value="price-low">Price: Low to High</option>

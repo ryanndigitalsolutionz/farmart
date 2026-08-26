@@ -130,7 +130,7 @@ function LivestockDetails() {
           <div className="flex gap-2 text-sm items-center">
             <FaStar size={20} color="gold" />
             <span>{animal.seller.rating}</span>
-            <span>{animal.seller.reviewCount} reviews</span>
+            <span>({animal.seller.reviewCount} reviews)</span>
           </div>
           </div>
         </p>  

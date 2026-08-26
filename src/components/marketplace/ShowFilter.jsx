@@ -5,7 +5,7 @@ function ShowFilter({ showFilters, setShowFilters}) {
     <div className="flex justify-end mt-2 mb-4">
           <button 
             onClick={() => setShowFilters(!showFilters)}
-            className=" rounded-xl bg-yellow-200 p-2 text-yellow-600"
+            className=" rounded-xl bg-green-600 p-2 text-green-100"
           >
             {showFilters ? "Hide Filter" : "Show Filter"}
           </button>

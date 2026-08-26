@@ -39,6 +39,7 @@ function PaymentForm({ order, onPay}) {
         "Payment request sent. \nPlease complete the M-Pesa prompt on your phone.")
      
       setSubmitted(true);
+      setprocessing(false);
       onPay(phone);
       
     }, 500);    
@@ -46,20 +47,27 @@ function PaymentForm({ order, onPay}) {
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit} className='mt-4'>
-        <h2>Payment</h2>
-        <p>
-          Pay Ksh {Number(order.total).toLocaleString()}
-        </p>
+    <div className="">
+      <form onSubmit={handleSubmit} className='space-y-5'>
+        {/* heading */}
+        <div>
+          <h2 className='font-bold text-xl text-gray-800'>
+            Choose payment Method
+          </h2>
+
+          <p>Select how you would like to pay for your order.</p>
+
+        </div>
 
         <label>
           Payment Method
           <select 
             value={paymentMethod}
             onChange={(e) => setPaymentmethod(e.target.value)}
-            className='border p-2 block mt-1 mb-3'
+            className='w-full border border-gray-300 rounded-lg px-4 py-3 bg-white outline-none transition
+            focus:border-green-500 focus:ring-2 focus:ring-green-100'
           >
+            {/* <option value="">Select Payment method</option> */}
             <option value="mpesa">Mpesa</option>
             <option value="card">Card</option>
             <option value="bank">Bank Transfer</option>
@@ -68,77 +76,99 @@ function PaymentForm({ order, onPay}) {
         </label>
 
         {paymentMethod === "mpesa" && ( 
-            <label>
-              M-Pesa Phone Number
+            <label className='block'>
+              <span className='block text-sm font-semibold text-gray-700 mb-2'>
+                M-Pesa Phone Number
+              </span>            
 
               <input 
                 type="text" 
                 value={phone} 
                 onChange={(e) => setphone(e.target.value)}
                 placeholder="07xxxxxxxx" 
-                className='border p-1 block mt-1 mb-3'
+                className='w-full border border-gray-300 rounded-lg px-4 py-3 bg-white 
+                outline-none transition focus:border-green-500 focus:ring-2 
+                focus:ring-green-100'
               />
+
+              
             </label>)
         }
         {paymentMethod === "card" && ( 
-          <div className='card'>
-            <label>
+          <div className='space-y-4 bg-stone-50 rounded-cl p-4'>
+            <p className='text-sm text-gray-500'>
+              Card payments are coming soon.
+            </p>
+
+            <label className='block text-sm font-semibold text-gray-700'>
               Card Number
 
               <input 
                 type="text" 
                 placeholder="1234 5678 9012 3456" 
-                className='border p-1 block mt-1 mb-2'
+                className='w-full border border-gray-200 rounded-lg px-4 py-3 
+                mt-1 bg-gray-100 text-gray-400 cursor-not-allowed'
               />
             </label>
 
-            <label>
-              Expiry Date
-              <input 
-              type="text" 
-              placeholder='MM/YY'
-              className='border p-1 block mt-1  mb-2'
-              />
-            </label>
-            <label>
-              CVV
-              <input 
-              type="text" 
-              placeholder='123'
-              className='border p-1 block mt-1 mb-2'
-              />
-            </label>
+            <div className='flex gap-3'>
+              <label className='block text-sm font-semibold text-gray-700 flex-1'>
+                Expiry Date
+                <input 
+                type="text" 
+                placeholder='MM/YY'
+                className='w-full border border-gray-200 rounded-lg px-4 py-3 
+                mt-1 bg-gray-100 text-gray-400 cursor-not-allowed'
+                />
+              </label>
+              <label className='block text-sm font-semibold text-gray-700 flex-1'>
+                CVV
+                <input 
+                type="text" 
+                placeholder='123'
+                className='w-full border border-gray-200 rounded-lg px-4 py-3 
+                mt-1 bg-gray-100 text-gray-400 cursor-not-allowed'
+                />
+              </label>
+            </div>
           </div>
             
         )}
 
         {paymentMethod === "bank" && ( 
-          <div className='bank'>
+          <div className='space-y-4 bg-stone-50 rounded-cl p-4'>
+            <p className='text-sm text-gray-500'>
+              Card payments are coming soon.
+            </p>
 
-            <label>
+            <label className='block text-sm font-semibold text-gray-700'>
               Bank
-              <select name="" id="">
+              <select 
+                className='w-full border border-gray-200 rounded-lg px-4 py-3 
+                mt-1 bg-gray-100 text-gray-400 cursor-not-allowed'
+              >
                 <option value="">Select Bank</option>
                 <option value="kcb">KCB</option>
                 <option value="equity bank">Equity Bank</option>
                 <option value="coop">co-operative Bank</option>
               </select>
             </label>
-            <label>
+            <label className='block text-sm font-semibold text-gray-700'>
               Account Number
 
               <input 
                 type="text" 
                 placeholder="1234 5678 9012 3456" 
-                className='border p-1 block mt-1 mb-2'
+                className='w-full border border-gray-200 rounded-lg px-4 py-3 
+                mt-1 bg-gray-100 text-gray-400 cursor-not-allowed'
               />
             </label>
             </div>
           )}
 
-        {error && <p>{error}</p>}
+        {error && <p className='bg-red-50 text-red-600 text-sm rounded-lg px-4 py-3'>{error}</p>}
         {message && (
-          <p className='whitespace-pre-line'>
+          <p className='bg-green-50 text-green-700 text-sm rounded-lg px-4 py-3 whitespace-pre-line'>
             {message}
           </p>
         )}
@@ -147,9 +177,12 @@ function PaymentForm({ order, onPay}) {
           <button
             type='submit'
             disabled={processing}
-            className='bg-yellow-300 text-green-900  p-2 rounded-lg 
-              font-semibold hover:text-green-600 hover:bg-yellow-400 cursor-pointer
-              transition-all duration-200 hover:-translate-y-1 hover:scale-105 hover:shadow-lg'
+            className='bg-yellow-300 text-green-900  px-5 py-3 rounded-xl 
+              font-semibold shadow-sm cursor-pointer
+              hover:bg-yellow-400 
+              transition-all duration-200 
+              hover:-translate-y-0.5 hover:shadow-md 
+              disabled:opacity-60 disabled:cursor-not-allowed'
           >
             {processing
               ? "Processing Payment..."

@@ -118,7 +118,7 @@ function Livestock() {
         {showFilters && (
             <div className="mt-2 mb-4 rounded-2xl border border-green-100 bg-green-50 shadow-xl p-4">
                 {/* filter title */}
-                <div className="mb-4 text-center gap-2 ">
+                <div className="mb-4 text-center gap-5 ">
                     <h3 className="font-semibold text-green-900 text-xl">Filter Livestock</h3>
                     <p className="text-gray-600 text-sm">Narrow down your search</p>
                 </div>
@@ -129,6 +129,8 @@ function Livestock() {
                 <BreedFilter breed={breed} setBreed={setBreed} />
                 {/* age filter */}
                 <AgeFilter age={age} setAge={setAge}/>
+                {/* sorting by price & age */}
+                <SortDropdown sort={sort} setSort={setSort}/>
                 {/* pricefilter */}
                 <PriceFilter
                     minPrice={minPrice}
@@ -136,7 +138,7 @@ function Livestock() {
                     setMinPrice={setMinPrice}
                     setMaxPrice={setMaxPrice}
                 />
-                <SortDropdown sort={sort} setSort={setSort}/>
+                
                 </div>
 
                 <div className="flex justify-end mt-3">

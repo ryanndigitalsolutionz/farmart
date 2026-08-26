@@ -9,7 +9,7 @@ function PriceFilter({minPrice, setMinPrice, maxPrice, setMaxPrice}) {
             min="0" 
             value={minPrice}
             onChange={(e) => setMinPrice(e.target.value)}
-            className='border px-2 w-40'
+            className='border px-2 w-40 bg-white'
         />
         <input 
             type="number" 
@@ -17,7 +17,7 @@ function PriceFilter({minPrice, setMinPrice, maxPrice, setMaxPrice}) {
             min="0" 
             value={maxPrice}
             onChange={(e) => setMaxPrice(e.target.value)}
-            className='border px-2 w-40'
+            className='border px-2 w-40 bg-white'
         />
     </div>
   )

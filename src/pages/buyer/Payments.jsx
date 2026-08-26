@@ -55,29 +55,30 @@ function Payments() {
   }
 
   return (
-    <div className='p-4 max-w-2xl mx-auto flex flex-col gap-4 m-3 border shadow-2xl rounded-lg '>
-        <h1 className="font-bold text-center text-2xl">Payment</h1>
-        
-        <PaymentSummary order={order}/>
-        <PaymentForm 
-            order={order}
-            onPay={(phone) => {
-                console.log("Payment request:", {
-                    orderId: order.id,
-                    phone,
-                    amount: order.total,
-                })
-            }} 
-        />
+    <div className='min-h-screen bg-stone-50 px-4 py-10 md:py-14 '>
+        <div className='max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8'>
+            <h1 className="font-bold text-center text-2xl md:text-3xl text-gray-800 mb-8">
+                Complete Your Payment</h1>
+            
+            <PaymentSummary order={order}/>
+            <PaymentForm 
+                order={order}
+                onPay={(phone) => {
+                    console.log("Payment request:", {
+                        orderId: order.id,
+                        phone,
+                        amount: order.total,
+                    })
+                }} 
+            />
 
-        <Link 
-            to={`/orders/${order.id}`}
-            className='bg-green-500 p-2 rounded-lg w-40 text-center
-                 text-white font-semibold mt-3 hover:bg-green-700
-                 transition-all duration-200 hover:-translate-y-1 hover:scale-105 hover:shadow-lg'
-        >
-            Back to My Orders
-        </Link>
+            <Link 
+                to={`/orders/${order.id}`}
+                className='block text-center text-gray-500 font-semibold mt-6 hover:text-green-700 transition-colors'
+            >
+                Back to My Orders
+            </Link>
+        </div>
     </div>
   )
 }
