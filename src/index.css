@@ -8,6 +8,15 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Custom Farmart Theme Variables */
+  --farm-green: #1e5631;
+  --farm-green-dark: #143b21;
+  --farm-green-soft: #e8f0ec;
+  --farm-background: #f3f8ef;
+  --farm-text: #173c29;
+  --farm-muted: #64748b;
+  --farm-green-border: #d1e7d8;
 }
 
 * {
@@ -23,6 +32,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--farm-background);
+  color: var(--farm-text);
 }
 
 button,
