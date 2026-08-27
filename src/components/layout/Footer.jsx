@@ -15,7 +15,7 @@ const innerStyle = {
   maxWidth: 1200,
   margin: "0 auto",
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+  gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 160px), 1fr))",
   gap: "var(--space-xl, 32px)",
 };
 
@@ -164,9 +164,9 @@ export default function Footer() {
         </motion.div>
       </div>
 
-      <div style={bottomStyle}>
-        <div>© {new Date().getFullYear()} Farmart. All rights reserved.</div>
-        <div style={{ display: "flex", gap: 16 }}>
+      <div style={{ ...bottomStyle, maxWidth: 1200, margin: "var(--space-xl, 32px) auto 0", paddingTop: 20, borderTop: "1px solid var(--color-border)" }}>
+        <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>© {new Date().getFullYear()} Farmart. All rights reserved.</div>
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
           <Link to="/privacy" style={{ ...linkStyle, fontSize: 13 }}>Privacy</Link>
           <Link to="/terms" style={{ ...linkStyle, fontSize: 13 }}>Terms</Link>
         </div>

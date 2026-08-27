@@ -70,48 +70,56 @@ export default function Users() {
       {error && <p style={{ color: "crimson" }}>Couldn't load users: {error}</p>}
       {!loading && !error && (
         <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13.5 }}>
-            <thead>
-              <tr style={{ textAlign: "left", borderBottom: "1px solid var(--border, #DCE6D8)" }}>
-                <th style={{ padding: "8px 6px" }}>Name</th>
-                <th style={{ padding: "8px 6px" }}>Email</th>
-                <th style={{ padding: "8px 6px" }}>Role</th>
-                <th style={{ padding: "8px 6px" }}>Joined</th>
-                <th style={{ padding: "8px 6px" }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={5} style={{ padding: "14px 6px", color: "var(--text-muted, #66766A)" }}>
-                    No users found.
-                  </td>
-                </tr>
-              )}
-              {filtered.map((u) => (
-                <tr key={u.id} style={{ borderBottom: "1px solid #EEF2EC" }}>
-                  <td style={{ padding: "8px 6px" }}>{u.name || "—"}</td>
-                  <td style={{ padding: "8px 6px" }}>{u.email}</td>
-                  <td style={{ padding: "8px 6px", textTransform: "capitalize" }}>{u.role}</td>
-                  <td style={{ padding: "8px 6px" }}>
-                    {u.joinedAt ? new Date(u.joinedAt).toLocaleDateString() : "—"}
-                  </td>
-                  <td style={{ padding: "8px 6px" }}>
-                    {u.role === "farmer" && (
-                      <Link to={`/admin/farmers/${u.id}`} style={{ color: "var(--green-700, #2F6D3F)", fontWeight: 600, fontSize: 12.5, textDecoration: "none" }}>
-                        View →
-                      </Link>
-                    )}
-                    {u.role === "buyer" && (
-                      <Link to={`/admin/buyers/${u.id}`} style={{ color: "var(--green-700, #2F6D3F)", fontWeight: 600, fontSize: 12.5, textDecoration: "none" }}>
-                        View →
-                      </Link>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {/* Desktop table */}
+          <div className="hide-mobile" style={{ width: "100%", borderCollapse: "collapse", fontSize: 13.5 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 2fr 1fr 1fr 1fr", gap: 0, borderBottom: "1px solid var(--border, #DCE6D8)", padding: "8px 6px", fontWeight: 600, color: "var(--text-dark, #1E2A1F)" }}>
+              <div>Name</div><div>Email</div><div>Role</div><div>Joined</div><div>Actions</div>
+            </div>
+            {filtered.map((u) => (
+              <div key={u.id} style={{ display: "grid", gridTemplateColumns: "2fr 2fr 1fr 1fr 1fr", gap: 0, borderBottom: "1px solid #EEF2EC", padding: "8px 6px", alignItems: "center", fontSize: 13.5 }}>
+                <div>{u.name || "—"}</div>
+                <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.email}</div>
+                <div style={{ textTransform: "capitalize" }}>{u.role}</div>
+                <div>{u.joinedAt ? new Date(u.joinedAt).toLocaleDateString() : "—"}</div>
+                <div>
+                  {u.role === "farmer" && (
+                    <Link to={`/admin/farmers/${u.id}`} style={{ color: "var(--green-700, #2F6D3F)", fontWeight: 600, fontSize: 12.5, textDecoration: "none" }}>
+                      View →
+                    </Link>
+                  )}
+                  {u.role === "buyer" && (
+                    <Link to={`/admin/buyers/${u.id}`} style={{ color: "var(--green-700, #2F6D3F)", fontWeight: 600, fontSize: 12.5, textDecoration: "none" }}>
+                      View →
+                    </Link>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Mobile cards */}
+          <div className="show-mobile-only" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {filtered.length === 0 && (
+              <p style={{ color: "var(--text-muted, #66766A)", padding: "14px 6px" }}>No users found.</p>
+            )}
+            {filtered.map((u) => (
+              <div key={u.id} style={{ background: "var(--white, #fff)", border: "1px solid var(--border, #DCE6D8)", borderRadius: 10, padding: 14, display: "flex", flexDirection: "column", gap: 6, fontSize: 13.5 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontWeight: 700, color: "var(--text-dark, #1E2A1F)" }}>{u.name || "—"}</span>
+                  <span style={{ textTransform: "capitalize", background: "var(--green-100, #EAF3E6)", padding: "2px 8px", borderRadius: 8, fontSize: 12, fontWeight: 600 }}>{u.role}</span>
+                </div>
+                <div style={{ color: "var(--text-muted, #66766A)" }}>{u.email}</div>
+                <div style={{ color: "var(--text-muted, #66766A)" }}>Joined: {u.joinedAt ? new Date(u.joinedAt).toLocaleDateString() : "—"}</div>
+                <div>
+                  {u.role === "farmer" && (
+                    <Link to={`/admin/farmers/${u.id}`} style={{ color: "var(--green-700, #2F6D3F)", fontWeight: 600, fontSize: 12.5, textDecoration: "none" }}>View →</Link>
+                  )}
+                  {u.role === "buyer" && (
+                    <Link to={`/admin/buyers/${u.id}`} style={{ color: "var(--green-700, #2F6D3F)", fontWeight: 600, fontSize: 12.5, textDecoration: "none" }}>View →</Link>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

@@ -1,8 +1,8 @@
 
 const grid = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-  gap: 10,
+  gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 240px), 1fr))",
+  gap: 12,
 };
 
 export default function LivestockGrid({ listings = [], renderCard }) {

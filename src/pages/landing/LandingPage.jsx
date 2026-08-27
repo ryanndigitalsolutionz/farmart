@@ -32,7 +32,7 @@ const heroStyle = {
 const containerStyle = {
   maxWidth: 1200,
   margin: "0 auto",
-  padding: "96px 24px 120px",
+  padding: "clamp(48px, 8vw, 96px) 24px clamp(64px, 10vw, 120px)",
   position: "relative",
   zIndex: 1,
 };
@@ -319,7 +319,7 @@ export default function LandingPage() {
         </section>
 
         {/* Categories */}
-        <section style={{ padding: "96px 0" }}>
+        <section style={{ padding: "clamp(48px, 6vw, 96px) 0" }}>
           <div style={sectionStyle}>
             <motion.div
               initial="hidden"
@@ -334,7 +334,7 @@ export default function LandingPage() {
                 Browse livestock by type and find exactly what you need.
               </p>
             </motion.div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, maxWidth: 960, margin: "0 auto" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 140px), 1fr))", gap: 16, maxWidth: 960, margin: "0 auto" }}>
               {[
                 { to: "/buyer/marketplace?type=cattle", type: "cattle", label: "Cattle" },
                 { to: "/buyer/marketplace?type=goat", type: "goat", label: "Goats" },
@@ -366,7 +366,7 @@ export default function LandingPage() {
         </section>
 
         {/* How it works */}
-        <section style={{ padding: "96px 0", background: "var(--color-surface-secondary)" }}>
+        <section style={{ padding: "clamp(48px, 6vw, 96px) 0", background: "var(--color-surface-secondary)" }}>
           <div style={sectionStyle}>
             <motion.div
               initial="hidden"
@@ -381,7 +381,7 @@ export default function LandingPage() {
                 A simple, transparent process from discovery to delivery.
               </p>
             </motion.div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 20 }}>
+             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))", gap: 20 }}>
               {steps.map((step, i) => (
                 <motion.div
                   key={step.title}
@@ -405,7 +405,7 @@ export default function LandingPage() {
         </section>
 
         {/* Featured Listings */}
-        <section style={{ padding: "96px 0" }}>
+        <section style={{ padding: "clamp(48px, 6vw, 96px) 0" }}>
           <div style={sectionStyle}>
             <motion.div
               initial="hidden"
@@ -464,7 +464,7 @@ export default function LandingPage() {
         </section>
 
         {/* Why Farmart */}
-        <section style={{ padding: "96px 0", background: "var(--color-surface-secondary)" }}>
+        <section style={{ padding: "clamp(48px, 6vw, 96px) 0", background: "var(--color-surface-secondary)" }}>
           <div style={sectionStyle}>
             <motion.div
               initial="hidden"
@@ -508,7 +508,7 @@ export default function LandingPage() {
         </section>
 
         {/* Featured Farmers */}
-        <section style={{ padding: "96px 0" }}>
+        <section style={{ padding: "clamp(48px, 6vw, 96px) 0" }}>
           <div style={sectionStyle}>
             <motion.div
               initial="hidden"
@@ -560,7 +560,7 @@ export default function LandingPage() {
         </section>
 
         {/* Statistics */}
-        <section style={{ padding: "96px 0", background: "var(--color-surface-secondary)" }}>
+        <section style={{ padding: "clamp(48px, 6vw, 96px) 0", background: "var(--color-surface-secondary)" }}>
           <div style={sectionStyle}>
             <motion.div
               initial="hidden"
@@ -575,7 +575,7 @@ export default function LandingPage() {
                 Real data from our growing marketplace.
               </p>
             </motion.div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 140px), 1fr))", gap: 16 }}>
               {[
                 { value: metrics.farmers, label: "Farmers" },
                 { value: metrics.listings, label: "Active Listings" },
@@ -601,7 +601,7 @@ export default function LandingPage() {
         </section>
 
         {/* Testimonials */}
-        <section style={{ padding: "96px 0" }}>
+        <section style={{ padding: "clamp(48px, 6vw, 96px) 0" }}>
           <div style={sectionStyle}>
             <motion.div
               initial="hidden"
@@ -616,7 +616,7 @@ export default function LandingPage() {
                 Demo testimonials from our users.
               </p>
             </motion.div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 16 }}>
               {testimonials.map((t, i) => (
                 <motion.div
                   key={t.name}
@@ -651,23 +651,23 @@ export default function LandingPage() {
         <section style={{
           background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%)",
           textAlign: "center",
-          padding: "96px 24px",
+          padding: "clamp(48px, 6vw, 96px) 24px",
         }}>
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            variants={fadeUp}
-            custom={0}
-            style={{ maxWidth: 600, margin: "0 auto", textAlign: "center" }}
-          >
-            <h2 style={{ fontFamily: "var(--font-display, 'Fraunces', serif)", fontSize: "clamp(32px, 5vw, 44px)", fontWeight: 700, margin: "0 0 16px", color: "#064e3b" }}>
-              Ready to find your next livestock?
-            </h2>
-            <p style={{ fontSize: 16, opacity: 0.9, maxWidth: 480, margin: "0 auto 32px", lineHeight: 1.7, color: "#374151" }}>
-              Join hundreds of farmers and buyers already using Farmart to trade livestock safely and transparently.
-            </p>
-            <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              viewport={{ once: true, margin: "-80px" }}
+              variants={fadeUp}
+              custom={0}
+              style={{ maxWidth: 600, margin: "0 auto", textAlign: "center" }}
+            >
+              <h2 style={{ fontFamily: "var(--font-display, 'Fraunces', serif)", fontSize: "clamp(28px, 5vw, 44px)", fontWeight: 700, margin: "0 0 16px", color: "#064e3b", lineHeight: 1.2 }}>
+                Ready to find your next livestock?
+              </h2>
+              <p style={{ fontSize: "clamp(14px, 2vw, 16px)", opacity: 0.9, maxWidth: 480, margin: "0 auto 24px", lineHeight: 1.7, color: "#374151" }}>
+                Join hundreds of farmers and buyers already using Farmart to trade livestock safely and transparently.
+              </p>
+              <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
               <Link to={cta.primary.to} style={{ ...primaryButtonStyle, background: "#fff", color: "#064e3b", border: "1px solid #fff" }}>
                 {cta.primary.label}
                 <ArrowRight size={18} />

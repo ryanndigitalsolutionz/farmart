@@ -128,6 +128,11 @@ img {
 
 #root {
   min-height: 100vh;
+  overflow-x: hidden;
+}
+
+html {
+  overflow-x: hidden;
 }
 
 a {
@@ -197,4 +202,53 @@ select:focus-visible {
 :focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+@media (max-width: 767px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .show-mobile-only {
+    display: none !important;
+  }
+  .mobile-menu-btn {
+    display: none !important;
+  }
+  .desktop-nav {
+    display: flex !important;
+  }
+  .desktop-utilities {
+    display: flex !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .desktop-nav {
+    display: none !important;
+  }
+  .desktop-utilities {
+    display: none !important;
+  }
+  .mobile-menu-btn {
+    display: inline-flex !important;
+  }
+  .admin-username {
+    display: none !important;
+  }
+  .admin-logout-btn {
+    font-size: 0 !important;
+    padding: 0 !important;
+    width: 36px !important;
+    height: 36px !important;
+  }
+  .admin-logout-btn::after {
+    content: "→";
+    font-size: 16px;
+  }
+  .admin-topbar-right {
+    gap: 4px !important;
+  }
 }

@@ -65,16 +65,14 @@ export default function OrderDetails() {
       <button onClick={() => navigate(-1)} style={{ background: "none", border: "none", color: "var(--green-700, #2F6D3F)", fontWeight: 600, cursor: "pointer", marginBottom: 16, padding: 0 }}>← Back</button>
 
       <div style={{ background: "var(--white, #fff)", border: "1px solid var(--border, #DCE6D8)", borderRadius: 12, padding: 20, boxShadow: "0 6px 20px rgba(29,78,42,0.05)", marginBottom: 20 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
-          <div>
-            <h1 style={{ fontFamily: "'IBM Plex Serif', serif", fontSize: 22, color: "var(--text-dark, #1E2A1F)", margin: "0 0 6px" }}>{order.orderNumber}</h1>
-            <div style={{ color: "var(--text-muted, #66766A)", fontSize: 14 }}>Placed on {d(order.createdAt)}</div>
-          </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
+          <h1 style={{ fontFamily: "'IBM Plex Serif', serif", fontSize: 22, color: "var(--text-dark, #1E2A1F)", margin: 0 }}>{order.orderNumber}</h1>
+          <div style={{ color: "var(--text-muted, #66766A)", fontSize: 14 }}>Placed on {d(order.createdAt)}</div>
           <span style={statusBadge(order.status)}>{order.status.replace("_", " ")}</span>
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 2fr) minmax(260px, 1fr)", gap: 20, alignItems: "start" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 20, alignItems: "start" }}>
         <div style={{ background: "var(--white, #fff)", border: "1px solid var(--border, #DCE6D8)", borderRadius: 12, padding: 20, boxShadow: "0 6px 20px rgba(29,78,42,0.05)" }}>
           <h3 style={{ fontFamily: "'IBM Plex Serif', serif", margin: "0 0 12px", color: "var(--text-dark, #1E2A1F)" }}>Items</h3>
           {order.items.map((item, idx) => (
@@ -106,7 +104,7 @@ export default function OrderDetails() {
           </div>
 
           {canCancel && (
-            <button onClick={handleCancel} disabled={cancelling} style={{ width: "100%", padding: "12px 16px", background: "#DC2626", color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer", opacity: cancelling ? 0.7 : 1 }}>
+            <button onClick={handleCancel} disabled={cancelling} style={{ width: "100%", padding: "14px 16px", background: "#DC2626", color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer", minHeight: 44, opacity: cancelling ? 0.7 : 1 }}>
               {cancelling ? "Cancelling..." : "Cancel Order"}
             </button>
           )}

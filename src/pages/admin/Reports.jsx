@@ -7,7 +7,20 @@ import {
 
 const COLORS = ["#2F6D3F", "#3C7F4C", "#A8D0A0", "#E8B93D", "#B2503E"];
 
+function useWindowWidth() {
+  const [width, setWidth] = useState(() => typeof window !== "undefined" ? window.innerWidth : 1200);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const handler = (e) => setWidth(e.matches ? 400 : 1200);
+    mq.addEventListener?.("change", handler);
+    return () => mq.removeEventListener?.("change", handler);
+  }, []);
+  return width;
+}
+
 export default function Reports() {
+  const winWidth = useWindowWidth();
+  const chartHeight = winWidth < 768 ? 220 : 260;
   const [metrics, setMetrics] = useState(null);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +56,7 @@ export default function Reports() {
     <div>
       <PageHeader title="Reports" subtitle="Platform performance overview" />
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 28 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 160px), 1fr))", gap: 14, marginBottom: 28 }}>
         {[
           { label: "Total Users", value: metrics.totalUsers },
           { label: "Farmers", value: metrics.farmers },
@@ -61,10 +74,10 @@ export default function Reports() {
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20, marginBottom: 28 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))", gap: 20, marginBottom: 28 }}>
         <div style={{ border: "1px solid var(--border, #DCE6D8)", borderRadius: 14, padding: 18, background: "var(--white, #fff)" }}>
           <h3 style={{ margin: "0 0 14px", fontSize: 15 }}>Orders by status</h3>
-          <ResponsiveContainer width="100%" height={260}>
+          <ResponsiveContainer width="100%" height={chartHeight}>
             <PieChart>
               <Pie data={statusData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
                 {statusData.map((entry, index) => (
@@ -79,7 +92,7 @@ export default function Reports() {
 
         <div style={{ border: "1px solid var(--border, #DCE6D8)", borderRadius: 14, padding: 18, background: "var(--white, #fff)" }}>
           <h3 style={{ margin: "0 0 14px", fontSize: 15 }}>Revenue by farmer</h3>
-          <ResponsiveContainer width="100%" height={260}>
+          <ResponsiveContainer width="100%" height={chartHeight}>
             <BarChart data={farmerData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
@@ -94,7 +107,7 @@ export default function Reports() {
 
       <div style={{ border: "1px solid var(--border, #DCE6D8)", borderRadius: 14, padding: 18, background: "var(--white, #fff)" }}>
         <h3 style={{ margin: "0 0 14px", fontSize: 15 }}>Order volume (last 7 days)</h3>
-        <ResponsiveContainer width="100%" height={260}>
+        <ResponsiveContainer width="100%" height={chartHeight}>
           <LineChart data={monthlyData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" tick={{ fontSize: 11 }} />

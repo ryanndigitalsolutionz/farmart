@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAdmin } from "../../context/AdminContext";
 import { useAuth } from "../../context/AuthContext";
 import FarmartLogo from "../branding/FarmartLogo";
-import { LayoutDashboard, Users, FileText, Package, CreditCard, Scale, TrendingUp, Settings, Megaphone } from "lucide-react";
+import { LayoutDashboard, Users, FileText, Package, CreditCard, Scale, TrendingUp, Settings, Megaphone, X } from "lucide-react";
 
 const NAV_ITEMS = [
   { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -98,32 +99,25 @@ const mobileDrawerStyle = {
   top: 0,
   left: 0,
   bottom: 0,
-  width: 260,
+  width: 280,
   background: "var(--glass-bg-strong)",
   borderRight: "1px solid var(--glass-border)",
   backdropFilter: "blur(16px)",
   WebkitBackdropFilter: "blur(16px)",
   zIndex: 200,
-  transform: "translateX(-100%)",
-  transition: "transform 0.3s ease",
   display: "flex",
   flexDirection: "column",
 };
 
-const mobileOpenStyle = {
-  transform: "translateX(0)",
-};
-
 const hamburgerStyle = {
-  position: "fixed",
-  top: 10,
-  left: 10,
-  zIndex: 201,
+  width: 40,
+  height: 40,
+  borderRadius: "var(--radius-sm, 8px)",
   background: "var(--color-surface)",
   border: "1px solid var(--color-border)",
-  borderRadius: "var(--radius-sm, 8px)",
-  padding: "8px 10px",
-  fontSize: 18,
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
   cursor: "pointer",
   color: "var(--color-text)",
 };
@@ -133,6 +127,16 @@ const overlayStyle = {
   inset: 0,
   background: "rgba(0,0,0,0.35)",
   zIndex: 199,
+};
+
+const drawerVariants = {
+  closed: { x: "-100%" },
+  open: { x: 0 },
+};
+
+const overlayVariants = {
+  closed: { opacity: 0 },
+  open: { opacity: 1 },
 };
 
 export default function Sidebar() {
@@ -149,15 +153,54 @@ export default function Sidebar() {
     return () => mq.removeEventListener?.("change", handler);
   }, []);
 
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleKey = (e) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [open]);
+
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
   const content = (
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      <div style={{ ...brandStyle, display: "inline-flex" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ ...brandStyle, display: "inline-flex", justifyContent: "space-between", alignItems: "center" }}>
         <FarmartLogo size="md" suffix="Admin" />
+        <button
+          type="button"
+          aria-label="Close menu"
+          onClick={() => setOpen(false)}
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "var(--color-text)",
+            cursor: "pointer",
+            width: 32,
+            height: 32,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: "var(--radius-sm, 8px)",
+          }}
+        >
+          <X size={20} />
+        </button>
       </div>
       <nav style={navStyle} aria-label="Admin navigation">
         {NAV_ITEMS.map((item) => {
@@ -170,7 +213,7 @@ export default function Sidebar() {
                 ...linkStyle,
                 ...(isActive ? activeStyle : {}),
               })}
-              onClick={() => isMobile && setOpen(false)}
+              onClick={() => setOpen(false)}
             >
               <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span aria-hidden="true"><item.icon size={18} /></span>
@@ -193,15 +236,41 @@ export default function Sidebar() {
         <button
           type="button"
           aria-label="Open menu"
+          aria-expanded={open}
           style={hamburgerStyle}
           onClick={() => setOpen(true)}
         >
-          ☰
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <line x1="4" y1="6" x2="20" y2="6" />
+            <line x1="4" y1="12" x2="20" y2="12" />
+            <line x1="4" y1="18" x2="20" y2="18" />
+          </svg>
         </button>
-        {open && <div style={overlayStyle} onClick={() => setOpen(false)} />}
-        <aside style={{ ...mobileDrawerStyle, ...(open ? mobileOpenStyle : {}) }}>
-          {content}
-        </aside>
+        <AnimatePresence>
+          {open && (
+            <>
+              <motion.div
+                initial="closed"
+                animate="open"
+                exit="closed"
+                variants={overlayVariants}
+                transition={{ duration: 0.25 }}
+                style={overlayStyle}
+                onClick={() => setOpen(false)}
+              />
+              <motion.aside
+                initial="closed"
+                animate="open"
+                exit="closed"
+                variants={drawerVariants}
+                transition={{ type: "spring", damping: 28, stiffness: 300 }}
+                style={mobileDrawerStyle}
+              >
+                {content}
+              </motion.aside>
+            </>
+          )}
+        </AnimatePresence>
       </>
     );
   }

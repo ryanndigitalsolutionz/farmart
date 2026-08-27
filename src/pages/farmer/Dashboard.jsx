@@ -71,7 +71,7 @@ export default function Dashboard() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 160px), 1fr))",
           gap: 14,
           marginBottom: 28,
         }}
@@ -121,8 +121,8 @@ export default function Dashboard() {
         </h2>
         <div
           style={{
-            display: "flex",
-            flexWrap: "wrap",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
             gap: 10,
           }}
         >
@@ -143,11 +143,13 @@ export default function Dashboard() {
                   ? "none"
                   : "1px solid var(--border, #DCE6D8)",
                 borderRadius: 10,
-                padding: "10px 16px",
+                padding: "12px 16px",
+                minHeight: 44,
                 fontSize: 13,
                 fontWeight: 700,
                 cursor: "pointer",
                 fontFamily: "Modern Antiqua, serif",
+                width: "100%",
               }}
             >
               {action.label}

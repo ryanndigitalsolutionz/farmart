@@ -85,7 +85,7 @@ export default function Dashboard() {
           hidden: {},
           show: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
         }}
-        style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 24 }}
+        style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 200px), 1fr))", gap: 14, marginBottom: 24 }}
       >
         <MetricCard label="Total users" value={metrics?.totalUsers} loading={loading} />
         <MetricCard label="Active listings" value={metrics?.activeListings} loading={loading} />
@@ -98,7 +98,7 @@ export default function Dashboard() {
         />
       </motion.div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 16, position: "relative" }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 16, position: "relative", overflowX: "auto", pb: 1 }}>
         {["farmers", "buyers", "listings"].map((t) => (
           <button
             key={t}

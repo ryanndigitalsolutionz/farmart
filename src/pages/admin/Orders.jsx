@@ -79,39 +79,40 @@ export default function Orders() {
       {error && <p style={{ color: "crimson" }}>Couldn't load orders: {error}</p>}
       {!loading && !error && (
         <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13.5 }}>
-            <thead>
-              <tr style={{ textAlign: "left", borderBottom: "1px solid var(--border, #DCE6D8)" }}>
-                <th style={{ padding: "8px 6px" }}>Order #</th>
-                <th style={{ padding: "8px 6px" }}>Buyer</th>
-                <th style={{ padding: "8px 6px" }}>Farmer</th>
-                <th style={{ padding: "8px 6px" }}>Total</th>
-                <th style={{ padding: "8px 6px" }}>Status</th>
-                <th style={{ padding: "8px 6px" }}>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={6} style={{ padding: "14px 6px", color: "var(--text-muted, #66766A)" }}>
-                    No orders found.
-                  </td>
-                </tr>
-              )}
-              {filtered.map((o) => (
-                <tr key={o.id} style={{ borderBottom: "1px solid #EEF2EC" }}>
-                  <td style={{ padding: "8px 6px", fontWeight: 600 }}>#{o.orderNumber || o.id}</td>
-                  <td style={{ padding: "8px 6px" }}>{o.buyerName || "—"}</td>
-                  <td style={{ padding: "8px 6px" }}>{o.farmerName || "—"}</td>
-                  <td style={{ padding: "8px 6px" }}>KES {Number(o.total || 0).toLocaleString()}</td>
-                  <td style={{ padding: "8px 6px", textTransform: "capitalize" }}>{o.status}</td>
-                  <td style={{ padding: "8px 6px" }}>
-                    {o.createdAt ? new Date(o.createdAt).toLocaleDateString() : "—"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {/* Desktop table */}
+          <div className="hide-mobile" style={{ width: "100%", borderCollapse: "collapse", fontSize: 13.5 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1.2fr 1.2fr 1fr 1fr 1fr", gap: 0, borderBottom: "1px solid var(--border, #DCE6D8)", padding: "8px 6px", fontWeight: 600, color: "var(--text-dark, #1E2A1F)" }}>
+              <div>Order #</div><div>Buyer</div><div>Farmer</div><div>Total</div><div>Status</div><div>Date</div>
+            </div>
+            {filtered.map((o) => (
+              <div key={o.id} style={{ display: "grid", gridTemplateColumns: "1.5fr 1.2fr 1.2fr 1fr 1fr 1fr", gap: 0, borderBottom: "1px solid #EEF2EC", padding: "8px 6px", alignItems: "center", fontSize: 13.5 }}>
+                <div style={{ fontWeight: 600 }}>#{o.orderNumber || o.id}</div>
+                <div>{o.buyerName || "—"}</div>
+                <div>{o.farmerName || "—"}</div>
+                <div>KES {Number(o.total || 0).toLocaleString()}</div>
+                <div style={{ textTransform: "capitalize" }}>{o.status}</div>
+                <div>{o.createdAt ? new Date(o.createdAt).toLocaleDateString() : "—"}</div>
+              </div>
+            ))}
+          </div>
+          {/* Mobile cards */}
+          <div className="show-mobile-only" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {filtered.length === 0 && (
+              <p style={{ color: "var(--text-muted, #66766A)", padding: "14px 6px" }}>No orders found.</p>
+            )}
+            {filtered.map((o) => (
+              <div key={o.id} style={{ background: "var(--white, #fff)", border: "1px solid var(--border, #DCE6D8)", borderRadius: 10, padding: 14, display: "flex", flexDirection: "column", gap: 4, fontSize: 13.5 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontWeight: 700, color: "var(--text-dark, #1E2A1F)" }}>#{o.orderNumber || o.id}</span>
+                  <span style={{ textTransform: "capitalize", background: "var(--green-100, #EAF3E6)", padding: "2px 8px", borderRadius: 8, fontSize: 12, fontWeight: 600 }}>{o.status}</span>
+                </div>
+                <div style={{ color: "var(--text-muted, #66766A)" }}>Buyer: {o.buyerName || "—"}</div>
+                <div style={{ color: "var(--text-muted, #66766A)" }}>Farmer: {o.farmerName || "—"}</div>
+                <div style={{ color: "var(--text-muted, #66766A)" }}>Total: KES {Number(o.total || 0).toLocaleString()}</div>
+                <div style={{ color: "var(--text-muted, #66766A)" }}>{o.createdAt ? new Date(o.createdAt).toLocaleDateString() : "—"}</div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

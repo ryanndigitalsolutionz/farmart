@@ -3,7 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import NotificationMenu from "../ui/NotificationMenu";
 import ThemeToggle from "../ui/ThemeToggle";
 import Avatar from "../ui/Avatar";
-import { ChevronRight, Menu } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 const NAV_HEIGHT = 64;
 
@@ -22,7 +22,7 @@ const outerStyle = {
 const innerStyle = {
   maxWidth: 1400,
   margin: "0 auto",
-  padding: "0 24px",
+  padding: "0 20px",
   height: "100%",
   display: "flex",
   alignItems: "center",
@@ -35,24 +35,30 @@ const leftStyle = {
   gap: 8,
   fontSize: 14,
   color: "var(--color-text-muted)",
+  minWidth: 0,
 };
 
 const breadcrumbLinkStyle = {
   color: "var(--color-text-muted)",
   textDecoration: "none",
   fontSize: 14,
+  flexShrink: 0,
 };
 
 const breadcrumbActiveStyle = {
   color: "var(--color-text)",
   fontWeight: 700,
   fontSize: 14,
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
 };
 
 const rightStyle = {
   display: "flex",
   alignItems: "center",
-  gap: 10,
+  gap: 8,
+  flexShrink: 0,
 };
 
 const iconButtonStyle = {
@@ -85,7 +91,7 @@ const breadcrumbMap = {
   "/admin/buyers/:id": "Buyer Details",
 };
 
-export default function AdminTopbar({ onToggleSidebar }) {
+export default function AdminTopbar() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -113,25 +119,14 @@ export default function AdminTopbar({ onToggleSidebar }) {
   return (
     <header style={outerStyle}>
       <div style={innerStyle}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button
-            type="button"
-            onClick={onToggleSidebar}
-            aria-label="Toggle sidebar"
-            style={{
-              ...iconButtonStyle,
-              display: window.innerWidth < 1024 ? "inline-flex" : "none",
-            }}
-          >
-            <Menu size={18} />
-          </button>
-          <nav style={leftStyle} aria-label="Breadcrumb">
+        <div style={leftStyle}>
+          <nav style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, overflow: "hidden" }} aria-label="Breadcrumb">
             <Link to="/admin" style={breadcrumbLinkStyle}>Admin</Link>
-            <ChevronRight size={14} style={{ color: "var(--color-text-muted)" }} />
+            <ChevronRight size={14} style={{ color: "var(--color-text-muted)", flexShrink: 0 }} />
             <span style={breadcrumbActiveStyle}>{label}</span>
           </nav>
         </div>
-        <div style={rightStyle}>
+        <div style={{ ...rightStyle, gap: 6 }} className="admin-topbar-right">
           <ThemeToggle ariaLabel="Toggle theme" />
           <NotificationMenu />
           <div style={{ position: "relative", display: "inline-flex" }}>
@@ -141,12 +136,13 @@ export default function AdminTopbar({ onToggleSidebar }) {
               style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "transparent", border: "none", padding: 0, cursor: "pointer", color: "var(--color-text)" }}
             >
               <Avatar name={user?.name} size={30} />
-              <span style={{ fontSize: 13, fontWeight: 600, display: window.innerWidth >= 640 ? "inline" : "none" }}>{user?.name}</span>
+              <span style={{ fontSize: 13, fontWeight: 600 }} className="admin-username">{user?.name}</span>
             </button>
           </div>
           <button
             type="button"
             onClick={handleLogout}
+            className="admin-logout-btn"
             style={{
               ...iconButtonStyle,
               fontSize: 13,

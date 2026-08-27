@@ -21,9 +21,22 @@ import { api } from "../../api";
 
 const COLORS = ["#277a44", "#2F6D3F", "#3C7F4C", "#A8D0A0", "#DCE6D8", "#8A6D1B"];
 
+function useWindowWidth() {
+  const [width, setWidth] = useState(() => typeof window !== "undefined" ? window.innerWidth : 1200);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const handler = (e) => setWidth(e.matches ? 400 : 1200);
+    mq.addEventListener?.("change", handler);
+    return () => mq.removeEventListener?.("change", handler);
+  }, []);
+  return width;
+}
+
 export default function Analytics() {
   const { user } = useAuth();
   const { listings } = useLivestock();
+  const winWidth = useWindowWidth();
+  const chartHeight = winWidth < 768 ? 220 : 260;
   const [chartData, setChartData] = useState({ revenueOverTime: [], salesVolume: [], categoryDistribution: [], statusDistribution: [] });
   const [loading, setLoading] = useState(true);
 
@@ -153,7 +166,7 @@ export default function Analytics() {
             >
               Revenue Over Time
             </h3>
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={chartHeight}>
               <LineChart data={chartData.revenueOverTime}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#DCE6D8" />
                 <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="#66766A" />
@@ -192,7 +205,7 @@ export default function Analytics() {
             >
               Sales Volume
             </h3>
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={chartHeight}>
               <BarChart data={chartData.salesVolume}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#DCE6D8" />
                 <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="#66766A" />
@@ -237,8 +250,8 @@ export default function Analytics() {
                 }}
               >
                 Category Distribution
-              </h3>
-              <ResponsiveContainer width="100%" height={260}>
+              </h3            >
+              <ResponsiveContainer width="100%" height={chartHeight}>
                 <PieChart>
                   <Pie
                     data={chartData.categoryDistribution}
@@ -283,8 +296,8 @@ export default function Analytics() {
                 }}
               >
                 Order Status Distribution
-              </h3>
-              <ResponsiveContainer width="100%" height={260}>
+              </h3            >
+              <ResponsiveContainer width="100%" height={chartHeight}>
                 <PieChart>
                   <Pie
                     data={chartData.statusDistribution}

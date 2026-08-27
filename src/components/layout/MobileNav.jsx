@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { Home, ShoppingCart, Package, Heart, User } from "lucide-react";
 
 const outerStyle = {
   position: "fixed",
@@ -13,7 +14,7 @@ const outerStyle = {
   display: "flex",
   justifyContent: "space-around",
   alignItems: "center",
-  padding: "0 8px",
+  padding: "0 8px env(safe-area-inset-bottom, 8px)",
   zIndex: 100,
 };
 
@@ -27,28 +28,33 @@ const linkBaseStyle = {
   fontSize: 10.5,
   fontWeight: 600,
   flex: 1,
-  padding: "6px 0",
+  padding: "8px 0",
   background: "transparent",
   border: "none",
   position: "relative",
   transition: "color 0.2s ease",
+  minHeight: 48,
+  justifyContent: "center",
 };
 
 const activeStyle = {
   color: "var(--color-primary)",
 };
 
-const iconStyle = {
-  fontSize: 20,
-  lineHeight: 1,
+const iconWrapperStyle = {
+  width: 24,
+  height: 24,
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
 };
 
 const defaultItems = [
-  { to: "/", label: "Home", icon: "🏠" },
-  { to: "/buyer/marketplace", label: "Market", icon: "🛒" },
-  { to: "/buyer/orders", label: "Orders", icon: "📦" },
-  { to: "/buyer/wishlist", label: "Wishlist", icon: "🤍" },
-  { to: "/buyer/profile", label: "Profile", icon: "👤" },
+  { to: "/", label: "Home", icon: Home },
+  { to: "/buyer/marketplace", label: "Market", icon: ShoppingCart },
+  { to: "/buyer/orders", label: "Orders", icon: Package },
+  { to: "/buyer/wishlist", label: "Wishlist", icon: Heart },
+  { to: "/buyer/profile", label: "Profile", icon: User },
 ];
 
 export default function MobileNav({ items = defaultItems }) {
@@ -63,7 +69,9 @@ export default function MobileNav({ items = defaultItems }) {
             ...(isActive ? activeStyle : {}),
           })}
         >
-          <span style={iconStyle} aria-hidden="true">{item.icon}</span>
+          <span style={iconWrapperStyle} aria-hidden="true">
+            <item.icon size={22} strokeWidth={2.2} />
+          </span>
           <span>{item.label}</span>
         </NavLink>
       ))}

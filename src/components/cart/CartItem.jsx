@@ -1,9 +1,12 @@
+import { Trash2 } from "lucide-react";
+
 const row = {
   display: "flex",
   gap: 14,
   padding: "14px 0",
   borderBottom: "1px solid var(--border, #DCE6D8)",
   alignItems: "center",
+  flexWrap: "wrap",
 };
 
 const image = {
@@ -48,21 +51,21 @@ const controls = {
 };
 
 const qtyBtn = {
-  width: 28,
-  height: 28,
+  width: 40,
+  height: 40,
   borderRadius: 8,
   border: "1px solid var(--border, #DCE6D8)",
   background: "#fff",
-  display: "flex",
+  display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
   cursor: "pointer",
-  fontSize: 14,
+  fontSize: 18,
   color: "var(--text-dark, #1E2A1F)",
 };
 
 const qtyText = {
-  minWidth: 24,
+  minWidth: 28,
   textAlign: "center",
   fontSize: 14,
   fontWeight: 600,
@@ -72,11 +75,14 @@ const removeBtn = {
   background: "transparent",
   border: "none",
   color: "#c53030",
-  fontSize: 12,
+  fontSize: 13,
   cursor: "pointer",
   fontWeight: 600,
   marginTop: 8,
   padding: 0,
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 4,
 };
 
 export default function CartItem({ item, onUpdateQuantity, onRemove }) {
@@ -107,10 +113,10 @@ export default function CartItem({ item, onUpdateQuantity, onRemove }) {
           </button>
         </div>
         <button type="button" style={removeBtn} onClick={() => onRemove?.(item.listingId)}>
-          Remove
+          <Trash2 size={14} /> Remove
         </button>
       </div>
-      <div style={{ fontWeight: 700, fontSize: 14, color: "var(--text-dark, #1E2A1F)", flex: "0 0 auto" }}>
+      <div style={{ fontWeight: 700, fontSize: 14, color: "var(--text-dark, #1E2A1F)", flex: "0 0 auto", marginTop: 4 }}>
         KES {(unit * (item.quantity || 1)).toLocaleString("en-KE")}
       </div>
     </div>

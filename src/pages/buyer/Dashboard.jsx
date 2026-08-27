@@ -52,7 +52,7 @@ export default function BuyerDashboard() {
         <p style={{ color: "var(--text-muted, #66766A)", margin: 0, fontSize: 14 }}>Here's an overview of your marketplace activity.</p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 32 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 200px), 1fr))", gap: 16, marginBottom: 32 }}>
         {[
           { label: "Total Orders", value: stats.total, to: "/buyer/orders", color: "#277a44" },
           { label: "Active Orders", value: stats.active, to: "/buyer/orders", color: "#2563EB" },

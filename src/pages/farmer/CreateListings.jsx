@@ -257,7 +257,7 @@ export default function CreateListings() {
           />
         </Field>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 180px), 1fr))", gap: 14 }}>
           <Field label="Price (KES)" required error={errors.price}>
             <input
               type="number"
@@ -287,7 +287,7 @@ export default function CreateListings() {
           </Field>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 180px), 1fr))", gap: 14 }}>
           <Field label="Gender" error={errors.gender}>
             <select value={form.gender} onChange={handleChange("gender")} style={inputStyle}>
               {GENDERS.map((g) => (

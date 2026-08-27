@@ -1,3 +1,4 @@
+import { Search } from "lucide-react";
 
 const outer = {
   position: "relative",
@@ -21,15 +22,15 @@ const icon = {
   left: 12,
   top: "50%",
   transform: "translateY(-50%)",
-  fontSize: 16,
   color: "var(--text-muted, #66766A)",
   pointerEvents: "none",
+  display: "inline-flex",
 };
 
 export default function SearchBar({ value, onChange, placeholder = "Search livestock..." }) {
   return (
     <div style={outer}>
-      <span aria-hidden="true" style={icon}>🔍</span>
+      <span aria-hidden="true" style={icon}><Search size={16} /></span>
       <input
         type="search"
         value={value}

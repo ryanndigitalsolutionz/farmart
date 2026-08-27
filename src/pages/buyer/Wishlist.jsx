@@ -31,7 +31,7 @@ export default function Wishlist() {
           <Link to="/buyer/marketplace" style={{ color: "var(--green-700, #2F6D3F)", fontWeight: 600, marginTop: 10, display: "inline-block" }}>Browse Marketplace</Link>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 240px), 1fr))", gap: 16 }}>
           {items.map((item) => (
             <div key={item.listingId} style={{ background: "var(--white, #fff)", border: "1px solid var(--border, #DCE6D8)", borderRadius: 12, padding: 14, boxShadow: "0 6px 20px rgba(29,78,42,0.05)", display: "flex", flexDirection: "column", gap: 10 }}>
               <div onClick={() => navigate(`/livestock/${item.listingId}`)} style={{ cursor: "pointer", height: 150, background: "#EAF3E6", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted, #66766A)", fontSize: 12 }}>

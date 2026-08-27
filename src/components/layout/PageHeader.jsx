@@ -1,24 +1,11 @@
-/**
- * PageHeader.jsx
- * ------------------------------------------------------------------
- * Consistent header used at the top of every admin page: title,
- * optional subtitle, and a right-aligned slot for actions (a period
- * dropdown, a primary button, etc). Keeps Dashboard/Listings/Disputes
- * visually consistent without repeating markup.
- *
- * Usage:
- *   <PageHeader title="Platform overview" actions={<PeriodDropdown />} />
- * ------------------------------------------------------------------
- */
 export default function PageHeader({ title, subtitle, actions }) {
   return (
     <div
       style={{
         display: "flex",
-        justifyContent: "space-between",
-        alignItems: "flex-start",
+        flexDirection: "column",
+        gap: 12,
         marginBottom: 20,
-        gap: 16,
       }}
     >
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -29,6 +16,7 @@ export default function PageHeader({ title, subtitle, actions }) {
             fontWeight: 600,
             color: "var(--color-text)",
             margin: 0,
+            lineHeight: 1.3,
           }}
         >
           {title}
@@ -39,7 +27,11 @@ export default function PageHeader({ title, subtitle, actions }) {
           </p>
         )}
       </div>
-      {actions && <div style={{ display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>{actions}</div>}
+      {actions && (
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", width: "100%" }}>
+          {actions}
+        </div>
+      )}
     </div>
   );
 }
