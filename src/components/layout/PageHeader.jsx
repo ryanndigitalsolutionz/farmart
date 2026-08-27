@@ -18,27 +18,28 @@ export default function PageHeader({ title, subtitle, actions }) {
         justifyContent: "space-between",
         alignItems: "flex-start",
         marginBottom: 20,
+        gap: 16,
       }}
     >
-      <div>
+      <div style={{ flex: 1, minWidth: 0 }}>
         <h1
           style={{
             fontFamily: "var(--font-display, 'Fraunces', serif)",
             fontSize: 22,
             fontWeight: 600,
-            color: "var(--green-900, #163420)",
+            color: "var(--color-text)",
             margin: 0,
           }}
         >
           {title}
         </h1>
         {subtitle && (
-          <p style={{ color: "var(--text-muted, #66766A)", fontSize: 13, marginTop: 4 }}>
+          <p style={{ color: "var(--color-text-muted)", fontSize: 13, marginTop: 4 }}>
             {subtitle}
           </p>
         )}
       </div>
-      {actions && <div style={{ display: "flex", gap: 10, alignItems: "center" }}>{actions}</div>}
+      {actions && <div style={{ display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>{actions}</div>}
     </div>
   );
 }

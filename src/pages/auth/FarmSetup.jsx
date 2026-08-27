@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MapPin, Phone, House, PenLine, ShieldCheck } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
 
 function FarmSetup() {
   const navigate = useNavigate()
+  const { updateFarmProfile } = useAuth()
 
   const [formData, setFormData] = useState({
     farmName: '',
@@ -16,7 +18,6 @@ function FarmSetup() {
 
   const handleChange = (event) => {
     const { name, value } = event.target
-
     setFormData((previous) => ({
       ...previous,
       [name]: value,
@@ -27,17 +28,11 @@ function FarmSetup() {
     event.preventDefault()
     setIsSaving(true)
 
-    localStorage.setItem(
-      'farmartFarmProfile',
-      JSON.stringify({
-        ...formData,
-        verificationStatus: 'pending',
-      }),
-    )
+    updateFarmProfile(formData)
 
     setTimeout(() => {
       setIsSaving(false)
-      navigate('/farmer/dashboard')
+      navigate('/farmer')
     }, 700)
   }
 

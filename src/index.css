@@ -1,13 +1,95 @@
 @import "tailwindcss";
 
+@layer theme {
+  @theme default {
+    --color-background: #f3f8ef;
+    --color-surface: #ffffff;
+    --color-surface-secondary: #f8fbf8;
+    --color-text: #17351f;
+    --color-text-muted: #66766A;
+    --color-border: #DCE6D8;
+    --color-primary: #277a44;
+    --color-primary-hover: #216b3b;
+    --color-danger: #c53030;
+    --color-warning: #E8B93D;
+    --color-success: #2F6D3F;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.08);
+    --shadow-glass: 0 20px 50px rgba(0, 0, 0, 0.12);
+
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+    --space-3xl: 64px;
+
+    --white: #ffffff;
+    --text-dark: #17351f;
+    --green-700: #277a44;
+    --green-900: #163420;
+    --green-100: #EAF3E6;
+    --yellow-500: #E8B93D;
+
+    --glass-bg: rgba(255, 255, 255, 0.78);
+    --glass-bg-strong: rgba(255, 255, 255, 0.92);
+    --glass-border: rgba(220, 230, 216, 0.6);
+
+    --color-cta-bg: #111827;
+    --color-cta-text: #ffffff;
+  }
+}
+
+[data-theme="dark"] {
+  --color-background: #0f1410;
+  --color-surface: #1a211c;
+  --color-surface-secondary: #212922;
+  --color-text: #e8f0e9;
+  --color-text-muted: #9aa89d;
+  --color-border: #2f3b32;
+  --color-primary: #4ade80;
+  --color-primary-hover: #22c55e;
+  --color-danger: #f87171;
+  --color-warning: #fbbf24;
+  --color-success: #4ade80;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.35);
+  --shadow-glass: 0 20px 50px rgba(0, 0, 0, 0.45);
+
+  --white: #1a211c;
+  --text-dark: #e8f0e9;
+  --green-700: #4ade80;
+  --green-900: #e8f0e9;
+  --green-100: #212922;
+  --yellow-500: #fbbf24;
+
+  --glass-bg: rgba(26, 33, 28, 0.78);
+  --glass-bg-strong: rgba(26, 33, 28, 0.92);
+  --glass-border: rgba(47, 59, 50, 0.6);
+
+  --color-cta-bg: #4ade80;
+  --color-cta-text: #ffffff;
+}
+
 :root {
   font-family: "IBM Plex Serif", serif;
-  color: #173c29;
-  background: #f3f8ef;
+  color: var(--color-text);
+  background: var(--color-background);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 * {
@@ -17,12 +99,15 @@
 html {
   min-width: 320px;
   min-height: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background: var(--color-background);
+  color: var(--color-text);
 }
 
 button,
@@ -43,4 +128,73 @@ img {
 
 #root {
   min-height: 100vh;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-primary-hover);
+}
+
+.farmart-logo-text {
+  color: #111827;
+}
+
+.farmart-logo-icon {
+  color: #059669;
+}
+
+[data-theme="dark"] .farmart-logo-text {
+  color: #4ade80;
+}
+
+[data-theme="dark"] .farmart-logo-icon {
+  color: #4ade80;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.stat-card {
+  text-decoration: none;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 6px 20px rgba(29,78,42,0.05);
+  display: block;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(29,78,42,0.10);
+}
+
+.clickable-row {
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.clickable-row:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(22,52,32,0.06);
+}
+
+::selection {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }

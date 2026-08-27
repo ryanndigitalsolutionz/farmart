@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
 
 function Login() {
   const navigate = useNavigate()
+  const { login, loading } = useAuth()
 
   const [formData, setFormData] = useState({
     email: '',
@@ -20,7 +22,7 @@ function Login() {
     })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
@@ -29,16 +31,30 @@ function Login() {
       return
     }
 
-    localStorage.setItem(
-      'farmartUser',
-      JSON.stringify({
-        email: formData.email,
-        role: 'farmer',
-        isLoggedIn: true,
-      }),
-    )
+    try {
+      const user = await login(formData.email, formData.password)
+      if (user.role === 'farmer') {
+        navigate('/farmer')
+      } else if (user.role === 'buyer') {
+        navigate('/buyer')
+      } else if (user.role === 'admin') {
+        navigate('/admin')
+      } else {
+        navigate('/')
+      }
+    } catch (err) {
+      setError(err.message || 'Login failed. Please try again.')
+    }
+  }
 
-    navigate('/farm-setup')
+  const demoAccounts = [
+    { label: 'Farmer', email: 'jomo@greenpastures.co.ke', password: 'demo1234', role: 'farmer' },
+    { label: 'Buyer', email: 'amina@example.com', password: 'demo1234', role: 'buyer' },
+    { label: 'Admin', email: 'admin@farmart.co.ke', password: 'admin123', role: 'admin' },
+  ]
+
+  const fillDemo = (email, password) => {
+    setFormData({ email, password })
   }
 
   return (
@@ -398,6 +414,113 @@ function Login() {
             right: -7px;
           }
         }
+
+        [data-theme="dark"] .login-page {
+          background:
+            radial-gradient(
+              circle at 50% 35%,
+              rgba(74, 222, 128, 0.08),
+              transparent 46%
+            ),
+            #0f1410;
+          color: #e8f0e9;
+        }
+
+        [data-theme="dark"] .login-card {
+          background: #1a211c;
+          border-color: #2f3b32;
+          box-shadow:
+            0 28px 80px rgba(0, 0, 0, 0.3),
+            0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        [data-theme="dark"] .login-card::before {
+          background: #4ade80;
+        }
+
+        [data-theme="dark"] .login-heading h1 {
+          color: #e8f0e9;
+        }
+
+        [data-theme="dark"] .login-heading p {
+          color: #9aa89d;
+        }
+
+        [data-theme="dark"] .login-field > span {
+          color: #9aa89d;
+        }
+
+        [data-theme="dark"] .login-input {
+          background: #212922;
+          border-color: #2f3b32;
+          color: #e8f0e9;
+        }
+
+        [data-theme="dark"] .login-input input {
+          color: #e8f0e9;
+        }
+
+        [data-theme="dark"] .login-input input::placeholder {
+          color: #66776a;
+        }
+
+        [data-theme="dark"] .login-input:focus-within {
+          border-color: #4ade80;
+          background: #1a211c;
+          box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.1);
+        }
+
+        [data-theme="dark"] .password-toggle {
+          color: #9aa89d;
+        }
+
+        [data-theme="dark"] .password-toggle:hover {
+          background: rgba(74, 222, 128, 0.08);
+          color: #4ade80;
+        }
+
+        [data-theme="dark"] .login-options a {
+          color: #4ade80;
+        }
+
+        [data-theme="dark"] .auth-error {
+          color: #f87171;
+        }
+
+        [data-theme="dark"] .login-submit {
+          background: #277a44;
+          border-color: #277a44;
+        }
+
+        [data-theme="dark"] .login-submit:hover {
+          background: #216b3b;
+        }
+
+        [data-theme="dark"] .login-register {
+          color: #9aa89d;
+        }
+
+        [data-theme="dark"] .login-register a {
+          color: #4ade80;
+        }
+
+        [data-theme="dark"] .login-divider {
+          background: #2f3b32;
+        }
+
+        [data-theme="dark"] .login-terms {
+          color: #66776a;
+        }
+
+        [data-theme="dark"] .login-footer {
+          background: #212922;
+          border-top-color: #2f3b32;
+          color: #9aa89d;
+        }
+
+        [data-theme="dark"] .login-footer span:not(:last-child)::after {
+          background: #4ade80;
+        }
       `}</style>
 
       <main className="login-page">
@@ -483,24 +606,36 @@ function Login() {
               <button
                 type="submit"
                 className="login-submit"
+                disabled={loading}
               >
-                Log in
+                {loading ? 'Logging in...' : 'Log in'}
               </button>
             </form>
 
-            <p className="login-register">
-              New to Farmart?{' '}
-              <Link to="/register">
-                Register
-              </Link>
-            </p>
+              <p className="login-register">
+                New to Farmart?{' '}
+                <Link to="/register">
+                  Register
+                </Link>
+              </p>
 
-            <div className="login-divider" />
+              <div className="login-divider" />
 
-            <p className="login-terms">
-              By continuing you agree to Farmart's Terms and
-              Conditions of service &amp; Fair-Trade Policy
-            </p>
+              <div style={{ maxWidth: 390, margin: "0 auto", color: "#87948a", fontFamily: "Modern Antiqua, serif", fontSize: 12, lineHeight: 1.8, textAlign: "center" }}>
+                <p style={{ margin: "0 0 10px", fontWeight: 600 }}>Demo accounts</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
+                  {demoAccounts.map((acct) => (
+                    <button key={acct.email} type="button" onClick={() => fillDemo(acct.email, acct.password)} style={{ background: "transparent", border: "none", color: "#277a44", fontWeight: 600, cursor: "pointer", fontSize: 12, fontFamily: "Modern Antiqua, serif", padding: 0 }}>
+                      {acct.label}: {acct.email} / {acct.password}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <p className="login-terms">
+                By continuing you agree to Farmart's Terms and
+                Conditions of service &amp; Fair-Trade Policy
+              </p>
           </div>
 
           <div className="login-footer">
