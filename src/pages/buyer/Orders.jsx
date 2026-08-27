@@ -31,38 +31,38 @@ function Orders() {
                 </Link>
             </div>
         ): (
-            <div className=''>
+            <div className='flex flex-col gap-2 '>
                 {orders.map((order) => (
-                    <div key={order.id}>
-                        <h2>{order.id}</h2>
+                    <div key={order.id} className='border border-gray-400 p-2 w-150 flex justify-between mt-5 rounded-2xl'>
+                        <div className='px-2'>
+                            <h2 className='font-semibold'>{order.id}</h2>
 
-                        <p>
-                            Total: Ksh {order.total.toLocaleString()}
-                        </p>
+                            <p>
+                                Total: Ksh {order.total.toLocaleString()}
+                            </p>
 
-                        <p>
-                            Payment:{" "}
-                            {order.paymentStatus
-                                ? order.paymentStatus.charAt(0).toUpperCase() + 
-                                    order.paymentStatus.slice(1) 
-                                : "unpaid"}
-                        
-                        </p>
+                            <p>
+                                Payment:{" "}
+                                {order.paymentStatus
+                                    ? order.paymentStatus.charAt(0).toUpperCase() + 
+                                        order.paymentStatus.slice(1) 
+                                    : "unpaid"}
+                            
+                            </p>
 
-                        <p>
-                            Date:{""}
-                            {new Date(order.createdAt).toLocaleDateString()}
-                        </p>
+                            <p>
+                                Date:{""}
+                                {new Date(order.createdAt).toLocaleDateString()}
+                            </p>
+                        </div>
 
-                        <div className='mt-3 flex gap-3'>
+                        <div className=''>
                             <Link 
                                 to={`/orders/${order.id}`} 
-                                className='bg-green-400 p-2 rounded-lg'
+                                className='text-green-600 font-semibold px-2 py-2 hover:underline '
                             >
                                 View Details
-                            </Link>
-
-                            
+                            </Link>                            
                         </div>
                     </div>
                 ))}

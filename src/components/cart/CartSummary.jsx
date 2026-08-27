@@ -12,7 +12,7 @@ function CartSummary() {
     )
   return (
     
-    <div className="mt-3 p-3 border rounded-lg ">
+    <div className="bg-white rounded-2xl shadow-lg p-5 ">
         <h1>Cart Summary</h1>
         <h2 className="font-bold">Total: Ksh {total.toLocaleString()}</h2>
         <p>Item's total: {itemCount}</p>
@@ -29,7 +29,7 @@ function CartSummary() {
                 to="/checkout" 
                 className="bg-yellow-400 p-2 rounded-lg font-semibold cursor-pointer text-orange-600"
             >
-                <button >Checkout</button>
+                Checkout
             </Link>
         </div>
 

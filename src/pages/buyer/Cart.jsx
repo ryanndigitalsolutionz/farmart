@@ -17,13 +17,13 @@ function Cart() {
         
 
         {cart.length === 0 ? (
-            <div>
-                <p>Your cart is empty</p>
+            <div className="text-center mt-4">
+                <p className="text-lg text-red-400 font-semibold">Your cart is empty</p>
 
                 <p className="mb-3">Add livestock to your cart before checking out</p>
                 <Link 
                     to="/marketplace"
-                    className="bg-green-500 p-2 rounded-lg "
+                    className="bg-green-500 p-2 rounded-lg"
                 >
                     Continue Shopping
                 </Link>
