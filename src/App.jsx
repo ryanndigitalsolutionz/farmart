@@ -1,9 +1,19 @@
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
+import { LivestockProvider } from "./context/LivestockContext";
+import { CartProvider } from "./context/CartContext";
+import SplashScreen from "./components/SplashScreen";
+
+import Welcome from "./pages/auth/Welcome";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import FarmSetup from "./pages/auth/FarmSetup";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import VerifyEmail from "./pages/auth/VerifyEmail";
+import ResetPassword from "./pages/auth/ResetPassword";
 import AdminRoute from "./routes/AdminRoute";
 import DashboardLayout from "./components/layout/DashboardLayout";
-import SplashScreen from "./components/SplashScreen";
 import Dashboard from "./pages/admin/Dashboard";
 import Listings from "./pages/admin/Listings";
 import Disputes from "./pages/admin/Disputes";
@@ -19,6 +29,13 @@ import Announcements from "./pages/admin/Announcements";
 
 import "./App.css";
 
+function FarmerDashboard() {
+  return <h1>Farmer Dashboard</h1>;
+}
+
+function BuyerDashboard() {
+  return <h1>Buyer Dashboard</h1>;
+}
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -29,34 +46,47 @@ function App() {
   }, []);
 
   return (
-    <>
-      <AnimatePresence>
-        {showSplash && <SplashScreen key="splash" />}
-      </AnimatePresence>
+    <LivestockProvider>
+      <CartProvider>
+        <AnimatePresence>
+          {showSplash && <SplashScreen key="splash" />}
+        </AnimatePresence>
 
-      <Routes>
-        {/* TODO: once Ryan's auth/landing pages are merged, this becomes
-        the real "/" route instead of redirecting straight to admin */}
-        <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+        <Routes>
+          <Route path="/" element={<Welcome />} />
 
-        <Route path="/admin" element={<AdminRoute />}>
-          <Route element={<DashboardLayout />}>
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="users" element={<Users />} />
-            <Route path="farmers" element={<Farmers />} />
-            <Route path="farmers/:farmerId" element={<FarmerDetails />} />
-            <Route path="listings" element={<Listings />} />
-            <Route path="orders" element={<Orders />} />
-            <Route path="transactions" element={<Transactions />} />
-            <Route path="disputes" element={<Disputes />} />
-            <Route path="reports" element={<Reports />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="announcements" element={<Announcements />} />
-            <Route path="buyers/:buyerId" element={<BuyerDetails />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+
+          <Route path="/farm-setup" element={<FarmSetup />} />
+
+          <Route path="/farmer/*" element={<FarmerDashboard />} />
+          <Route path="/buyer/*" element={<BuyerDashboard />} />
+
+          <Route path="/admin" element={<AdminRoute />}>
+            <Route element={<DashboardLayout />}>
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="users" element={<Users />} />
+              <Route path="farmers" element={<Farmers />} />
+              <Route path="farmers/:farmerId" element={<FarmerDetails />} />
+              <Route path="listings" element={<Listings />} />
+              <Route path="orders" element={<Orders />} />
+              <Route path="transactions" element={<Transactions />} />
+              <Route path="disputes" element={<Disputes />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="announcements" element={<Announcements />} />
+              <Route path="buyers/:buyerId" element={<BuyerDetails />} />
+            </Route>
           </Route>
-        </Route>
-      </Routes>
-    </>
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </CartProvider>
+    </LivestockProvider>
   );
 }
 
