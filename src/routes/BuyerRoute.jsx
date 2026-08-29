@@ -7,6 +7,7 @@ import OrderConfirmation from "../pages/buyer/OrderConfirmation";
 import Orders from "../pages/buyer/Orders";
 import OrderDetails from "../pages/buyer/OrderDetails";
 import Payments from "../pages/buyer/Payments";
+import Wishlist from "../pages/buyer/Wishlist";
 
 function BuyerRoute() {
   return (
@@ -15,6 +16,7 @@ function BuyerRoute() {
         <Route path="/marketplace" element={<Livestock />} />
         <Route path="/marketplace/:id" element={<LivestockDetails />} />
         <Route path="/cart" element={<Cart/>}/>
+        <Route path="/wishlist" element={<Wishlist/>}/>
         <Route path="/checkout" element={<Checkout/>}/>
         <Route path="/order-confirmation" element={<OrderConfirmation/>}/>
         <Route path="/orders" element={<Orders />}/>

@@ -39,14 +39,14 @@ function Cart() {
                     >
                         <img 
                             src={animal.images?.[0]} 
-                            alt={animal.name} 
+                            alt={animal.type} 
                             className="w-30 h-30 object-cover"
                         />
                         <div className="">
-                            <h2>{animal.name}</h2>
-
-                            <p>Type: {animal.type}</p>
-                            <p>Breed: {animal.breed}</p>
+                            <h2>{animal.breed} {animal.type}</h2>
+                            
+                            <p className="text-gray-400 text-sm">name: {animal.name}</p>
+                            
                             <p>Price: Ksh {Number(animal.price).toLocaleString()}</p>
 
                             <button 

@@ -105,11 +105,11 @@ function Checkout() {
                         <div className="flex gap-3">
                             <img 
                                 src={animal.images} 
-                                alt={animal.name} 
+                                alt={animal.type} 
                                 className="w-35 h-35 object-cover mb-4"
                             />
                             <div className="flex flex-col gap-1">
-                                <p className="font-bold text-xl ">{animal.name} {animal.type}</p>                                
+                                <p className="font-bold text-xl ">{animal.breed} {animal.type}</p>                                
                                 <p className="text-gray-400">{animal.age} years - {animal.weight} kg</p>
                                 <p className="text-gray-400">{animal.location}</p>
                                 <p className="font-semibold">

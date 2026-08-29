@@ -56,7 +56,7 @@ function LivestockDetails() {
 
         {/* animal details */}
         <div className="flex font-bold text-2xl justify-between mb-2 mt-2">
-          <h1 className="">{animal.name} {animal.type}</h1>
+          <h1 className="">{animal.breed} {animal.type}</h1>
           <p className="text-green-700 ">Ksh {animal.price}</p>
         </div>
 
