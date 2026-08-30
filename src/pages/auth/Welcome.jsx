@@ -5,7 +5,7 @@ function Welcome() {
   const navigate = useNavigate()
 
   const handleRoleSelect = (role) => {
-    navigate('/login', {
+    navigate('/register', {
       state: { role },
     })
   }

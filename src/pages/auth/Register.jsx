@@ -1,15 +1,23 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
 
 function Register() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { register, loading } = useAuth()
+
+  const roleFromState = location.state?.role || null
 
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
+    role: roleFromState || 'farmer',
+    phone: '',
+    location: '',
   })
 
   const [showPassword, setShowPassword] = useState(false)
@@ -23,17 +31,17 @@ function Register() {
     })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
-    if (
-      !formData.name ||
-      !formData.email ||
-      !formData.password ||
-      !formData.confirmPassword
-    ) {
+    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
       setError('Please complete all fields.')
+      return
+    }
+
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters.')
       return
     }
 
@@ -42,17 +50,26 @@ function Register() {
       return
     }
 
-    localStorage.setItem(
-      'farmartUser',
-      JSON.stringify({
+    try {
+      const user = await register({
         name: formData.name,
         email: formData.email,
-        role: 'farmer',
-        isLoggedIn: true,
-      }),
-    )
+        password: formData.password,
+        role: formData.role,
+        phone: formData.phone,
+        location: formData.location,
+      })
 
-    navigate('/farm-setup')
+      if (user.role === 'farmer') {
+        navigate('/farm-setup')
+      } else if (user.role === 'buyer') {
+        navigate('/buyer')
+      } else {
+        navigate('/')
+      }
+    } catch (err) {
+      setError(err.message || 'Registration failed. Please try again.')
+    }
   }
 
   return (
@@ -339,6 +356,99 @@ function Register() {
             margin-bottom: 36px;
           }
         }
+
+        [data-theme="dark"] .register-page {
+          background:
+            radial-gradient(
+              circle at 50% 32%,
+              rgba(74, 222, 128, 0.08),
+              transparent 46%
+            ),
+            #0f1410;
+          color: #e8f0e9;
+        }
+
+        [data-theme="dark"] .register-card {
+          background: #1a211c;
+          border-color: #2f3b32;
+          box-shadow:
+            0 28px 80px rgba(0, 0, 0, 0.3),
+            0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        [data-theme="dark"] .register-card::before {
+          background: #4ade80;
+        }
+
+        [data-theme="dark"] .register-heading h1 {
+          color: #e8f0e9;
+        }
+
+        [data-theme="dark"] .register-heading p {
+          color: #9aa89d;
+        }
+
+        [data-theme="dark"] .register-field > label {
+          color: #9aa89d;
+        }
+
+        [data-theme="dark"] .register-input {
+          background: #212922;
+          border-color: #2f3b32;
+          color: #e8f0e9;
+        }
+
+        [data-theme="dark"] .register-input input {
+          color: #e8f0e9;
+        }
+
+        [data-theme="dark"] .register-input input::placeholder {
+          color: #66776a;
+        }
+
+        [data-theme="dark"] .register-input:focus-within {
+          border-color: #4ade80;
+          background: #1a211c;
+          box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.1);
+        }
+
+        [data-theme="dark"] .register-password-toggle {
+          color: #9aa89d;
+        }
+
+        [data-theme="dark"] .register-password-toggle:hover {
+          background: rgba(74, 222, 128, 0.08);
+          color: #4ade80;
+        }
+
+        [data-theme="dark"] .register-error {
+          color: #f87171;
+        }
+
+        [data-theme="dark"] .register-submit {
+          background: #277a44;
+          border-color: #277a44;
+        }
+
+        [data-theme="dark"] .register-submit:hover {
+          background: #216b3b;
+        }
+
+        [data-theme="dark"] .register-switch {
+          color: #9aa89d;
+        }
+
+        [data-theme="dark"] .register-switch a {
+          color: #4ade80;
+        }
+
+        [data-theme="dark"] .register-divider {
+          background: #2f3b32;
+        }
+
+        [data-theme="dark"] .register-terms {
+          color: #66776a;
+        }
       `}</style>
 
       <main className="register-page">
@@ -374,6 +484,51 @@ function Register() {
                   />
                 </div>
               </div>
+
+              <div className="register-field">
+                <label htmlFor="role">I want to</label>
+                <select
+                  id="role"
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  style={{ width: "100%", minHeight: 61, padding: "0 17px", borderRadius: 15, border: "1px solid #d1dfd4", background: "#f5f9f5", color: "#17351f", fontSize: 15, fontFamily: "Modern Antiqua, serif" }}
+                >
+                  <option value="farmer">Sell livestock as a farmer</option>
+                  <option value="buyer">Buy livestock as a buyer</option>
+                </select>
+              </div>
+
+              {formData.role === 'farmer' && (
+                <>
+                  <div className="register-field">
+                    <label htmlFor="phone">Phone number</label>
+                    <div className="register-input">
+                      <input
+                        id="phone"
+                        type="tel"
+                        name="phone"
+                        placeholder="e.g. 0712 345 678"
+                        value={formData.phone}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </div>
+                  <div className="register-field">
+                    <label htmlFor="location">Farm location</label>
+                    <div className="register-input">
+                      <input
+                        id="location"
+                        type="text"
+                        name="location"
+                        placeholder="e.g. Kiambu County"
+                        value={formData.location}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
 
               <div className="register-field">
                 <label htmlFor="email">Email address</label>
@@ -474,8 +629,9 @@ function Register() {
               <button
                 type="submit"
                 className="register-submit"
+                disabled={loading}
               >
-                Create account
+                {loading ? 'Creating account...' : 'Create account'}
               </button>
             </form>
 
@@ -486,12 +642,21 @@ function Register() {
               </Link>
             </p>
 
-            <div className="register-divider" />
+              <div className="login-divider" />
 
-            <p className="register-terms">
-              By creating an account you agree to Farmart's Terms
-              and Conditions of service &amp; Fair-Trade Policy
-            </p>
+              <div style={{ maxWidth: 410, margin: "0 auto", color: "#87948a", fontFamily: "Modern Antiqua, serif", fontSize: 12, lineHeight: 1.8, textAlign: "center" }}>
+                <p style={{ margin: "0 0 10px", fontWeight: 600 }}>Quick demo accounts</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
+                  <span style={{ color: "#277a44", fontWeight: 600 }}>Farmer: jomo@greenpastures.co.ke / demo1234</span>
+                  <span style={{ color: "#277a44", fontWeight: 600 }}>Buyer: amina@example.com / demo1234</span>
+                  <span style={{ color: "#277a44", fontWeight: 600 }}>Admin: admin@farmart.co.ke / admin123</span>
+                </div>
+              </div>
+
+              <p className="register-terms">
+                By creating an account you agree to Farmart's Terms
+                and Conditions of service &amp; Fair-Trade Policy
+              </p>
           </div>
         </section>
       </main>

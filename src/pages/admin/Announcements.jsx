@@ -1,26 +1,40 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PageHeader from "../../components/layout/PageHeader";
+import { api } from "../../api";
 
 export default function Announcements() {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [announcements, setAnnouncements] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const all = await api.getAnnouncements();
+        if (!cancelled) setAnnouncements(all);
+      } catch {
+        // ignore
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const handleSend = async () => {
     if (!message.trim()) return;
     setSending(true);
     setSent(false);
     try {
-      await fetch("/api/admin/announcements", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
-        },
-        body: JSON.stringify({ message }),
+      const created = await api.createAnnouncement({
+        title: message.slice(0, 60),
+        message,
+        audience: "all",
+        published: true,
       });
-      setSent(true);
+      setAnnouncements((prev) => [created, ...prev]);
       setMessage("");
+      setSent(true);
     } catch (err) {
       console.error(err);
     } finally {
@@ -31,7 +45,7 @@ export default function Announcements() {
   return (
     <div>
       <PageHeader title="Announcements" subtitle="Broadcast a message to all users" />
-      <div style={{ maxWidth: 480 }}>
+      <div style={{ maxWidth: 480, marginBottom: 28 }}>
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
@@ -44,6 +58,8 @@ export default function Announcements() {
             border: "1px solid var(--border, #DCE6D8)",
             marginBottom: 12,
             fontFamily: "inherit",
+            background: "var(--white, #fff)",
+            color: "var(--text-dark, #1E2A1F)",
           }}
         />
         <button
@@ -63,6 +79,21 @@ export default function Announcements() {
         </button>
         {sent && <p style={{ color: "var(--green-700, #2F6D3F)", marginTop: 8 }}>Sent.</p>}
       </div>
+
+      {announcements.length > 0 && (
+        <div style={{ maxWidth: 480, display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>Recent announcements</div>
+          {announcements.map((ann) => (
+            <div key={ann.id} style={{ border: "1px solid var(--border, #DCE6D8)", borderRadius: 10, padding: "10px 14px", background: "var(--white, #fff)" }}>
+              <div style={{ fontWeight: 600, fontSize: 13 }}>{ann.title || "Announcement"}</div>
+              <div style={{ fontSize: 12, color: "var(--text-muted, #66766A)", marginTop: 2 }}>{ann.message}</div>
+              <div style={{ fontSize: 11, color: "var(--text-muted, #66766A)", marginTop: 4 }}>
+                {ann.createdAt ? new Date(ann.createdAt).toLocaleDateString() : "—"}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

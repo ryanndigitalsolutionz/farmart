@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import PageHeader from "../../components/layout/PageHeader";
 import { useAdmin } from "../../context/AdminContext";
 import { getFarmerDetail, verifyFarmer, rejectFarmer, suspendUser } from "../../api/adminApi";
+import { Star, Phone, Mail, CheckCircle2 } from "lucide-react";
 
 export default function FarmerDetails() {
   const { farmerId } = useParams();
@@ -62,14 +63,14 @@ export default function FarmerDetails() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 22 }}>
         <Stat label="Listings" value={farmer.listing_count} />
         <Stat label="Animals sold" value={farmer.animals_sold} />
-        <Stat label="Rating" value={farmer.rating ? `★ ${farmer.rating}` : "—"} />
+        <Stat label="Rating" value={farmer.rating ? <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>{farmer.rating} <Star size={14} color="#F59E0B" fill="#F59E0B" /></span> : "—"} />
       </div>
 
       <div style={{ border: "1px solid var(--border, #DCE6D8)", borderRadius: 14, padding: 18, marginBottom: 20 }}>
         <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>Contact</div>
         <div style={{ fontSize: 12.5, color: "var(--text-muted, #66766A)", lineHeight: 1.8 }}>
-          <div>📞 {farmer.phone_number || "—"}</div>
-          <div>✉️ {farmer.email || "—"}</div>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Phone size={14} /> {farmer.phone_number || "—"}</div>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Mail size={14} /> {farmer.email || "—"}</div>
         </div>
         {farmer.description && (
           <>
@@ -92,8 +93,8 @@ export default function FarmerDetails() {
         </div>
       ) : (
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontSize: 12.5, color: "var(--green-700, #2F6D3F)", fontWeight: 700 }}>
-            ✓ Verified farmer
+          <span style={{ fontSize: 12.5, color: "var(--green-700, #2F6D3F)", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <CheckCircle2 size={16} /> Verified farmer
           </span>
           <button onClick={handleSuspend} disabled={busy} style={dangerOutlineBtn}>
             Suspend account

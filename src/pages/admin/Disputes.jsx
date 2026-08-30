@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import PageHeader from "../../components/layout/PageHeader";
 import { useAdmin } from "../../context/AdminContext";
 import { getDisputes, resolveDispute } from "../../api/adminApi";
+import { CheckCircle2 } from "lucide-react";
 
 export default function Disputes() {
   const { refreshOverview } = useAdmin();
@@ -31,15 +32,18 @@ export default function Disputes() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32, maxWidth: 480 }}>
         {disputes.length === 0 && (
-          <p style={{ color: "var(--text-muted, #66766A)", fontSize: 13 }}>No open disputes 🎉</p>
+          <div style={{ color: "var(--text-muted, #66766A)", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 8, padding: "16px 0" }}>
+            <CheckCircle2 size={16} color="var(--green-700, #2F6D3F)" />
+            No open disputes
+          </div>
         )}
         {disputes.map((dispute) => (
           <div
             key={dispute.id}
-            style={{ border: "1px solid var(--border, #DCE6D8)", borderRadius: 14, padding: 16 }}
+            style={{ border: "1px solid var(--border, #DCE6D8)", borderRadius: 14, padding: 16, background: "var(--white, #fff)" }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ fontWeight: 700, fontSize: 13.5 }}>Order #{dispute.order_id}</span>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontWeight: 700, fontSize: 13.5 }}>Order #{dispute.orderId || dispute.order_id}</span>
               <span
                 style={{
                   background: "var(--yellow-100, #FBF0D2)",
@@ -53,24 +57,10 @@ export default function Disputes() {
                 Open
               </span>
             </div>
-            <p style={{ fontSize: 12.5, color: "var(--text-muted, #66766A)", margin: "8px 0 14px" }}>
+            <p style={{ fontSize: 12.5, color: "var(--text-muted, #66766A)", margin: "8px 0 14px", lineHeight: 1.5 }}>
               {dispute.reason}
             </p>
             <div style={{ display: "flex", gap: 8 }}>
-              <button
-                style={{
-                  background: "#fff",
-                  color: "var(--green-700, #2F6D3F)",
-                  border: "1.4px solid var(--green-300, #A8D0A0)",
-                  borderRadius: 8,
-                  padding: "8px 14px",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                Message parties
-              </button>
               <button
                 onClick={() => handleResolve(dispute.id)}
                 disabled={resolvingId === dispute.id}
@@ -92,7 +82,6 @@ export default function Disputes() {
         ))}
       </div>
 
-      {/* --- Content management --- */}
       <div style={{ maxWidth: 480 }}>
         <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>Content management</div>
         <div
@@ -103,13 +92,13 @@ export default function Disputes() {
             border: "1px solid var(--border, #DCE6D8)",
             borderRadius: 12,
             padding: "12px 16px",
+            background: "var(--white, #fff)",
           }}
         >
           <span style={{ fontSize: 12.5 }}>FAQs &amp; announcements</span>
-          {/* TODO: link to /admin/announcements once that page/route exists */}
-          <a href="/admin/announcements" style={{ color: "var(--green-700, #2F6D3F)", fontSize: 12.5, fontWeight: 700 }}>
-            Edit →
-          </a>
+          <span style={{ color: "var(--green-700, #2F6D3F)", fontSize: 12.5, fontWeight: 700 }}>
+            Managed in <a href="/admin/announcements" style={{ color: "inherit", textDecoration: "none" }}>Announcements</a>
+          </span>
         </div>
       </div>
     </div>

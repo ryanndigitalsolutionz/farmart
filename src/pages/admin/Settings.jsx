@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PageHeader from "../../components/layout/PageHeader";
 import { useTheme } from "../../context/ThemeContext";
-import { useAuth } from "../../auth/useAuth";
+import { useAuth } from "../../context/AuthContext";
+import { getCommissionRate, updateCommissionRate } from "../../api/adminApi";
 
 export default function Settings() {
-  const [commission, setCommission] = useState(10);
+  const [commission, setCommission] = useState(2.5);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -15,21 +16,27 @@ export default function Settings() {
   const [email, setEmail] = useState(user?.email || "admin@farmart.co.ke");
   const [accountSaved, setAccountSaved] = useState(false);
 
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const rate = await getCommissionRate();
+        if (!cancelled) setCommission(Number(rate.percentage || 2.5));
+      } catch {
+        // keep default
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const handleSave = async () => {
     setSaving(true);
     setSaved(false);
     try {
-      await fetch("/api/admin/settings/commission", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
-        },
-        body: JSON.stringify({ commission_rate: commission }),
-      });
+      await updateCommissionRate(Number(commission));
       setSaved(true);
-    } catch (err) {
-      console.error(err);
+    } catch {
+      // keep saved flag off on error
     } finally {
       setSaving(false);
     }
@@ -37,7 +44,6 @@ export default function Settings() {
 
   const handleAccountSave = (e) => {
     e.preventDefault();
-    // No backend yet — this is a placeholder until account update endpoints exist
     setAccountSaved(true);
     setTimeout(() => setAccountSaved(false), 2000);
   };
@@ -58,6 +64,7 @@ export default function Settings() {
     padding: 20,
     maxWidth: 420,
     marginBottom: 24,
+    background: "var(--white, #fff)",
   };
 
   const labelStyle = { fontSize: 13, fontWeight: 600, display: "block", marginBottom: 6 };
@@ -76,7 +83,6 @@ export default function Settings() {
     <div>
       <PageHeader title="Settings" subtitle="Platform-wide configuration" />
 
-      {/* Appearance */}
       <div style={cardStyle}>
         <h3 style={{ margin: "0 0 14px", fontSize: 15 }}>Appearance</h3>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -118,7 +124,6 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Account details */}
       <div style={cardStyle}>
         <h3 style={{ margin: "0 0 14px", fontSize: 15 }}>Account details</h3>
         <form onSubmit={handleAccountSave}>
@@ -141,13 +146,12 @@ export default function Settings() {
           </button>
           {accountSaved && (
             <p style={{ color: "var(--green-700, #2F6D3F)", marginTop: 8, fontSize: 13 }}>
-              Saved locally — backend account update comes next week.
+              Saved locally.
             </p>
           )}
         </form>
       </div>
 
-      {/* Commission */}
       <div style={cardStyle}>
         <h3 style={{ margin: "0 0 14px", fontSize: 15 }}>Commission rate</h3>
         <label style={labelStyle}>Commission rate (%)</label>

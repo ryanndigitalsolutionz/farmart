@@ -1,115 +1,279 @@
-/**
- * Sidebar.jsx
- * ------------------------------------------------------------------
- * Admin-only left nav. Pulls live badge counts (pending farmers, open
- * disputes, flagged listings) from AdminContext so the sidebar always
- * reflects reality without each page managing its own count.
- *
- * Note: this is the ADMIN sidebar specifically. It's separate from
- * whatever generic Navbar/Footer Shadrack builds for the public/buyer/
- * farmer shell — admin has its own left-nav dashboard layout instead
- * of a top navbar, matching the design board.
- * ------------------------------------------------------------------
- */
-import { NavLink } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAdmin } from "../../context/AdminContext";
+import { useAuth } from "../../context/AuthContext";
+import FarmartLogo from "../branding/FarmartLogo";
+import { LayoutDashboard, Users, FileText, Package, CreditCard, Scale, TrendingUp, Settings, Megaphone, X } from "lucide-react";
 
 const NAV_ITEMS = [
-  { to: "/admin/dashboard", label: "Dashboard", icon: "📊" },
-  { to: "/admin/users", label: "Users", icon: "👥" },
-  { to: "/admin/farmers", label: "Farmers", icon: "🚜", countKey: "pendingFarmerCount" },
-  { to: "/admin/listings", label: "Listings", icon: "🐄", countKey: "flaggedListingCount" },
-  { to: "/admin/orders", label: "Orders", icon: "📦" },
-  { to: "/admin/transactions", label: "Transactions", icon: "💳" },
-  { to: "/admin/disputes", label: "Disputes", icon: "⚖️", countKey: "openDisputeCount" },
-  { to: "/admin/reports", label: "Reports", icon: "📈" },
-  { to: "/admin/settings", label: "Settings", icon: "⚙️" },
-  { to: "/admin/announcements", label: "Announcements", icon: "📣" },
+  { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/admin/users", label: "Users", icon: Users },
+  { to: "/admin/farmers", label: "Farmers", icon: Users, countKey: "pendingFarmerCount" },
+  { to: "/admin/listings", label: "Listings", icon: FileText, countKey: "flaggedListingCount" },
+  { to: "/admin/orders", label: "Orders", icon: Package },
+  { to: "/admin/transactions", label: "Transactions", icon: CreditCard },
+  { to: "/admin/disputes", label: "Disputes", icon: Scale, countKey: "openDisputeCount" },
+  { to: "/admin/reports", label: "Reports", icon: TrendingUp },
+  { to: "/admin/settings", label: "Settings", icon: Settings },
+  { to: "/admin/announcements", label: "Announcements", icon: Megaphone },
 ];
+
+const outerStyle = {
+  width: 240,
+  position: "fixed",
+  top: 0,
+  left: 0,
+  bottom: 0,
+  borderRight: "1px solid var(--color-border)",
+  background: "var(--color-surface)",
+  display: "flex",
+  flexDirection: "column",
+  zIndex: 100,
+};
+
+const brandStyle = {
+  fontFamily: "var(--font-display, 'Fraunces', serif)",
+  fontWeight: 700,
+  fontSize: 18,
+  color: "var(--color-primary)",
+  padding: "20px 16px",
+  borderBottom: "1px solid var(--color-border)",
+};
+
+const navStyle = {
+  flex: 1,
+  padding: "12px",
+  display: "flex",
+  flexDirection: "column",
+  gap: 2,
+  overflowY: "auto",
+};
+
+const linkStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "10px 12px",
+  borderRadius: "var(--radius-sm, 8px)",
+  fontSize: 14,
+  fontWeight: 600,
+  textDecoration: "none",
+  color: "var(--color-text)",
+  transition: "background 0.15s ease, color 0.15s ease",
+};
+
+const activeStyle = {
+  background: "var(--color-surface-secondary)",
+  color: "var(--color-primary)",
+};
+
+const badgeStyle = {
+  background: "var(--color-warning)",
+  color: "var(--color-text)",
+  fontSize: 10.5,
+  fontWeight: 700,
+  borderRadius: 10,
+  padding: "1px 7px",
+};
+
+const logoutStyle = {
+  padding: "12px 16px",
+  borderTop: "1px solid var(--color-border)",
+  fontSize: 14,
+  fontWeight: 600,
+  color: "var(--color-text-muted)",
+  textDecoration: "none",
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  background: "transparent",
+  border: "none",
+  width: "100%",
+  textAlign: "left",
+  cursor: "pointer",
+};
+
+const mobileDrawerStyle = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  bottom: 0,
+  width: 280,
+  background: "var(--glass-bg-strong)",
+  borderRight: "1px solid var(--glass-border)",
+  backdropFilter: "blur(16px)",
+  WebkitBackdropFilter: "blur(16px)",
+  zIndex: 200,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const hamburgerStyle = {
+  width: 40,
+  height: 40,
+  borderRadius: "var(--radius-sm, 8px)",
+  background: "var(--color-surface)",
+  border: "1px solid var(--color-border)",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  cursor: "pointer",
+  color: "var(--color-text)",
+};
+
+const overlayStyle = {
+  position: "fixed",
+  inset: 0,
+  background: "rgba(0,0,0,0.35)",
+  zIndex: 199,
+};
+
+const drawerVariants = {
+  closed: { x: "-100%" },
+  open: { x: 0 },
+};
+
+const overlayVariants = {
+  closed: { opacity: 0 },
+  open: { opacity: 1 },
+};
 
 export default function Sidebar() {
   const counts = useAdmin();
+  const [open, setOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
-  return (
-    <aside
-      style={{
-        width: 220,
-        flex: "0 0 auto",
-        borderRight: "1px solid var(--border, #DCE6D8)",
-        padding: "20px 12px",
-        display: "flex",
-        flexDirection: "column",
-        gap: 2,
-        minHeight: "100vh",
-        boxSizing: "border-box",
-      }}
-    >
-      <div
-        style={{
-          fontFamily: "var(--font-display, 'Fraunces', serif)",
-          fontWeight: 700,
-          fontSize: 18,
-          color: "var(--green-900, #163420)",
-          padding: "0 10px 18px",
-        }}
-      >
-        Farmart <span style={{ fontSize: 11, fontWeight: 500, color: "var(--text-muted, #66766A)" }}>Admin</span>
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const handler = (e) => setIsMobile(e.matches);
+    mq.addEventListener?.("change", handler);
+    return () => mq.removeEventListener?.("change", handler);
+  }, []);
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleKey = (e) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [open]);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
+  const content = (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ ...brandStyle, display: "inline-flex", justifyContent: "space-between", alignItems: "center" }}>
+        <FarmartLogo size="md" suffix="Admin" />
+        <button
+          type="button"
+          aria-label="Close menu"
+          onClick={() => setOpen(false)}
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "var(--color-text)",
+            cursor: "pointer",
+            width: 32,
+            height: 32,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: "var(--radius-sm, 8px)",
+          }}
+        >
+          <X size={20} />
+        </button>
       </div>
-
-      {NAV_ITEMS.map((item) => {
-        const count = item.countKey ? counts[item.countKey] : 0;
-        return (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            style={({ isActive }) => ({
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "9px 10px",
-              borderRadius: 8,
-              fontSize: 13.5,
-              fontWeight: 600,
-              textDecoration: "none",
-              color: isActive ? "var(--green-700, #2F6D3F)" : "var(--text-dark, #1E2A1F)",
-              background: isActive ? "var(--green-100, #EAF3E6)" : "transparent",
-            })}
-          >
-            <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span aria-hidden="true">{item.icon}</span>
-              {item.label}
-            </span>
-            {!!count && (
-              <span
-                style={{
-                  background: "var(--yellow-500, #E8B93D)",
-                  color: "var(--green-900, #163420)",
-                  fontSize: 10.5,
-                  fontWeight: 700,
-                  borderRadius: 10,
-                  padding: "1px 7px",
-                }}
-              >
-                {count}
+      <nav style={navStyle} aria-label="Admin navigation">
+        {NAV_ITEMS.map((item) => {
+          const count = item.countKey ? counts[item.countKey] : 0;
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              style={({ isActive }) => ({
+                ...linkStyle,
+                ...(isActive ? activeStyle : {}),
+              })}
+              onClick={() => setOpen(false)}
+            >
+              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span aria-hidden="true"><item.icon size={18} /></span>
+                {item.label}
               </span>
-            )}
-          </NavLink>
-        );
-      })}
-
-      <NavLink
-        to="/logout"
-        style={{
-          marginTop: "auto",
-          padding: "9px 10px",
-          fontSize: 13.5,
-          fontWeight: 600,
-          color: "var(--text-muted, #66766A)",
-          textDecoration: "none",
-        }}
-      >
-        🚪 Logout
-      </NavLink>
-    </aside>
+              {!!count && <span style={badgeStyle}>{count}</span>}
+            </NavLink>
+          );
+        })}
+      </nav>
+      <button type="button" onClick={handleLogout} style={logoutStyle}>
+        Logout
+      </button>
+    </div>
   );
+
+  if (isMobile) {
+    return (
+      <>
+        <button
+          type="button"
+          aria-label="Open menu"
+          aria-expanded={open}
+          style={hamburgerStyle}
+          onClick={() => setOpen(true)}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <line x1="4" y1="6" x2="20" y2="6" />
+            <line x1="4" y1="12" x2="20" y2="12" />
+            <line x1="4" y1="18" x2="20" y2="18" />
+          </svg>
+        </button>
+        <AnimatePresence>
+          {open && (
+            <>
+              <motion.div
+                initial="closed"
+                animate="open"
+                exit="closed"
+                variants={overlayVariants}
+                transition={{ duration: 0.25 }}
+                style={overlayStyle}
+                onClick={() => setOpen(false)}
+              />
+              <motion.aside
+                initial="closed"
+                animate="open"
+                exit="closed"
+                variants={drawerVariants}
+                transition={{ type: "spring", damping: 28, stiffness: 300 }}
+                style={mobileDrawerStyle}
+              >
+                {content}
+              </motion.aside>
+            </>
+          )}
+        </AnimatePresence>
+      </>
+    );
+  }
+
+  return <aside style={outerStyle}>{content}</aside>;
 }

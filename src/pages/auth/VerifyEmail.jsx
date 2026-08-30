@@ -1,24 +1,22 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MailCheck, ArrowRight } from 'lucide-react'
 
 function VerifyEmail() {
   const navigate = useNavigate()
 
-  const [email, setEmail] = useState('')
+  const [email] = useState(() => {
+    const savedEmail = sessionStorage.getItem('farmartResetEmail')
+    return savedEmail || ''
+  })
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const savedEmail = sessionStorage.getItem('farmartResetEmail')
-
-    if (!savedEmail) {
+    if (!email) {
       navigate('/forgot-password', { replace: true })
-      return
     }
-
-    setEmail(savedEmail)
-  }, [navigate])
+  }, [email, navigate])
 
   const handleSubmit = (e) => {
     e.preventDefault()
