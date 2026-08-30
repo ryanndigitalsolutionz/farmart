@@ -26,99 +26,22 @@ function PaymentForm({
   }
 
   return (
-    <>
-      <style>{`
-        .farmart-payment-form {
-          width: 100%;
-          padding: 24px;
-
-          border: 1px solid #d5e1d8;
-          border-radius: 18px;
-
-          background: #ffffff;
-
-          box-sizing: border-box;
-        }
-
-        .farmart-payment-form-title {
-          margin: 0 0 7px;
-
-          color: #284533;
-
-          font-family: "IBM Plex Serif", serif;
-          font-size: 21px;
-          font-weight: 700;
-        }
-
-        .farmart-payment-form-description {
-          margin: 0 0 22px;
-
-          color: #718078;
-
-          font-family: "Modern Antiqua", serif;
-          font-size: 13px;
-          line-height: 1.6;
-        }
-
-        .farmart-payment-form-method {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-
-          margin-bottom: 20px;
-          padding: 13px 15px;
-
-          border: 1px solid #d8e4db;
-          border-radius: 12px;
-
-          background: #f5faf6;
-
-          color: #47705a;
-
-          font-family: "Modern Antiqua", serif;
-          font-size: 14px;
-          font-weight: 600;
-        }
-
-        .farmart-payment-form-method-dot {
-          width: 9px;
-          height: 9px;
-
-          border-radius: 50%;
-          background: #4a9f7b;
-
-          box-shadow:
-            0 0 0 4px rgba(74, 159, 123, 0.12);
-        }
-
-        .farmart-payment-form-button {
-          width: 100%;
-          margin-top: 20px;
-        }
-
-        .farmart-payment-loading {
-          display: inline-flex;
-          align-items: center;
-          gap: 9px;
-        }
-      `}</style>
-
       <form
-        className="farmart-payment-form"
+        className="box-border w-full rounded-[18px] border border-[#d5e1d8] bg-white p-6"
         onSubmit={handleSubmit}
       >
 
-        <h2 className="farmart-payment-form-title">
+        <h2 className="mb-[7px] mt-0 font-serif text-[21px] font-bold text-[#284533]">
           M-Pesa Payment
         </h2>
 
-        <p className="farmart-payment-form-description">
+        <p className="mb-[22px] mt-0 font-serif text-[13px] leading-[1.6] text-[#718078]">
           Enter the M-Pesa number that will receive
           the payment prompt.
         </p>
 
-        <div className="farmart-payment-form-method">
-          <span className="farmart-payment-form-method-dot" />
+        <div className="mb-5 flex items-center gap-2.5 rounded-xl border border-[#d8e4db] bg-[#f5faf6] px-[15px] py-[13px] font-serif text-sm font-semibold text-[#47705a]">
+          <span className="h-[9px] w-[9px] rounded-full bg-[#4a9f7b] shadow-[0_0_0_4px_rgba(74,159,123,0.12)]" />
           Pay with M-Pesa
         </div>
 
@@ -145,10 +68,10 @@ function PaymentForm({
           size="large"
           fullWidth
           disabled={isLoading || !phoneNumber.trim()}
-          className="farmart-payment-form-button"
+          className="mt-5 w-full"
         >
           {isLoading ? (
-            <span className="farmart-payment-loading">
+            <span className="inline-flex items-center gap-[9px]">
               <Spinner size="small" variant="light" />
               Processing...
             </span>
@@ -158,7 +81,6 @@ function PaymentForm({
         </Button>
 
       </form>
-    </>
   )
 }
 

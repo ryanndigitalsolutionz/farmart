@@ -4,32 +4,7 @@ function ReviewList({
   reviews = [],
 }) {
   return (
-    <>
-      <style>{`
-        .farmart-review-list {
-          width: 100%;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-
-        .farmart-review-list-empty {
-          padding: 35px 20px;
-
-          border: 1px dashed #bdccc0;
-          border-radius: 16px;
-
-          background: #f7faf7;
-
-          color: #718078;
-
-          font-family: "Modern Antiqua", serif;
-          font-size: 14px;
-          text-align: center;
-        }
-      `}</style>
-
-      <section className="farmart-review-list">
+    <section className="flex w-full flex-col gap-4">
 
         {reviews.length > 0 ? (
           reviews.map((review) => (
@@ -39,13 +14,13 @@ function ReviewList({
             />
           ))
         ) : (
-          <div className="farmart-review-list-empty">
+          <div className="rounded-2xl border border-dashed border-[#bdccc0] bg-[#f7faf7] 
+          px-5 py-8.75 text-center font-farmart-body text-sm text-farmart-muted">
             No reviews yet.
           </div>
         )}
 
-      </section>
-    </>
+    </section>
   )
 }
 

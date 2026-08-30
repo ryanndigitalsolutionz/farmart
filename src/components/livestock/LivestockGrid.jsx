@@ -9,49 +9,11 @@ function LivestockGrid({
   if (livestock.length === 0) {
     return (
       <>
-        <style>{`
-          .farmart-livestock-empty {
-            width: 100%;
-            padding: 60px 24px;
+        <div className="flex w-full flex-col items-center justify-center rounded-[20px] 
+          border border-dashed border-[#b9c8bc] bg-[rgba(237,245,233,0.45)] px-6 py-15 text-center">
+          <h2 className="mb-2 mt-0 font-serif text-[22px] text-[#385442]">No livestock found</h2>
 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-
-            text-align: center;
-
-            border: 1px dashed #b9c8bc;
-            border-radius: 20px;
-
-            background: rgba(237, 245, 233, 0.45);
-          }
-
-          .farmart-livestock-empty h2 {
-            margin: 0 0 8px;
-
-            color: #385442;
-
-            font-family: "IBM Plex Serif", serif;
-            font-size: 22px;
-          }
-
-          .farmart-livestock-empty p {
-            max-width: 420px;
-            margin: 0;
-
-            color: #71847a;
-
-            font-family: "Modern Antiqua", serif;
-            font-size: 14px;
-            line-height: 1.7;
-          }
-        `}</style>
-
-        <div className="farmart-livestock-empty">
-          <h2>No livestock found</h2>
-
-          <p>
+          <p className="m-0 max-w-105 font-serif text-sm leading-[1.7] text-[#71847a]">
             Sorry, but there is no livestock matching
             your current search or filters.
           </p>
@@ -62,26 +24,7 @@ function LivestockGrid({
 
   return (
     <>
-      <style>{`
-        .farmart-livestock-grid {
-          width: 100%;
-
-          display: grid;
-          grid-template-columns:
-            repeat(auto-fit, minmax(280px, 360px));
-
-          justify-content: center;
-          gap: 24px;
-        }
-
-        @media (max-width: 650px) {
-          .farmart-livestock-grid {
-            grid-template-columns: minmax(0, 1fr);
-          }
-        }
-      `}</style>
-
-      <div className="farmart-livestock-grid">
+      <div className="grid w-full grid-cols-1 justify-center gap-6 min-[651px]:grid-cols-[repeat(auto-fit,minmax(280px,360px))]">
         {livestock.map((animal) => (
           <LivestockCard
             key={animal.id}

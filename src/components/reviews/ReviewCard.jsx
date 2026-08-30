@@ -11,89 +11,25 @@ function ReviewCard({
   } = review
 
   return (
-    <>
-      <style>{`
-        .farmart-review-card {
-          width: 100%;
-          padding: 20px;
+    <article className="w-full rounded-2xl border border-[#d8e3da] bg-white p-5 
+    shadow-[4px_4px_12px_rgba(48,72,56,0.07)]">
 
-          border: 1px solid #d8e3da;
-          border-radius: 16px;
-
-          background: #ffffff;
-
-          box-shadow:
-            4px 4px 12px rgba(48, 72, 56, 0.07);
-        }
-
-        .farmart-review-header {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 15px;
-        }
-
-        .farmart-review-buyer {
-          margin: 0;
-
-          color: #304b39;
-
-          font-family: "IBM Plex Serif", serif;
-          font-size: 16px;
-          font-weight: 700;
-        }
-
-        .farmart-review-date {
-          margin: 4px 0 0;
-
-          color: #89958d;
-
-          font-family: "Modern Antiqua", serif;
-          font-size: 12px;
-        }
-
-        .farmart-review-rating {
-          display: flex;
-          gap: 2px;
-
-          color: #c9a33a;
-          font-size: 16px;
-          letter-spacing: 1px;
-        }
-
-        .farmart-review-comment {
-          margin: 16px 0 0;
-
-          color: #627268;
-
-          font-family: "Modern Antiqua", serif;
-          font-size: 14px;
-          line-height: 1.7;
-        }
-
-        .farmart-review-empty {
-          color: #7c8981;
-        }
-      `}</style>
-
-      <article className="farmart-review-card">
-
-        <div className="farmart-review-header">
+        <div className="flex items-start justify-between gap-3.75">
 
           <div>
-            <p className="farmart-review-buyer">
+            <p className="m-0 font-farmart-display text-base font-bold text-[#304b39]">
               {buyerName}
             </p>
 
             {createdAt && (
-              <p className="farmart-review-date">
+              <p className="mb-0 mt-1 font-farmart-body text-xs text-[#89958d]">
                 {createdAt}
               </p>
             )}
           </div>
 
           <div
-            className="farmart-review-rating"
+            className="flex gap-0.5 font-farmart-body text-base tracking-[1px] text-[#c9a33a]"
             aria-label={`${rating} out of 5 stars`}
           >
             {'★'.repeat(Math.max(0, Math.min(5, rating)))}
@@ -103,17 +39,16 @@ function ReviewCard({
         </div>
 
         {comment ? (
-          <p className="farmart-review-comment">
+          <p className="mb-0 mt-4 font-farmart-body text-sm leading-[1.7] text-[#627268]">
             {comment}
           </p>
         ) : (
-          <p className="farmart-review-comment farmart-review-empty">
+          <p className="mb-0 mt-4 font-farmart-body text-sm leading-[1.7] text-[#7c8981]">
             No comment provided.
           </p>
         )}
 
-      </article>
-    </>
+    </article>
   )
 }
 
