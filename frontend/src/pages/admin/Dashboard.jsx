@@ -254,4 +254,4 @@ function AnimatedNumber({ value }) {
   }, [value, spring]);
 
   return <motion.span>{display}</motion.span>;
-}
+}// commit 27
