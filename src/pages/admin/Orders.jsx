@@ -1,7 +1,6 @@
 import { useState } from "react";
-import PageHeader from "../../components/layout/PageHeader";
 
-// TODO: replace with real fetch("/api/admin/orders") once backend is ready
+
 const MOCK_ORDERS = [
   { id: 1042, buyer_name: "Amina Wanjiru", total: 4500, status: "delivered", created_at: "2026-08-20" },
   { id: 1043, buyer_name: "Grace Otieno", total: 12000, status: "pending", created_at: "2026-08-21" },

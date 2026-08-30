@@ -1,35 +1,31 @@
 import { Link } from 'react-router-dom'
 import { Heart, ShoppingCart } from 'react-icons/fa'
 
-function LivestockCard({
-  livestock,
+function ProductCard({
+  product,
   onAddToCart,
   onToggleWishlist,
   isWishlisted = false,
 }) {
-  if (!livestock) {
-    return null
-  }
+  if (!product) return null
 
   const {
     id,
     name,
-    breed,
-    type,
+    category,
     location,
-    age,
-    sex,
-    weight,
+    quantity,
+    quantityUnit = 'g',
     price,
     seller,
     image,
     availability,
-  } = livestock
+  } = product
 
   return (
     <>
       <style>{`
-        .farmart-livestock-card {
+        .farmart-product-card {
           width: 100%;
           max-width: 360px;
           overflow: hidden;
@@ -40,38 +36,34 @@ function LivestockCard({
           background: #172019;
           color: #edf4ee;
 
-          box-shadow:
-            0 12px 28px rgba(25, 48, 33, 0.12);
+          box-shadow: 0 12px 28px rgba(25, 48, 33, 0.12);
 
           transition:
             box-shadow 180ms ease,
             border-color 180ms ease;
         }
 
-        .farmart-livestock-card:hover {
+        .farmart-product-card:hover {
           border-color: #83a58d;
-          box-shadow:
-            0 16px 34px rgba(25, 48, 33, 0.18);
+          box-shadow: 0 16px 34px rgba(25, 48, 33, 0.18);
         }
 
-        .farmart-livestock-image-link {
+        .farmart-product-image-link {
           display: block;
           width: 100%;
           height: 220px;
 
           background: #edf5e9;
-          text-decoration: none;
         }
 
-        .farmart-livestock-image {
+        .farmart-product-image {
           width: 100%;
           height: 100%;
           display: block;
-
           object-fit: cover;
         }
 
-        .farmart-livestock-no-image {
+        .farmart-product-no-image {
           width: 100%;
           height: 100%;
 
@@ -80,29 +72,27 @@ function LivestockCard({
           justify-content: center;
 
           color: #61736a;
-
           font-family: "Modern Antiqua", serif;
-          font-size: 16px;
         }
 
-        .farmart-livestock-content {
+        .farmart-product-content {
           padding: 20px 21px 22px;
         }
 
-        .farmart-livestock-heading {
+        .farmart-product-heading {
           display: flex;
           align-items: flex-start;
           justify-content: space-between;
           gap: 12px;
         }
 
-        .farmart-livestock-title-link {
+        .farmart-product-title-link {
           min-width: 0;
           color: #f0f5f0;
           text-decoration: none;
         }
 
-        .farmart-livestock-title {
+        .farmart-product-title {
           margin: 0;
 
           font-family: "IBM Plex Serif", serif;
@@ -111,11 +101,11 @@ function LivestockCard({
           line-height: 1.3;
         }
 
-        .farmart-livestock-title-link:hover {
+        .farmart-product-title-link:hover {
           color: #72c9a3;
         }
 
-        .farmart-wishlist-button {
+        .farmart-product-wishlist {
           width: 34px;
           height: 34px;
 
@@ -127,7 +117,6 @@ function LivestockCard({
 
           border: none;
           background: transparent;
-
           color: #789184;
 
           cursor: pointer;
@@ -137,27 +126,26 @@ function LivestockCard({
             background 180ms ease;
         }
 
-        .farmart-wishlist-button:hover {
+        .farmart-product-wishlist:hover {
           color: #e6c65c;
           background: rgba(230, 198, 92, 0.08);
           border-radius: 50%;
         }
 
-        .farmart-wishlist-active {
+        .farmart-product-wishlist-active {
           color: #e6c65c;
         }
 
-        .farmart-livestock-location {
+        .farmart-product-location {
           margin: 5px 0 0;
 
           color: #71847a;
 
           font-family: "Modern Antiqua", serif;
           font-size: 14px;
-          line-height: 1.5;
         }
 
-        .farmart-livestock-meta {
+        .farmart-product-meta {
           display: flex;
           flex-wrap: wrap;
           gap: 7px 16px;
@@ -168,28 +156,22 @@ function LivestockCard({
 
           font-family: "Modern Antiqua", serif;
           font-size: 13px;
-          line-height: 1.5;
         }
 
-        .farmart-livestock-divider {
+        .farmart-product-divider {
           height: 1px;
           margin: 15px 0 17px;
-
           background: #526259;
         }
 
-        .farmart-livestock-bottom {
+        .farmart-product-bottom {
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 15px;
         }
 
-        .farmart-livestock-price {
-          min-width: 0;
-        }
-
-        .farmart-livestock-amount {
+        .farmart-product-amount {
           margin: 0;
 
           color: #4fdc82;
@@ -197,24 +179,22 @@ function LivestockCard({
           font-family: "IBM Plex Serif", serif;
           font-size: 22px;
           font-weight: 700;
-          line-height: 1.2;
         }
 
-        .farmart-livestock-seller {
+        .farmart-product-seller {
           margin: 4px 0 0;
-
-          overflow: hidden;
 
           color: #71847a;
 
           font-family: "Modern Antiqua", serif;
           font-size: 13px;
-          line-height: 1.4;
+
+          overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
 
-        .farmart-add-cart {
+        .farmart-product-cart {
           min-height: 52px;
 
           display: inline-flex;
@@ -243,91 +223,57 @@ function LivestockCard({
 
           cursor: pointer;
 
-          box-shadow:
-            0 7px 16px rgba(74, 159, 123, 0.18),
-            inset 0 1px 0 rgba(255, 255, 255, 0.25);
-
           transition:
             background 180ms ease,
             box-shadow 180ms ease;
         }
 
-        .farmart-add-cart:hover {
+        .farmart-product-cart:hover {
           background: linear-gradient(
             135deg,
             #82d4af,
             #55aa85
           );
 
-          box-shadow:
-            0 9px 20px rgba(74, 159, 123, 0.23),
-            inset 0 1px 0 rgba(255, 255, 255, 0.30);
+          box-shadow: 0 9px 20px rgba(74, 159, 123, 0.23);
         }
 
-        .farmart-add-cart:active {
-          box-shadow:
-            inset 3px 3px 7px rgba(0, 0, 0, 0.14);
-        }
-
-        .farmart-unavailable {
+        .farmart-product-unavailable {
           color: #b8c2bb;
           font-family: "Modern Antiqua", serif;
           font-size: 13px;
         }
-
-        @media (max-width: 500px) {
-          .farmart-livestock-image-link {
-            height: 200px;
-          }
-
-          .farmart-livestock-content {
-            padding: 18px;
-          }
-
-          .farmart-livestock-title {
-            font-size: 18px;
-          }
-
-          .farmart-livestock-bottom {
-            align-items: flex-end;
-          }
-
-          .farmart-add-cart {
-            min-height: 46px;
-            padding: 0 13px;
-          }
-        }
       `}</style>
 
-      <article className="farmart-livestock-card">
+      <article className="farmart-product-card">
 
         <Link
-          to={`/buyer/livestock/${id}`}
-          className="farmart-livestock-image-link"
+          to={`/buyer/products/${id}`}
+          className="farmart-product-image-link"
           aria-label={`View ${name}`}
         >
           {image ? (
             <img
               src={image}
               alt={name}
-              className="farmart-livestock-image"
+              className="farmart-product-image"
             />
           ) : (
-            <div className="farmart-livestock-no-image">
+            <div className="farmart-product-no-image">
               No image
             </div>
           )}
         </Link>
 
-        <div className="farmart-livestock-content">
+        <div className="farmart-product-content">
 
-          <div className="farmart-livestock-heading">
+          <div className="farmart-product-heading">
 
             <Link
-              to={`/buyer/livestock/${id}`}
-              className="farmart-livestock-title-link"
+              to={`/buyer/products/${id}`}
+              className="farmart-product-title-link"
             >
-              <h2 className="farmart-livestock-title">
+              <h2 className="farmart-product-title">
                 {name}
               </h2>
             </Link>
@@ -335,10 +281,10 @@ function LivestockCard({
             <button
               type="button"
               className={`
-                farmart-wishlist-button
-                ${isWishlisted ? 'farmart-wishlist-active' : ''}
+                farmart-product-wishlist
+                ${isWishlisted ? 'farmart-product-wishlist-active' : ''}
               `}
-              onClick={() => onToggleWishlist?.(livestock)}
+              onClick={() => onToggleWishlist?.(product)}
               aria-label={
                 isWishlisted
                   ? 'Remove from wishlist'
@@ -354,54 +300,46 @@ function LivestockCard({
 
           </div>
 
-          <p className="farmart-livestock-location">
-            {breed || type}
+          <p className="farmart-product-location">
+            {category || 'Farm Product'}
             {location ? ` • ${location}` : ''}
           </p>
 
-          <div className="farmart-livestock-meta">
-            {age !== undefined && age !== null && (
-              <span>Age: {age}</span>
-            )}
-
-            {sex && (
-              <span>Gender: {sex}</span>
-            )}
-
-            {weight !== undefined && weight !== null && (
-              <span>Weight: {weight}kg</span>
+          <div className="farmart-product-meta">
+            {quantity !== undefined && (
+              <span>
+                Quantity: {quantity}{quantityUnit}
+              </span>
             )}
           </div>
 
-          <div className="farmart-livestock-divider" />
+          <div className="farmart-product-divider" />
 
-          <div className="farmart-livestock-bottom">
+          <div className="farmart-product-bottom">
 
-            <div className="farmart-livestock-price">
-
-              <p className="farmart-livestock-amount">
+            <div>
+              <p className="farmart-product-amount">
                 KES {Number(price || 0).toLocaleString()}
               </p>
 
               {seller && (
-                <p className="farmart-livestock-seller">
+                <p className="farmart-product-seller">
                   {seller}
                 </p>
               )}
-
             </div>
 
             {availability !== 'unavailable' ? (
               <button
                 type="button"
-                className="farmart-add-cart"
-                onClick={() => onAddToCart?.(livestock)}
+                className="farmart-product-cart"
+                onClick={() => onAddToCart?.(product)}
               >
                 <ShoppingCart size={16} />
                 Add to cart
               </button>
             ) : (
-              <span className="farmart-unavailable">
+              <span className="farmart-product-unavailable">
                 Unavailable
               </span>
             )}
@@ -409,10 +347,9 @@ function LivestockCard({
           </div>
 
         </div>
-
       </article>
     </>
   )
 }
 
-export default LivestockCard
+export default ProductCard

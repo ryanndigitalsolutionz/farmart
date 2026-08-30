@@ -1,7 +1,6 @@
 import { useState } from "react";
-import PageHeader from "../../components/layout/PageHeader";
 import { useTheme } from "../../context/ThemeContext";
-import { useAuth } from "../../auth/useAuth";
+
 
 export default function Settings() {
   const [commission, setCommission] = useState(10);

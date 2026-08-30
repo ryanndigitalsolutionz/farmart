@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { MailCheck, ArrowRight } from 'lucide-react'
+import { FiMail, FiArrowRight } from 'react-icons/fi'
 
 function VerifyEmail() {
   const navigate = useNavigate()
@@ -41,283 +41,319 @@ function VerifyEmail() {
 
   return (
     <>
-      <style>{`
-        .verify-page {
-          min-height: 100vh;
-          width: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 48px 24px;
-          box-sizing: border-box;
-          background:
-            radial-gradient(
-              circle at 50% 35%,
-              rgba(39, 122, 68, 0.11),
-              transparent 43%
-            ),
-            #f7faf7;
-          color: #17351f;
-        }
+<style>{`
+  .verify-page {
+    min-height: 100vh;
+    width: 100%;
 
-        .verify-card {
-          width: min(100%, 520px);
-          padding: 58px 56px 48px;
-          box-sizing: border-box;
-          position: relative;
-          overflow: hidden;
-          border: 1px solid #d8e5da;
-          border-radius: 28px;
-          background: rgba(255, 255, 255, 0.97);
-          box-shadow:
-            0 24px 70px rgba(29, 78, 42, 0.10),
-            0 4px 16px rgba(29, 78, 42, 0.05);
-        }
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-        .verify-card::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 50%;
-          width: 110px;
-          height: 4px;
-          background: #277a44;
-          border-radius: 0 0 8px 8px;
-        }
+    padding: 48px 24px;
+    box-sizing: border-box;
 
-        .verify-content {
-          position: relative;
-          z-index: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-        }
+    background:
+      radial-gradient(
+        circle at 50% 35%,
+        rgba(39, 122, 68, 0.11),
+        transparent 43%
+      ),
+      var(--farm-background);
 
-        .verify-logo {
-          width: 68px;
-          height: 68px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 28px;
-          border-radius: 20px;
-          background: #277a44;
-          color: white;
-          font-family: "IBM Plex Serif", serif;
-          font-size: 36px;
-          font-weight: 700;
-          box-shadow:
-            0 0 0 8px rgba(39, 122, 68, 0.07),
-            0 10px 28px rgba(39, 122, 68, 0.16);
-        }
+    color: var(--farm-text);
+  }
 
-        .verify-icon {
-          width: 46px;
-          height: 46px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 20px;
-          border-radius: 50%;
-          background: #eef6ef;
-          color: #277a44;
-        }
+  .verify-card {
+    width: min(100%, 520px);
+    padding: 58px 56px 48px;
 
-        .verify-heading h1 {
-          margin: 0;
-          color: #17351f;
-          font-family: "IBM Plex Serif", serif;
-          font-size: clamp(34px, 6vw, 44px);
-          font-weight: 700;
-          line-height: 1.1;
-        }
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
 
-        .verify-heading p {
-          max-width: 390px;
-          margin: 18px auto 34px;
-          color: #65766a;
-          font-family: "Modern Antiqua", serif;
-          font-size: 16px;
-          line-height: 1.7;
-        }
+    border: 1px solid var(--farm-green-border);
+    border-radius: 28px;
 
-        .verify-email {
-          margin: 0 0 28px;
-          color: #277a44;
-          font-family: "Modern Antiqua", serif;
-          font-size: 15px;
-          font-weight: 600;
-          overflow-wrap: anywhere;
-        }
+    background: var(--auth-card);
 
-        .verify-form {
-          width: 100%;
-          display: flex;
-          flex-direction: column;
-          gap: 18px;
-        }
+    box-shadow:
+      0 24px 70px var(--farm-green-glow),
+      0 4px 16px var(--farm-green-glow);
+  }
 
-        .verify-field {
-          width: 100%;
-          text-align: left;
-        }
+  .verify-card::before {
+    content: '';
+    position: absolute;
 
-        .verify-field > span {
-          display: block;
-          margin-bottom: 9px;
-          color: #36543e;
-          font-family: "Modern Antiqua", serif;
-          font-size: 14px;
-        }
+    top: 0;
+    left: 50%;
 
-        .verify-input {
-          width: 100%;
-          height: 60px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0 18px;
-          box-sizing: border-box;
-          border: 1px solid #d1e1d3;
-          border-radius: 14px;
-          background: #f1f7f1;
-          transition:
-            border-color 180ms ease,
-            background 180ms ease,
-            box-shadow 180ms ease;
-        }
+    width: 110px;
+    height: 4px;
 
-        .verify-input:focus-within {
-          border-color: #277a44;
-          background: white;
-          box-shadow: 0 0 0 4px rgba(39, 122, 68, 0.10);
-        }
+    transform: translateX(-50%);
 
-        .verify-input input {
-          width: 100%;
-          height: 100%;
-          border: none;
-          outline: none;
-          background: transparent;
-          color: #17351f;
-          font-family: "Modern Antiqua", serif;
-          font-size: 22px;
-          font-weight: 600;
-          letter-spacing: 7px;
-          text-align: center;
-        }
+    background: var(--farm-green);
+    border-radius: 0 0 8px 8px;
+  }
 
-        .verify-input input::placeholder {
-          color: #a1aca4;
-          letter-spacing: 6px;
-        }
+  .verify-content {
+    position: relative;
+    z-index: 1;
 
-        .verify-error {
-          margin: 0;
-          color: #b64444;
-          font-family: "Modern Antiqua", serif;
-          font-size: 13px;
-        }
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 
-        .verify-submit {
-          width: 100%;
-          height: 60px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-          margin-top: 4px;
-          border: 1px solid #277a44;
-          border-radius: 14px;
-          background: #277a44;
-          color: white;
-          font-family: "Modern Antiqua", serif;
-          font-size: 15px;
-          font-weight: 600;
-          cursor: pointer;
-          transition:
-            transform 180ms ease,
-            background 180ms ease,
-            box-shadow 180ms ease;
-        }
+    text-align: center;
+  }
 
-        .verify-submit:hover {
-          background: #236b3d;
-          box-shadow: 0 10px 24px rgba(39, 122, 68, 0.20);
-        }
+  .verify-icon {
+    width: 46px;
+    height: 46px;
 
-        .verify-submit:active {
-          transform: translateY(0);
-        }
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-        .verify-resend {
-          margin: 22px 0 0;
-          color: #748078;
-          font-family: "Modern Antiqua", serif;
-          font-size: 14px;
-        }
+    margin-bottom: 20px;
 
-        .verify-resend button {
-          padding: 0;
-          border: none;
-          background: transparent;
-          color: #277a44;
-          font-family: "Modern Antiqua", serif;
-          font-size: inherit;
-          font-weight: 600;
-          cursor: pointer;
-        }
+    border-radius: 50%;
 
-        .verify-resend button:hover {
-          color: #17351f;
-        }
+    background: var(--farm-green-soft);
+    color: var(--farm-green);
+  }
 
-        .verify-back {
-          margin: 26px 0 0;
-          font-family: "Modern Antiqua", serif;
-          font-size: 14px;
-        }
+  .verify-heading h1 {
+    margin: 0;
 
-        .verify-back a {
-          color: #748078;
-        }
+    color: var(--farm-text);
 
-        .verify-back a:hover {
-          color: #277a44;
-        }
+    font-family: "IBM Plex Serif", serif;
+    font-size: clamp(34px, 6vw, 44px);
+    font-weight: 700;
+    line-height: 1.1;
+  }
 
-        @media (max-width: 600px) {
-          .verify-page {
-            padding: 28px 16px;
-          }
+  .verify-heading p {
+    max-width: 390px;
+    margin: 18px auto 34px;
 
-          .verify-card {
-            padding: 48px 28px 40px;
-            border-radius: 24px;
-          }
-        }
+    color: var(--farm-muted);
 
-        @media (max-width: 430px) {
-          .verify-page {
-            padding: 16px;
-          }
+    font-family: "Modern Antiqua", serif;
+    font-size: 16px;
+    line-height: 1.7;
+  }
 
-          .verify-card {
-            padding: 42px 22px 34px;
-          }
-        }
-      `}</style>
+  .verify-email {
+    margin: 0 0 28px;
+
+    color: var(--farm-green);
+
+    font-family: "Modern Antiqua", serif;
+    font-size: 15px;
+    font-weight: 600;
+
+    overflow-wrap: anywhere;
+  }
+
+  .verify-form {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .verify-field {
+    width: 100%;
+    text-align: left;
+  }
+
+  .verify-field > span {
+    display: block;
+    margin-bottom: 9px;
+
+    color: var(--farm-text);
+
+    font-family: "Modern Antiqua", serif;
+    font-size: 14px;
+  }
+
+  .verify-input {
+    width: 100%;
+    height: 60px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 18px;
+    box-sizing: border-box;
+
+    border: 1px solid var(--farm-green-border);
+    border-radius: 14px;
+
+    background: var(--auth-input);
+
+    transition:
+      border-color 180ms ease,
+      background 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .verify-input:focus-within {
+    border-color: var(--farm-green);
+    background: var(--auth-input-focus);
+
+    box-shadow:
+      0 0 0 4px var(--farm-green-glow);
+  }
+
+  .verify-input input {
+    width: 100%;
+    height: 100%;
+
+    border: none;
+    outline: none;
+
+    background: transparent;
+    color: var(--farm-text);
+
+    font-family: "Modern Antiqua", serif;
+    font-size: 22px;
+    font-weight: 600;
+
+    letter-spacing: 7px;
+    text-align: center;
+  }
+
+  .verify-input input::placeholder {
+    color: var(--farm-muted);
+    letter-spacing: 6px;
+  }
+
+  .verify-error {
+    margin: 0;
+
+    color: var(--farm-error);
+
+    font-family: "Modern Antiqua", serif;
+    font-size: 13px;
+  }
+
+  .verify-submit {
+    width: 100%;
+    height: 60px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    margin-top: 4px;
+
+    border: 1px solid var(--farm-green);
+    border-radius: 14px;
+
+    background: var(--farm-green);
+    color: #ffffff;
+
+    font-family: "Modern Antiqua", serif;
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+      background 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .verify-submit:hover {
+    background: #236b3d;
+    box-shadow: 0 10px 24px var(--farm-green-glow);
+  }
+
+  .verify-resend {
+    margin: 22px 0 0;
+
+    color: var(--farm-muted);
+
+    font-family: "Modern Antiqua", serif;
+    font-size: 14px;
+  }
+
+  .verify-resend button {
+    padding: 0;
+
+    border: none;
+    background: transparent;
+
+    color: var(--farm-green);
+
+    font-family: "Modern Antiqua", serif;
+    font-size: inherit;
+    font-weight: 600;
+
+    cursor: pointer;
+  }
+
+  .verify-resend button:hover {
+    color: var(--farm-text);
+  }
+
+  .verify-back {
+    margin: 26px 0 0;
+
+    font-family: "Modern Antiqua", serif;
+    font-size: 14px;
+  }
+
+  .verify-back a {
+    color: var(--farm-muted);
+  }
+
+  .verify-back a:hover {
+    color: var(--farm-green);
+  }
+
+  @media (max-width: 600px) {
+    .verify-page {
+      padding: 28px 16px;
+    }
+
+    .verify-card {
+      padding: 48px 28px 40px;
+      border-radius: 24px;
+    }
+  }
+
+  @media (max-width: 430px) {
+    .verify-page {
+      padding: 16px;
+    }
+
+    .verify-card {
+      padding: 42px 22px 34px;
+    }
+  }
+`}</style>
 
       <main className="verify-page">
         <section className="verify-card">
           <div className="verify-content">
-            <div className="verify-logo">
-              F
+            <div className="login-logo">
+              <img
+                src="/logo/farmart_full_logo_testing.png"
+                alt="Farmart"
+              />
             </div>
 
             <div className="verify-icon">
-              <MailCheck size={24} />
+              <FiMail size={24} />
             </div>
 
             <div className="verify-heading">
@@ -358,7 +394,7 @@ function VerifyEmail() {
 
               <button type="submit" className="verify-submit">
                 Verify & continue
-                <ArrowRight size={18} />
+                <FiArrowRight size={18} />
               </button>
             </form>
 

@@ -43,7 +43,7 @@ export default function SplashScreen() {
             marginTop: 4,
           }}
         >
-          Admin
+          Welcome!
         </div>
       </motion.div>
     </motion.div>

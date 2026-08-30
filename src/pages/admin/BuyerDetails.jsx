@@ -1,8 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import PageHeader from "../../components/layout/PageHeader";
-import { useAdmin } from "../../context/AdminContext";
-import { getBuyerDetail, suspendUser, reactivateUser } from "../../api/adminApi";
 
 export default function BuyerDetails() {
   const { buyerId } = useParams();
