@@ -19,4 +19,4 @@ function PriceFilter({minPrice, setMinPrice, maxPrice, setMaxPrice}) {
   )
 }
 
-export default PriceFilter;
+export default PriceFilter;// commit 50
