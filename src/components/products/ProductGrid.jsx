@@ -1,16 +1,16 @@
-import LivestockCard from './LivestockCard'
+import ProductCard from './ProductCard'
 
-function LivestockGrid({
-  livestock = [],
+function ProductGrid({
+  products = [],
   onAddToCart,
   onToggleWishlist,
   wishlistIds = [],
 }) {
-  if (livestock.length === 0) {
+  if (products.length === 0) {
     return (
       <>
         <style>{`
-          .farmart-livestock-empty {
+          .farmart-product-empty {
             width: 100%;
             padding: 60px 24px;
 
@@ -27,7 +27,7 @@ function LivestockGrid({
             background: rgba(237, 245, 233, 0.45);
           }
 
-          .farmart-livestock-empty h2 {
+          .farmart-product-empty h2 {
             margin: 0 0 8px;
 
             color: #385442;
@@ -36,7 +36,7 @@ function LivestockGrid({
             font-size: 22px;
           }
 
-          .farmart-livestock-empty p {
+          .farmart-product-empty p {
             max-width: 420px;
             margin: 0;
 
@@ -48,11 +48,11 @@ function LivestockGrid({
           }
         `}</style>
 
-        <div className="farmart-livestock-empty">
-          <h2>No livestock found</h2>
+        <div className="farmart-product-empty">
+          <h2>No farm products found</h2>
 
           <p>
-            Sorry, but there is no livestock matching
+            Sorry, but there is no farm produce matching
             your current search or filters.
           </p>
         </div>
@@ -63,7 +63,7 @@ function LivestockGrid({
   return (
     <>
       <style>{`
-        .farmart-livestock-grid {
+        .farmart-product-grid {
           width: 100%;
 
           display: grid;
@@ -75,20 +75,20 @@ function LivestockGrid({
         }
 
         @media (max-width: 650px) {
-          .farmart-livestock-grid {
+          .farmart-product-grid {
             grid-template-columns: minmax(0, 1fr);
           }
         }
       `}</style>
 
-      <div className="farmart-livestock-grid">
-        {livestock.map((animal) => (
-          <LivestockCard
-            key={animal.id}
-            livestock={animal}
+      <div className="farmart-product-grid">
+        {products.map((product) => (
+          <ProductCard
+            key={product.id}
+            product={product}
             onAddToCart={onAddToCart}
             onToggleWishlist={onToggleWishlist}
-            isWishlisted={wishlistIds.includes(animal.id)}
+            isWishlisted={wishlistIds.includes(product.id)}
           />
         ))}
       </div>
@@ -96,4 +96,4 @@ function LivestockGrid({
   )
 }
 
-export default LivestockGrid
+export default ProductGrid

@@ -1,8 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import PageHeader from "../../components/layout/PageHeader";
-import { useAdmin } from "../../context/AdminContext";
-import { getFarmerDetail, verifyFarmer, rejectFarmer, suspendUser } from "../../api/adminApi";
 
 export default function FarmerDetails() {
   const { farmerId } = useParams();

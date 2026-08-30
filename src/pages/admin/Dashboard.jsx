@@ -1,37 +1,20 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence, useSpring, useTransform } from "framer-motion";
-import PageHeader from "../../components/layout/PageHeader";
-import { useAdmin } from "../../context/AdminContext";
-import { getPendingFarmers, verifyFarmer, rejectFarmer } from "../../api/adminApi";
+import { motion, AnimatePresence } from "framer-motion";
+
+
+const metrics = {
+  total_users: 0,
+  active_listings: 0,
+  gmv_this_month: 0,
+  open_disputes: 0,
+};
+
+const loading = false;
 
 export default function Dashboard() {
-  const { metrics, refreshOverview, loading } = useAdmin();
-  const [pendingFarmers, setPendingFarmers] = useState([]);
-  const [tab, setTab] = useState("farmers"); // farmers | buyers | listings
+  const [tab, setTab] = useState("farmers");
   const navigate = useNavigate();
-
-  useEffect(() => {
-    refreshOverview();
-  }, [refreshOverview]);
-
-  useEffect(() => {
-    getPendingFarmers().then(setPendingFarmers).catch(console.error);
-  }, []);
-
-  const handleApprove = async (farmerId) => {
-    await verifyFarmer(farmerId);
-    setPendingFarmers((list) => list.filter((f) => f.id !== farmerId));
-    refreshOverview();
-  };
-
-  const handleReject = async (farmerId) => {
-    const reason = window.prompt("Reason for rejecting this farmer?");
-    if (reason === null) return; // cancelled
-    await rejectFarmer(farmerId, reason);
-    setPendingFarmers((list) => list.filter((f) => f.id !== farmerId));
-    refreshOverview();
-  };
 
   return (
     <div>

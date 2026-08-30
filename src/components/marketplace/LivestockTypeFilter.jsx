@@ -1,5 +1,3 @@
-import React from 'react'
-
 function LivestockTypeFilter({ type, setType }) {
   return (
     <div>
@@ -7,8 +5,8 @@ function LivestockTypeFilter({ type, setType }) {
             <option value="">All Livestock</option>
             <option value="Goat">Goats</option>
             <option value="Cow">Cows</option>
-            <option value="Sheep">Sheeps</option>
-            <option value="Chicken">Chickens</option>
+            <option value="Sheep">Sheep</option>
+            <option value="Poultry">Poultry</option>
             <option value="Pig">Pigs</option>
         </select>
     </div>

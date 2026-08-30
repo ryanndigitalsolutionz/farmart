@@ -1,7 +1,4 @@
 import { useEffect, useState } from "react";
-import PageHeader from "../../components/layout/PageHeader";
-import { useAdmin } from "../../context/AdminContext";
-import { getDisputes, resolveDispute } from "../../api/adminApi";
 
 export default function Disputes() {
   const { refreshOverview } = useAdmin();

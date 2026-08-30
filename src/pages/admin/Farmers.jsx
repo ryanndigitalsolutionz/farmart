@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import PageHeader from "../../components/layout/PageHeader";
 
-// TODO: replace with real fetch("/api/admin/farmers") once backend is ready
+
 const MOCK_FARMERS = [
   { id: 1, name: "Kiambu Green Pastures", status: "pending" },
   { id: 2, name: "Nakuru Boran Ranch", status: "pending" },
