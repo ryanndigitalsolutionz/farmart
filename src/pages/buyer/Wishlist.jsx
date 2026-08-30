@@ -1,38 +1,27 @@
-import { Link } from 'react'
-import { useWishlist } from '../../context/WishlistContext'
-import WishlistCard from '../../components/wishlist/WishlistCard'
-import WishlistEmpty from '../../components/wishlist/WishlistEmpty'
+import { useWishlist } from "../../context/WishlistContext";
+import WishlistCard from "../../components/wishlist/WishlistCard";
+import WishlistEmpty from "../../components/wishlist/WishlistEmpty";
 
 function Wishlist() {
-    const { wishlist } = useWishlist();
-    const itemCount = wishlist.length;
+  const { wishlist } = useWishlist();
 
   return (
-    <div className='p-4 shadow-2xl max-w-5xl mx-auto mt-3 mb-6'>
-        <div className='text-center'> 
-            <h1 className='text-2xl font-bold tracking-wide text-green-900'>
-                My Wishlist {{itemCount}}
-            </h1>
-            <p>{itemCount} item{itemCount !== 1 ? "s" : ""}</p>
-            <Link 
-                to="/marketplace"
-                className="text-sm text-green-700 hoverunderline "
-            > 
-            &larr; Back to Marketplace
-            </Link>
-        </div>
+    <main className="mx-auto max-w-7xl p-4 sm:p-6">
+      <h1 className="text-2xl font-bold text-gray-900">Wishlist</h1>
 
-        {itemCount === 0 ? (
-            <WishlistEmpty/>
-        ) : (
-            <div>
-                {wishlist.map((animal) => (
-                    <WishlistCard key={animal.id} animal={animal}/>
-                ))}
-            </div>         
-        )}
-    </div>
-    );
+      {wishlist.length === 0 ? (
+        <div className="mt-8">
+          <WishlistEmpty />
+        </div>
+      ) : (
+        <div className="mt-6 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
+          {wishlist.map((animal) => (
+            <WishlistCard key={animal.id} animal={animal} />
+          ))}
+        </div>
+      )}
+    </main>
+  );
 }
 
 export default Wishlist;

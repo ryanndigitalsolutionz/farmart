@@ -20,10 +20,10 @@ function Cart() {
             <div className="text-center mt-4">
                 <p className="text-lg text-red-400 font-semibold">Your cart is empty</p>
 
-                <p className="mb-3">Add livestock to your cart before checking out</p>
+                <p className="mb-6">Add livestock to your cart before checking out</p>
                 <Link 
                     to="/marketplace"
-                    className="bg-green-500 p-2 rounded-lg"
+                    className="text-gray-500 p-2 rounded-lg font-semibold hover:underline hover:text-green-600"
                 >
                     Continue Shopping
                 </Link>
@@ -43,7 +43,7 @@ function Cart() {
                             className="w-30 h-30 object-cover"
                         />
                         <div className="">
-                            <h2>{animal.breed} {animal.type}</h2>
+                            <h2 className="font-semibold">{animal.breed} {animal.type}</h2>
                             
                             <p className="text-gray-400 text-sm">name: {animal.name}</p>
                             

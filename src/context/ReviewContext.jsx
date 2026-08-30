@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect} from 'react'
 
-const ReviewContext = createContext();
+const ReviewsContext = createContext();
 
 export function ReviewProvider({ children }) {
     // TODO(backend): replace initializer with GET /api/reviews (per animal) or
@@ -36,7 +36,7 @@ export function ReviewProvider({ children }) {
     }, [reviews]);
 
     return (
-        <ReviewtContext.Provider
+        <ReviewsContext.Provider
             value={{
                 reviews,
                 addReview,
@@ -45,11 +45,11 @@ export function ReviewProvider({ children }) {
             }}
         >
             {children}
-        </ReviewtContext.Provider>
+        </ReviewsContext.Provider>
     )
 
 }
 
 export function useReviews() {
-    return useContext(ReviewContext)
+    return useContext(ReviewsContext)
 }

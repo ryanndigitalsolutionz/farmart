@@ -1,78 +1,75 @@
-import { Link } from "react-router-dom"
-import { useWishlist } from "../../context/WishlistContext"
-import { useCart } from "../../context/CartContext"
-import { FaStar } from "react-icons/fa";
-
+import { Link } from "react-router-dom";
+import { FaRegImage, FaRegTrashAlt } from "react-icons/fa";
+import { useWishlist } from "../../context/WishlistContext";
+import { useCart } from "../../context/CartContext";
 
 function WishlistCard({ animal }) {
-    const { removeFromWishlist } = useWishlist();
-    const { addToCart } = useCart();
+  const { removeFromWishlist } = useWishlist();
+  const { addToCart } = useCart();
+  const isAvailable = animal.availability?.toLowerCase() === "available";
+  const image = animal.images?.[0];
+  const title = `${animal.name || animal.breed || "Livestock"}${animal.type ? ` ${animal.type}` : ""}`;
+  const price = Number(animal.price);
 
-    const isAvailable = animal.availability?.toLowercase() === "available";
+  const handleMoveToCart = () => {
+    if (!isAvailable) return;
 
-    const handleMoveToCart = () => {
-        addToCart(animal);
-        removeFromWishlist(animal.id);
-    }
-    
+    addToCart(animal);
+    removeFromWishlist(animal.id);
+  };
+
   return (
-    <div className="border border-gray-400 flex">
-        <Link to={`/marketplace/${animal.id}`} className="w-full">
-            <img 
-                src={animal.image?.[0]} 
-                alt={animal.type} 
-                className="w-full h-48 object-cover rounded-xl"
-            />
-        </Link>
-        <h2 className="font-bold mt-2">{animal.breed} {animal.type}</h2>
-        <p className="text-gray-400 text-sm ">{animal.age} years &middot; {animal.weight} Kg</p>
-
-        <div className="">
-            <span>{animal.seller?.name}</span>
-            <span>&middot;</span>
-            <span>{animal.location}</span>
-        </div>
-
-        {animal.seller?.rating && (
-            <div className="flex items-center gap-1 text-gray-500">
-                <FaStar color="gold"/>
-                <span>{animal.seller.rating}</span>
-                <span>({animal.seller.reviewCount} reviews)</span>
-            </div>
+    <article className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
+      <Link
+        to={`/marketplace/${animal.id}`}
+        className="block overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-green-800 focus:ring-offset-2"
+        aria-label={`View ${title}`}
+      >
+        {image ? (
+          <img src={image} alt={title} className="h-36 w-full object-cover sm:h-48" />
+        ) : (
+          <div className="flex h-36 w-full flex-col items-center justify-center gap-2 bg-green-50 text-sm text-gray-500 sm:h-48">
+            <FaRegImage className="text-lg" aria-hidden="true" />
+            <span>No image</span>
+          </div>
         )}
-        <p className="font-bold text-green-800 mt-1">
-            Ksh {Number(animal.price).toLocaleString()} 
+      </Link>
+
+      <div className="flex flex-1 flex-col pt-3">
+        <h2 className="font-bold text-gray-900">{title}</h2>
+        <p className="mt-1 text-sm text-gray-500">
+          {[animal.breed, animal.location].filter(Boolean).join(" · ")}
+        </p>
+        <p className="mt-3 font-bold text-green-800">
+          KES {Number.isFinite(price) ? price.toLocaleString("en-KE", { maximumFractionDigits: 0 }) : "0"}
         </p>
 
-        <p className={`font-semibold ${
-            isAvailable? "text-green-600" :"text-red-500"
+        <div className="mt-auto flex gap-2 pt-4">
+          <button
+            type="button"
+            onClick={handleMoveToCart}
+            disabled={!isAvailable}
+            className={`flex-1 rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
+              isAvailable
+                ? "bg-green-800 text-white hover:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-800 focus:ring-offset-2"
+                : "cursor-not-allowed bg-gray-200 text-gray-500"
             }`}
-        >
-            {animal.availability}
-        </p>
-
-        <div>
-            <button
-                onClick={handleMoveToCart}
-                disabled={!isAvailable}
-                className={`flex-1 p-2 rounded-lg font-semibold transition-all duration-200${
-                    isAvailable 
-                    ? "bg-green-600 text-white cursor-pointer hover:translate-y-1 hover:scale-105 hover:shadow-lg"
-                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                }`}
-            >
-                Move to Cart
-            </button>
-            <button
-                onClick={() => removeFromWishlist(animal.id)}
-                className="flex-1 border border-red-400 text-red-500 font-semibold p-2 rounded-lg cursor-pointer transition-colors hover:bg-red-50"
-            >
-                Remove
-            </button>
+          >
+            Move to cart
+          </button>
+          <button
+            type="button"
+            onClick={() => removeFromWishlist(animal.id)}
+            title="Remove from wishlist"
+            aria-label="Remove from wishlist"
+            className="rounded-lg border border-red-300 p-2 text-red-500 transition-colors hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
+          >
+            <FaRegTrashAlt aria-hidden="true" />
+          </button>
         </div>
-
-    </div>
-  )
+      </div>
+    </article>
+  );
 }
 
-export default WishlistCard
+export default WishlistCard;

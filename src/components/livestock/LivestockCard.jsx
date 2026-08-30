@@ -1,17 +1,34 @@
 import { useNavigate } from "react-router-dom"
+import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { useWishlist } from "../../context/WishlistContext";
 
 function LivestockCard({ animal, onViewDetails }) {
   const navigate = useNavigate();
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const wishlisted = isInWishlist(animal.id);
 
   return (
-    <div className='livestockcard border border-gray-400 shadow-2xl flex flex-col p-2 items-center rounded-lg'>
+    <div className='livestockcard relative border border-gray-400 shadow-2xl flex flex-col p-2 items-center rounded-lg'>
+      <button
+        onClick={() => toggleWishlist(animal)}
+        aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+        className="absolute top-3 right-3 bg-white/90 rounded-full p-1.5 
+        shadow cursor-pointer transition-transform duration-200 hover:scale-110"
+      >
+        {wishlisted ? (
+          <FaHeart size={16} className="text-red-500"/>
+
+        ) : (
+          <FaRegHeart size={16} className="text-red-500"/>
+        )}
+      </button>
         <img 
             src={animal.images?.[0]} 
-            alt={animal.name} 
+            alt={animal.type} 
             className="w-full h-65 object-cover rounded-xl"
         />
 
-        <h2 className="font-bold">{animal.name}</h2>
+        <h2 className="font-bold">{animal.breed}{animal.type}</h2>
         <p>{animal.type}</p>
         <p>{animal.breed}</p>
         <p>{animal.age} years</p>

@@ -40,7 +40,14 @@ function MarketplaceHeader({
               Cart: {cartCount}
             </Link>
 
-        </div>
+          </div>
+          
+          <Link 
+            to="/wishlist"
+            className="bg-green-600 rounded-2xl p-2 text-white"
+          >
+            Wishlist
+          </Link>
           
         </div>      
         
