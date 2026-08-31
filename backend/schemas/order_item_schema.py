@@ -33,8 +33,7 @@ class BaseSchema(Schema):
 
 class OrderItemSchema(BaseSchema):
     order_id = fields.Integer(
-        required=True, 
-        validate=validate.Range(min=1),
+        dump_only=True,
     )
     livestock_id = fields.Integer(
         required=True, 
