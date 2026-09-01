@@ -41,7 +41,7 @@ function Marketplace() {
     () => [
       {
         id: 1,
-        name: 'Farm Cow',
+        name: 'Maria',
         type: 'Cow',
         breed: 'Friesian',
         age: 3,
@@ -53,7 +53,7 @@ function Marketplace() {
       },
       {
         id: 2,
-        name: 'Farm Goat',
+        name: 'Kamau',
         type: 'Goat',
         breed: 'Boer',
         age: 2,
@@ -65,7 +65,7 @@ function Marketplace() {
       },
       {
         id: 3,
-        name: 'Farm Sheep',
+        name: 'Milka',
         type: 'Sheep',
         breed: 'Dorper',
         age: 2,
@@ -77,7 +77,7 @@ function Marketplace() {
       },
       {
         id: 4,
-        name: 'Farm Pig',
+        name: 'Kasuku',
         type: 'Pig',
         breed: 'Landrace',
         age: 1,
@@ -89,7 +89,7 @@ function Marketplace() {
       },
       {
         id: 5,
-        name: 'Farm Poultry',
+        name: 'Kienyeji Hen',
         type: 'Poultry',
         breed: 'Kienyeji',
         age: 1,
