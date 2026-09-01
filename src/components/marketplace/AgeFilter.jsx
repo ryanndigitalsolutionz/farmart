@@ -1,4 +1,3 @@
-
 function AgeFilter({age, setAge}) {
   return (
     <div>

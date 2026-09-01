@@ -1,9 +1,19 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import {
+  FaEnvelope,
+  FaLock,
+  FaUser,
+  FaEye,
+  FaEyeSlash,
+  FaGoogle,
+} from 'react-icons/fa'
 
 function Register() {
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const selectedRole = location.state?.role || ''
 
   const [formData, setFormData] = useState({
     name: '',
@@ -27,6 +37,16 @@ function Register() {
     e.preventDefault()
     setError('')
 
+    if (!selectedRole) {
+      setError('Please select a registration role first.')
+      return
+    }
+
+    if (selectedRole === 'admin') {
+      setError('Administrator accounts cannot be created here.')
+      return
+    }
+
     if (
       !formData.name ||
       !formData.email ||
@@ -42,324 +62,463 @@ function Register() {
       return
     }
 
+    // Temporary frontend-only registration.
+    // This will be replaced by the Flask backend.
     localStorage.setItem(
       'farmartUser',
       JSON.stringify({
         name: formData.name,
         email: formData.email,
-        role: 'farmer',
+        role: selectedRole,
         isLoggedIn: true,
       }),
     )
 
-    navigate('/farm-setup')
+    if (selectedRole === 'farmer') {
+      navigate('/farm-setup')
+      return
+    }
+
+    if (selectedRole === 'buyer') {
+      navigate('/buyer/marketplace')
+    }
   }
+
+  const roleLabel =
+    selectedRole === 'farmer'
+      ? 'Farmer'
+      : selectedRole === 'buyer'
+        ? 'Buyer'
+        : 'Farmart'
 
   return (
     <>
-      <style>{`
-        .register-page {
-          min-height: 100vh;
-          width: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 70px 28px;
-          background:
-            radial-gradient(
-              circle at 50% 32%,
-              rgba(39, 122, 68, 0.09),
-              transparent 46%
-            ),
-            #f7faf7;
-          color: #17351f;
-        }
+<style>{`
+  .register-page {
+    min-height: 100vh;
+    width: 100%;
 
-        .register-card {
-          position: relative;
-          width: min(100%, 570px);
-          overflow: hidden;
-          border: 1px solid #d8e5da;
-          border-radius: 30px;
-          background: #ffffff;
-          box-shadow:
-            0 28px 80px rgba(29, 78, 42, 0.11),
-            0 6px 20px rgba(29, 78, 42, 0.05);
-        }
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-        .register-card::before {
-          content: "";
-          position: absolute;
-          top: 0;
-          left: 50%;
-          width: 110px;
-          height: 4px;
-          border-radius: 0 0 8px 8px;
-          background: #277a44;
-        }
+    padding: 60px 24px;
 
-        .register-content {
-          position: relative;
-          z-index: 1;
-          padding: 76px 68px 54px;
-        }
+    background:
+      radial-gradient(
+        circle at 50% 30%,
+        rgba(39, 122, 68, 0.09),
+        transparent 46%
+      ),
+      var(--farm-background);
 
-        .register-logo {
-          width: 76px;
-          height: 76px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 0 auto 30px;
-          border-radius: 22px;
-          background: #277a44;
-          color: #ffffff;
-          box-shadow:
-            0 0 0 9px rgba(39, 122, 68, 0.07),
-            0 14px 30px rgba(39, 122, 68, 0.16);
-        }
+    color: var(--farm-text);
 
-        .register-logo span {
-          font-family: "IBM Plex Serif", serif;
-          font-size: 40px;
-          font-weight: 700;
-          line-height: 1;
-        }
+    transition:
+      background 180ms ease,
+      color 180ms ease;
+  }
 
-        .register-heading {
-          text-align: center;
-        }
+  .register-card {
+    width: min(100%, 570px);
+    overflow: hidden;
 
-        .register-heading h1 {
-          margin: 0;
-          color: #17351f;
-          font-family: "IBM Plex Serif", serif;
-          font-size: clamp(36px, 7vw, 47px);
-          font-weight: 700;
-          line-height: 1.1;
-          letter-spacing: -1px;
-        }
+    border: 1px solid var(--farm-green-border);
+    border-radius: 30px;
 
-        .register-heading p {
-          max-width: 410px;
-          margin: 20px auto 44px;
-          color: #68766c;
-          font-family: "Modern Antiqua", serif;
-          font-size: 16px;
-          line-height: 1.75;
-        }
+    background: var(--auth-card);
 
-        .register-form {
-          display: flex;
-          flex-direction: column;
-          gap: 21px;
-        }
+    box-shadow:
+      0 28px 80px var(--farm-green-glow),
+      0 6px 20px var(--farm-green-glow);
 
-        .register-field {
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
+    transition:
+      background 180ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease;
+  }
 
-        .register-field > label {
-          color: #31553c;
-          font-family: "Modern Antiqua", serif;
-          font-size: 14px;
-          font-weight: 600;
-        }
+  .register-content {
+    padding: 64px 68px 48px;
+  }
 
-        .register-input {
-          width: 100%;
-          min-height: 61px;
-          display: flex;
-          align-items: center;
-          gap: 13px;
-          padding: 0 17px;
-          border: 1px solid #d1dfd4;
-          border-radius: 15px;
-          background: #f5f9f5;
-          color: #438052;
-          transition:
-            border-color 180ms ease,
-            background 180ms ease,
-            box-shadow 180ms ease;
-        }
+  .register-logo {
+    width: min(100%, 300px);
+    min-height: 100px;
 
-        .register-input:focus-within {
-          border-color: #277a44;
-          background: #ffffff;
-          box-shadow:
-            0 0 0 4px rgba(39, 122, 68, 0.09);
-        }
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-        .register-input svg {
-          flex-shrink: 0;
-        }
+    padding: 14px 22px;
+    margin: 0 auto 30px;
 
-        .register-input input {
-          width: 100%;
-          min-width: 0;
-          height: 100%;
-          padding: 0;
-          border: 0;
-          outline: 0;
-          background: transparent;
-          color: #17351f;
-          font-family: "Modern Antiqua", serif;
-          font-size: 15px;
-        }
+    border: 1px solid var(--farm-green-border);
+    border-radius: 20px;
 
-        .register-input input::placeholder {
-          color: #8a978e;
-        }
+    background: var(--auth-logo-bg);
+  }
 
-        .register-password-toggle {
-          width: 34px;
-          height: 34px;
-          flex-shrink: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0;
-          border: 0;
-          border-radius: 9px;
-          background: transparent;
-          color: #6c7c70;
-          transition:
-            background 160ms ease,
-            color 160ms ease;
-        }
+  .register-logo img {
+    width: 100%;
+    height: 100px;
+    object-fit: contain;
+  }
 
-        .register-password-toggle:hover {
-          background: rgba(39, 122, 68, 0.08);
-          color: #277a44;
-        }
+  .register-heading {
+    text-align: center;
+  }
 
-        .register-error {
-          margin: -2px 0 0;
-          color: #b64444;
-          font-family: "Modern Antiqua", serif;
-          font-size: 14px;
-          line-height: 1.5;
-          text-align: center;
-        }
+  .register-heading h1 {
+    margin: 0;
 
-        .register-submit {
-          width: 100%;
-          min-height: 64px;
-          margin-top: 7px;
-          border: 1px solid #277a44;
-          border-radius: 16px;
-          background: #277a44;
-          color: #ffffff;
-          font-family: "Modern Antiqua", serif;
-          font-size: 16px;
-          font-weight: 600;
-          transition:
-            transform 180ms ease,
-            background 180ms ease,
-            box-shadow 180ms ease;
-        }
+    color: var(--farm-text);
 
-        .register-submit:hover {
-          background: #216b3b;
-          box-shadow:
-            0 12px 28px rgba(39, 122, 68, 0.18);
-        }
+    font-family: "IBM Plex Serif", serif;
+    font-size: clamp(36px, 7vw, 47px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -1px;
+  }
 
-        .register-submit:active {
-          transform: translateY(0);
-        }
+  .register-heading p {
+    max-width: 410px;
+    margin: 18px auto 38px;
 
-        .register-switch {
-          margin: 34px 0 0;
-          color: #718078;
-          font-family: "Modern Antiqua", serif;
-          font-size: 14px;
-          line-height: 1.7;
-          text-align: center;
-        }
+    color: var(--farm-muted);
 
-        .register-switch a {
-          color: #277a44;
-          font-weight: 700;
-        }
+    font-family: "Modern Antiqua", serif;
+    font-size: 16px;
+    line-height: 1.75;
+  }
 
-        .register-switch a:hover {
-          color: #173d28;
-        }
+  .register-role {
+    width: fit-content;
 
-        .register-divider {
-          width: 100%;
-          height: 1px;
-          margin: 34px 0 24px;
-          background: #dfe8e1;
-        }
+    margin: -18px auto 28px;
+    padding: 8px 15px;
 
-        .register-terms {
-          max-width: 410px;
-          margin: 0 auto;
-          color: #87948a;
-          font-family: "Modern Antiqua", serif;
-          font-size: 12px;
-          line-height: 1.8;
-          text-align: center;
-        }
+    border: 1px solid var(--farm-green-border);
+    border-radius: 999px;
 
-        @media (max-width: 600px) {
-          .register-page {
-            padding: 36px 16px;
-          }
+    background: var(--farm-green-soft);
+    color: var(--farm-green);
 
-          .register-content {
-            padding: 60px 28px 44px;
-          }
+    font-family: "Modern Antiqua", serif;
+    font-size: 13px;
+    font-weight: 600;
+  }
 
-          .register-heading h1 {
-            font-size: 37px;
-          }
-        }
+  .register-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
 
-        @media (max-width: 400px) {
-          .register-page {
-            padding: 20px 10px;
-          }
+  .register-field {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
 
-          .register-card {
-            border-radius: 24px;
-          }
+  .register-field > label {
+    color: var(--farm-text);
 
-          .register-content {
-            padding: 52px 20px 38px;
-          }
+    font-family: "Modern Antiqua", serif;
+    font-size: 14px;
+    font-weight: 600;
+  }
 
-          .register-heading p {
-            margin-bottom: 36px;
-          }
-        }
-      `}</style>
+  .register-input {
+    width: 100%;
+    min-height: 61px;
+
+    display: flex;
+    align-items: center;
+    gap: 13px;
+
+    padding: 0 17px;
+
+    border: 1px solid var(--farm-green-border);
+    border-radius: 15px;
+
+    background: var(--auth-input);
+    color: var(--farm-green);
+
+    box-sizing: border-box;
+
+    transition:
+      border-color 180ms ease,
+      background 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .register-input:focus-within {
+    border-color: var(--farm-green);
+    background: var(--auth-input-focus);
+
+    box-shadow:
+      0 0 0 4px var(--farm-green-glow);
+  }
+
+  .register-input input {
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+
+    padding: 0;
+
+    border: 0;
+    outline: 0;
+
+    background: transparent;
+    color: var(--farm-text);
+
+    font-family: "Modern Antiqua", serif;
+    font-size: 15px;
+  }
+
+  .register-input input::placeholder {
+    color: var(--farm-muted);
+  }
+
+  .register-password-toggle {
+    width: 34px;
+    height: 34px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 9px;
+
+    background: transparent;
+    color: var(--farm-muted);
+
+    cursor: pointer;
+
+    transition:
+      background 160ms ease,
+      color 160ms ease;
+  }
+
+  .register-password-toggle:hover {
+    background: var(--farm-green-glow);
+    color: var(--farm-green);
+  }
+
+  .register-error {
+    margin: 0;
+
+    color: var(--farm-error);
+
+    font-family: "Modern Antiqua", serif;
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .register-submit {
+    width: 100%;
+    min-height: 62px;
+    margin-top: 4px;
+
+    border: 1px solid var(--farm-green);
+    border-radius: 16px;
+
+    background: var(--farm-green);
+    color: #ffffff;
+
+    font-family: "Modern Antiqua", serif;
+    font-size: 16px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+      background 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .register-submit:hover {
+    background: #216b3b;
+    box-shadow: 0 12px 28px var(--farm-green-glow);
+  }
+
+  .google-button {
+    width: 100%;
+    min-height: 58px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    border: 1px solid #4285f4;
+    border-radius: 15px;
+
+    background: #4285f4;
+    color: #ffffff;
+
+    font-family: "Modern Antiqua", serif;
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  .google-button:disabled {
+    cursor: not-allowed;
+  }
+
+  .google-note {
+    margin: -8px 0 0;
+
+    color: var(--farm-muted);
+
+    font-family: "Modern Antiqua", serif;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .register-switch {
+    margin: 30px 0 0;
+
+    color: var(--farm-muted);
+
+    font-family: "Modern Antiqua", serif;
+    font-size: 14px;
+    line-height: 1.7;
+    text-align: center;
+  }
+
+  .register-switch a {
+    color: var(--farm-green);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .register-switch a:hover {
+    color: var(--farm-text);
+  }
+
+  .register-divider {
+    width: 100%;
+    height: 1px;
+    margin: 30px 0 22px;
+
+    background: var(--farm-green-border);
+  }
+
+  .register-terms {
+    max-width: 410px;
+    margin: 0 auto;
+
+    color: var(--farm-muted);
+
+    font-family: "Modern Antiqua", serif;
+    font-size: 12px;
+    line-height: 1.8;
+    text-align: center;
+  }
+
+  /* AUTH THEME SURFACES */
+
+  :root {
+    --auth-card: #ffffff;
+    --auth-logo-bg: #f4f8f2;
+    --auth-input: #f5f9f5;
+    --auth-input-focus: #ffffff;
+    --auth-footer: #f8fbf8;
+  }
+
+  [data-theme="dark"] {
+    --auth-card: #1c2b22;
+    --auth-logo-bg: #14201a;
+    --auth-input: #17241d;
+    --auth-input-focus: #1c2b22;
+    --auth-footer: #17241d;
+  }
+
+  @media (max-width: 600px) {
+    .register-page {
+      padding: 32px 16px;
+    }
+
+    .register-content {
+      padding: 54px 28px 42px;
+    }
+
+    .register-logo {
+      min-height: 82px;
+      padding: 10px 18px;
+    }
+
+    .register-logo img {
+      height: 82px;
+    }
+
+    .register-heading h1 {
+      font-size: 37px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .register-page {
+      padding: 20px 10px;
+    }
+
+    .register-card {
+      border-radius: 24px;
+    }
+
+    .register-content {
+      padding: 46px 20px 36px;
+    }
+  }
+`}</style>
 
       <main className="register-page">
         <section className="register-card">
           <div className="register-content">
+
             <div className="register-logo">
-              <span>F</span>
+              <img
+                src="/logo/farmart_full_logo_testing.png"
+                alt="Farmart"
+              />
             </div>
 
             <div className="register-heading">
               <h1>Create your account</h1>
 
               <p>
-                Join Farmart and connect directly with buyers and farmers.
+                Join Farmart and connect directly with farmers,
+                buyers and the livestock marketplace.
               </p>
             </div>
 
+            {selectedRole && (
+              <div className="register-role">
+                Registering as {roleLabel}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="register-form">
+
               <div className="register-field">
-                <label htmlFor="name">Full name</label>
+                <label htmlFor="name">
+                  Full name
+                </label>
 
                 <div className="register-input">
-                  <User size={18} />
+                  <FaUser size={17} />
 
                   <input
                     id="name"
@@ -374,16 +533,18 @@ function Register() {
               </div>
 
               <div className="register-field">
-                <label htmlFor="email">Email address</label>
+                <label htmlFor="email">
+                  Email address
+                </label>
 
                 <div className="register-input">
-                  <Mail size={18} />
+                  <FaEnvelope size={17} />
 
                   <input
                     id="email"
                     type="email"
                     name="email"
-                    placeholder="farmer@boranfarm.co.ke"
+                    placeholder="you@example.com"
                     value={formData.email}
                     onChange={handleChange}
                     autoComplete="email"
@@ -392,10 +553,12 @@ function Register() {
               </div>
 
               <div className="register-field">
-                <label htmlFor="password">Create password</label>
+                <label htmlFor="password">
+                  Create password
+                </label>
 
                 <div className="register-input">
-                  <Lock size={18} />
+                  <FaLock size={17} />
 
                   <input
                     id="password"
@@ -412,13 +575,15 @@ function Register() {
                     className="register-password-toggle"
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={
-                      showPassword ? 'Hide password' : 'Show password'
+                      showPassword
+                        ? 'Hide password'
+                        : 'Show password'
                     }
                   >
                     {showPassword ? (
-                      <EyeOff size={18} />
+                      <FaEyeSlash size={17} />
                     ) : (
-                      <Eye size={18} />
+                      <FaEye size={17} />
                     )}
                   </button>
                 </div>
@@ -430,11 +595,15 @@ function Register() {
                 </label>
 
                 <div className="register-input">
-                  <Lock size={18} />
+                  <FaLock size={17} />
 
                   <input
                     id="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
+                    type={
+                      showConfirmPassword
+                        ? 'text'
+                        : 'password'
+                    }
                     name="confirmPassword"
                     placeholder="Confirm your password"
                     value={formData.confirmPassword}
@@ -446,7 +615,9 @@ function Register() {
                     type="button"
                     className="register-password-toggle"
                     onClick={() =>
-                      setShowConfirmPassword(!showConfirmPassword)
+                      setShowConfirmPassword(
+                        !showConfirmPassword,
+                      )
                     }
                     aria-label={
                       showConfirmPassword
@@ -455,9 +626,9 @@ function Register() {
                     }
                   >
                     {showConfirmPassword ? (
-                      <EyeOff size={18} />
+                      <FaEyeSlash size={17} />
                     ) : (
-                      <Eye size={18} />
+                      <FaEye size={17} />
                     )}
                   </button>
                 </div>
@@ -475,11 +646,28 @@ function Register() {
               >
                 Create account
               </button>
+
+              <button
+                type="button"
+                className="google-button"
+                disabled
+              >
+                <FaGoogle size={17} />
+                Continue with Google
+              </button>
+
+              <p className="google-note">
+                Google sign-in will be available soon.
+              </p>
+
             </form>
 
             <p className="register-switch">
               Already have an account?{' '}
-              <Link to="/login">
+              <Link
+                to="/login"
+                state={{ role: selectedRole }}
+              >
                 Log in
               </Link>
             </p>
@@ -487,9 +675,11 @@ function Register() {
             <div className="register-divider" />
 
             <p className="register-terms">
-              By creating an account you agree to Farmart's Terms
-              and Conditions of service &amp; Fair-Trade Policy
+              By creating an account you agree to Farmart's
+              Terms and Conditions of service &amp; Fair-Trade
+              Policy
             </p>
+
           </div>
         </section>
       </main>

@@ -1,5 +1,3 @@
-import React from 'react'
-
 function PriceFilter({minPrice, setMinPrice, maxPrice, setMaxPrice}) {
   return (
     <div>
