@@ -14,8 +14,6 @@ def _convert_camel_to_snake(data):
         "orderId": "order_id",
         "livestockId": "livestock_id",
         "unitPrice": "unit_price",
-        "createdAt": "created_at",
-        "updatedAt": "updated_at",
     }
 
     return {
@@ -27,8 +25,6 @@ class BaseSchema(Schema):
         unknown = RAISE
 
     id = fields.Integer(dump_only=True)
-    created_at = fields.DateTime(dump_only=True)
-    updated_at = fields.DateTime(dump_only=True)
 
 
 class OrderItemSchema(BaseSchema):

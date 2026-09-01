@@ -6,7 +6,8 @@ from marshmallow import (
     pre_load,
 )
 
-from models import PaymentMethod, PaymentStatus
+from models import PaymentMethod
+
 
 def _convert_camel_to_snake(data):
     if not isinstance(data, dict):
@@ -14,7 +15,6 @@ def _convert_camel_to_snake(data):
 
     replacements = {
         "orderId": "order_id",
-        "cardLast4": "card_last4",
         "transactionReference": "transaction_reference",
         "paidAt": "paid_at",
     }
@@ -23,38 +23,42 @@ def _convert_camel_to_snake(data):
         replacements.get(k, k): _convert_camel_to_snake(v)
         for k, v in data.items()
     }
+
+
 class BaseSchema(Schema):
     class Meta:
         unknown = RAISE
 
     id = fields.Integer(dump_only=True)
     created_at = fields.DateTime(dump_only=True)
-    updated_at = fields.DateTime(dump_only=True)
 
 
 class PaymentSchema(BaseSchema):
     order_id = fields.Integer(
-        required=True, 
+        required=True,
         validate=validate.Range(min=1),
     )
+
     amount = fields.Decimal(
         dump_only=True,
         as_string=True,
-        places=2, 
+        places=2,
     )
+
     payment_method = fields.Enum(
         PaymentMethod,
         by_value=True,
         required=True,
     )
+
     transaction_reference = fields.String(
         dump_only=True,
     )
-    status = fields.Enum(
-        PaymentStatus, 
-        by_value=True, 
-        required=True,
+
+    status = fields.String(
+        dump_only=True,
     )
+
     paid_at = fields.DateTime(
         dump_only=True,
     )

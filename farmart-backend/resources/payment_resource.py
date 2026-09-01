@@ -13,7 +13,7 @@ class PaymentResource(Resource):
         buyer_id = session.get("user_id")
 
         if not buyer_id:
-            return {"message": "Authorized required"}, 401
+            return {"message": "Authorization required"}, 401
 
         if session.get("user_role") != "buyer":
             return {"message": "Buyer access required"}, 403
@@ -37,3 +37,4 @@ class PaymentResource(Resource):
         )
 
         return payments_schema.dump(payments), 200
+    

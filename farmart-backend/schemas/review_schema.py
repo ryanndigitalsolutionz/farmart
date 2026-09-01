@@ -39,12 +39,12 @@ class ReviewSchema(BaseSchema):
         required=True,
         validate=validate.Range(min=1),
     )
-    rating = fields.String(
+    rating = fields.Integer(
         required=True,
         validate=validate.Range(min=1, max=5),
     )
     comment = fields.String(
-        required=True,
+        required=False,
         allow_none=True,
         validate=validate.Length(max=1000),
     )

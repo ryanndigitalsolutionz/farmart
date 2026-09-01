@@ -9,10 +9,10 @@ wishlists_schema = WishlistSchema(many=True)
 
 class WishlistResource(Resource):
     def get(self):
-        buyer_id = request.get("user_id")
+        buyer_id = session.get("user_id")
 
         if not buyer_id:
-            return {"message": "Authorized required"}, 401
+            return {"message": "Authorization required"}, 401
 
         if session.get("user_role") != "buyer":
             return {"message": "Buyer access required"}, 403
@@ -24,10 +24,10 @@ class WishlistResource(Resource):
         return wishlists_schema.dump(wishlists), 200
 
     def post(self):
-        buyer_id = request.get("user_id")
-        
+        buyer_id = session.get("user_id")
+
         if not buyer_id:
-            return {"message": "Authorized required"}, 401
+            return {"message": "Authorization required"}, 401
 
         if session.get("user_role") != "buyer":
             return {"message": "Buyer access required"}, 403
@@ -45,10 +45,10 @@ class WishlistResource(Resource):
         return wishlist_schema.dump(wishlist), 201
     
     def delete(self, wishlist_id):
-        buyer_id = request.get("user_id")
+        buyer_id = session.get("user_id")
 
         if not buyer_id:
-            return {"message": "Authorized required"}, 401
+            return {"message": "Authorization required"}, 401
 
         if session.get("user_role") != "buyer":
             return {"message": "Buyer access required"}, 403

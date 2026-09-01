@@ -1,7 +1,7 @@
 from flask import session
 from flask_restful import Resource
 
-from models import db, Order, OrderStatus
+from models import db, Order
 from schemas.order_schema import OrderSchema
 
 order_schema = OrderSchema()
@@ -13,7 +13,7 @@ class OrderResource(Resource):
         buyer_id = session.get("user_id")
         
         if not buyer_id:
-            return {"message": "Authorized required"}, 401
+            return {"message": "Authorization required"}, 401
 
         if session.get("user_role") != "buyer":
             return {"message": "Buyer access required"}, 403
@@ -31,6 +31,6 @@ class OrderResource(Resource):
 
         orders = Order.query.filter_by(buyer_id=buyer_id).all()
         
-        return order_schema.dump(orders), 200
+        return orders_schema.dump(orders), 200
 
     

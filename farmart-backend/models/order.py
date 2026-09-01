@@ -25,7 +25,8 @@ class Order(db.Model):
     )
     status = db.Column(
         db.Enum(OrderStatus), 
-        nullable=False
+        nullable=False,
+        default=OrderStatus.PENDING
     )
     created_at = db.Column(
         db.DateTime(timezone=True), 

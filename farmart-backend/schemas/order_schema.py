@@ -15,9 +15,9 @@ def _convert_camel_to_snake(data):
 
     replacements = {
         "buyerId": "buyer_id",
-        "totalAmount": "total_amount",
+        "livestockId": "livestock_id",
         "createdAt": "created_at",
-        "updatedAt": "updated_at",
+        
     }
 
     return {
@@ -37,15 +37,16 @@ class OrderSchema(BaseSchema):
     buyer_id = fields.Integer(
         dump_only=True,
     )
+
     total_amount = fields.Decimal(
-        required=True,
-        as_string=True, 
-        validate=validate.Range(min=0)
+        dump_only=True,
+        as_string=True,
+        places=2,
+        validate=validate.Range(min=0),
     )
-    status = fields.Enum(
-        OrderStatus, 
-        by_value=True, 
-        required=True,
+    
+    status = fields.String(
+        dump_only=True,
     )
 
     @pre_load

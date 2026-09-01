@@ -18,18 +18,28 @@ class PaymentStatus(Enum):
 class Payment(db.Model):
     __tablename__ = "payments"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
     order_id = db.Column(
         db.Integer, 
         db.ForeignKey("orders.id"), 
         nullable=False,
     )
-    amount = db.Column(db.Numeric(10, 2), nullable=False)
-    payment_method = db.Column(db.Enum(PaymentMethod), nullable=False)
+    amount = db.Column(
+        db.Numeric(10, 2), 
+        nullable=False
+    )
+    payment_method = db.Column(
+        db.Enum(PaymentMethod), 
+        nullable=False
+    )
     transaction_reference = db.Column(
         db.String(50), 
-        nullable=False, 
-        unique=True)
+        nullable=True, 
+        unique=True
+    )
     status = db.Column(
         db.Enum(PaymentStatus), 
         nullable=False,
@@ -37,8 +47,7 @@ class Payment(db.Model):
     )
     paid_at = db.Column(
         db.DateTime(timezone=True), 
-        default=lambda: datetime.now(timezone.utc), 
-        nullable=False,
+        nullable=True,
     )
     order = db.relationship(
         "Order", 
