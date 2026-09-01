@@ -15,8 +15,7 @@ function App() {
           </ReviewProvider>
         </CartProvider> 
       </WishlistProvider>     
-    </LivestockProvider>
-    
+    </LivestockProvider>    
   )
 }
 
