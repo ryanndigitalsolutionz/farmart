@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
+import { CartProvider } from './context/CartContext'
 
 import SplashScreen from './components/SplashScreen'
 import Header from './components/layout/Header'
@@ -23,16 +24,7 @@ import CreateListings from './pages/farmer/CreateListings'
 import FarmerOrders from './pages/farmer/Orders'
 import FarmerAnalytics from './pages/farmer/Analytics'
 
-import Marketplace from './pages/buyer/Marketplace'
-import BuyerProfile from './pages/buyer/Profile'
-import Cart from './pages/buyer/Cart'
-import Checkout from './pages/buyer/Checkout'
-import BuyerPayments from './pages/buyer/Payments'
-import BuyerOrders from './pages/buyer/Orders'
-import OrderDetails from './pages/buyer/OrderDetails'
-import OrderConfirmation from './pages/buyer/OrderConfirmation'
-import Wishlist from './pages/buyer/Wishlist'
-import BuyerReviews from './pages/buyer/Reviews'
+import BuyerRoute from './Routes/BuyerRoute'
 
 import AdminDashboard from './pages/admin/Dashboard'
 import Users from './pages/admin/Users'
@@ -68,7 +60,9 @@ function App() {
         {showSplash && <SplashScreen key="splash" />}
       </AnimatePresence>
 
+    <CartProvider>
       <Routes>
+        
         <Route path="/" element={<LandingPage />} />
 
         <Route path="/welcome" element={<Welcome />} />
@@ -88,25 +82,10 @@ function App() {
           <Route path="analytics" element={<FarmerAnalytics />} />
           <Route path="farm-profile" element={<FarmProfile />} />
           <Route path="profile" element={<FarmerProfile />} />
-        </Route>
-
-        <Route path="/buyer">
-          <Route index element={<Marketplace />} />
-          <Route path="marketplace" element={<Marketplace />} />
-          <Route path="profile" element={<BuyerProfile />} />
-          <Route path="cart" element={<Cart />} />
-          <Route path="checkout" element={<Checkout />} />
-          <Route path="payments" element={<BuyerPayments />} />
-          <Route path="orders" element={<BuyerOrders />} />
-          <Route path="orders/:orderId" element={<OrderDetails />} />
-          <Route
-            path="order-confirmation"
-            element={<OrderConfirmation />}
-          />
-          <Route path="wishlist" element={<Wishlist />} />
-          <Route path="reviews" element={<BuyerReviews />} />
-        </Route>
-
+        </Route>          
+      
+        <Route path="/buyer/*" element={<BuyerRoute />} />
+          
         <Route path="/admin">
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
@@ -136,7 +115,9 @@ function App() {
           path="*"
           element={<Navigate to="/" replace />}
         />
-      </Routes>
+      
+    </Routes>
+      </CartProvider>
     </>
   )
 }
