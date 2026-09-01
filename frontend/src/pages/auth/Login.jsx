@@ -335,8 +335,9 @@ function Login() {
     opacity: 0.55;
   }
 
-  .google-button:disabled {
-    cursor: not-allowed;
+  .google-button {
+    cursor: pointer;
+    opacity: 1;
   }
 
   .google-note {
@@ -564,14 +565,17 @@ function Login() {
               <button
                 type="button"
                 className="google-button"
-                disabled
+                onClick={() => {
+                window.location.href =
+                    `http://127.0.0.1:5000/auth/google?role=${selectedRole}`
+                }}
               >
                 <FaGoogle size={17} />
                 Continue with Google
               </button>
 
               <p className="google-note">
-                Google sign-in will be available soon.
+                Enabled! Continue securely with your Google account.
               </p>
             </form>
 
