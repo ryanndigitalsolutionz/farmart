@@ -25,6 +25,7 @@ function Register() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => {
     setFormData({
@@ -33,7 +34,7 @@ function Register() {
     })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
@@ -48,8 +49,8 @@ function Register() {
     }
 
     if (
-      !formData.name ||
-      !formData.email ||
+      !formData.name.trim() ||
+      !formData.email.trim() ||
       !formData.password ||
       !formData.confirmPassword
     ) {
@@ -62,26 +63,81 @@ function Register() {
       return
     }
 
-    // Temporary frontend-only registration.
-    // This will be replaced by the Flask backend.
-    localStorage.setItem(
-      'farmartUser',
-      JSON.stringify({
-        name: formData.name,
-        email: formData.email,
-        role: selectedRole,
-        isLoggedIn: true,
-      }),
-    )
-
-    if (selectedRole === 'farmer') {
-      navigate('/farm-setup')
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters.')
       return
     }
 
-    if (selectedRole === 'buyer') {
-      navigate('/buyer/marketplace')
+    setLoading(true)
+
+    try {
+      const response = await fetch(
+        'http://localhost:5000/auth/register',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            name: formData.name.trim(),
+            email: formData.email.trim().toLowerCase(),
+            password: formData.password,
+            role: selectedRole,
+          }),
+        },
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(
+          data.error ||
+            'Unable to create your Farmart account.',
+        )
+        return
+      }
+
+      /*
+       * The Flask backend has already created the account
+       * and established the session.
+       *
+       * We do NOT create a fake localStorage account here.
+       */
+
+      if (selectedRole === 'farmer') {
+        navigate('/farm-setup')
+        return
+      }
+
+      if (selectedRole === 'buyer') {
+        navigate('/buyer/marketplace')
+        return
+      }
+    } catch (error) {
+      console.error('Registration error:', error)
+
+      setError(
+        'Unable to connect to the Farmart server.',
+      )
+    } finally {
+      setLoading(false)
     }
+  }
+
+  const handleGoogleRegister = () => {
+    if (!selectedRole) {
+      setError('Please select a registration role first.')
+      return
+    }
+
+    if (selectedRole === 'admin') {
+      setError('Administrator accounts cannot be created here.')
+      return
+    }
+
+    window.location.href =
+    `http://localhost:5000/auth/google?role=${selectedRole}`
   }
 
   const roleLabel =
@@ -93,7 +149,7 @@ function Register() {
 
   return (
     <>
-<style>{`
+      <style>{`
   .register-page {
     min-height: 100vh;
     width: 100%;
@@ -342,12 +398,18 @@ function Register() {
 
     transition:
       background 180ms ease,
-      box-shadow 180ms ease;
+      box-shadow 180ms ease,
+      opacity 180ms ease;
   }
 
-  .register-submit:hover {
+  .register-submit:hover:not(:disabled) {
     background: #216b3b;
     box-shadow: 0 12px 28px var(--farm-green-glow);
+  }
+
+  .register-submit:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
   }
 
   .google-button {
@@ -369,12 +431,15 @@ function Register() {
     font-size: 15px;
     font-weight: 600;
 
-    cursor: not-allowed;
-    opacity: 0.55;
+    cursor: pointer;
+
+    transition:
+      background 180ms ease,
+      box-shadow 180ms ease;
   }
 
-  .google-button:disabled {
-    cursor: not-allowed;
+  .google-button:hover {
+    box-shadow: 0 10px 24px rgba(66, 133, 244, 0.25);
   }
 
   .google-note {
@@ -510,7 +575,10 @@ function Register() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="register-form">
+            <form
+              onSubmit={handleSubmit}
+              className="register-form"
+            >
 
               <div className="register-field">
                 <label htmlFor="name">
@@ -528,6 +596,7 @@ function Register() {
                     value={formData.name}
                     onChange={handleChange}
                     autoComplete="name"
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -548,6 +617,7 @@ function Register() {
                     value={formData.email}
                     onChange={handleChange}
                     autoComplete="email"
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -562,23 +632,31 @@ function Register() {
 
                   <input
                     id="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={
+                      showPassword
+                        ? 'text'
+                        : 'password'
+                    }
                     name="password"
                     placeholder="Create a password"
                     value={formData.password}
                     onChange={handleChange}
                     autoComplete="new-password"
+                    disabled={loading}
                   />
 
                   <button
                     type="button"
                     className="register-password-toggle"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() =>
+                      setShowPassword(!showPassword)
+                    }
                     aria-label={
                       showPassword
                         ? 'Hide password'
                         : 'Show password'
                     }
+                    disabled={loading}
                   >
                     {showPassword ? (
                       <FaEyeSlash size={17} />
@@ -609,6 +687,7 @@ function Register() {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     autoComplete="new-password"
+                    disabled={loading}
                   />
 
                   <button
@@ -624,6 +703,7 @@ function Register() {
                         ? 'Hide password'
                         : 'Show password'
                     }
+                    disabled={loading}
                   >
                     {showConfirmPassword ? (
                       <FaEyeSlash size={17} />
@@ -643,21 +723,25 @@ function Register() {
               <button
                 type="submit"
                 className="register-submit"
+                disabled={loading}
               >
-                Create account
+                {loading
+                  ? 'Creating account...'
+                  : 'Create account'}
               </button>
 
               <button
                 type="button"
                 className="google-button"
-                disabled
+                onClick={handleGoogleRegister}
+                disabled={loading}
               >
                 <FaGoogle size={17} />
                 Continue with Google
               </button>
 
               <p className="google-note">
-                Google sign-in will be available soon.
+                Continue securely with your Google account.
               </p>
 
             </form>

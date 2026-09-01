@@ -22,4 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-backend/.env
+farmart-backend/.env
+farmart-backend/instance/
+farmart-backend/migrations/
