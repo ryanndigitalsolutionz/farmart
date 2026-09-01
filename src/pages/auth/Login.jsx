@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 
 function Login() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const role = location.state?.role || 'buyer'
 
   const [formData, setFormData] = useState({
     email: '',
@@ -33,12 +35,18 @@ function Login() {
       'farmartUser',
       JSON.stringify({
         email: formData.email,
-        role: 'farmer',
+        role,
         isLoggedIn: true,
       }),
     )
 
-    navigate('/farm-setup')
+    if (role === 'admin') {
+      navigate('/admin/dashboard')
+    } else if (role === 'farmer') {
+      navigate('/farm-setup')
+    } else {
+      navigate('/buyer')
+    }
   }
 
   return (
