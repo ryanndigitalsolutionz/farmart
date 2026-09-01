@@ -1,6 +1,6 @@
 # Farmart — Team Roles
 
-## Backend (farmart-backend/)
+## Backend (backend/)
 
 | Member | Files | Notes |
 |---|---|---|
@@ -19,7 +19,7 @@
 
 ### Farmart backend structure
 
-farmart-backend/
+backend/
 │
 ├── models/
 │   ├── __init__.py
