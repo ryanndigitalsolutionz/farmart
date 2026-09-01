@@ -1,3 +1,4 @@
+// VerifyEmail.jsx
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { FiMail, FiArrowRight } from 'react-icons/fi'
@@ -8,40 +9,134 @@ function VerifyEmail() {
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [resending, setResending] = useState(false)
 
   useEffect(() => {
-    const savedEmail = sessionStorage.getItem('farmartResetEmail')
+    const savedEmail = sessionStorage.getItem(
+      'farmartResetEmail',
+    )
 
     if (!savedEmail) {
-      navigate('/forgot-password', { replace: true })
+      navigate('/forgot-password', {
+        replace: true,
+      })
       return
     }
 
     setEmail(savedEmail)
   }, [navigate])
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
-    if (!code.trim()) {
+    const trimmedCode = code.trim()
+
+    if (!trimmedCode) {
       setError('Please enter the verification code.')
       return
     }
 
-    sessionStorage.setItem('farmartEmailVerified', 'true')
+    if (!/^\d{6}$/.test(trimmedCode)) {
+      setError('Please enter the 6-digit verification code.')
+      return
+    }
 
-    navigate('/reset-password')
+    setLoading(true)
+
+    try {
+      const response = await fetch(
+        'http://localhost:5000/auth/verify-password-reset-otp',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            email: email.trim(),
+            otp: trimmedCode,
+          }),
+        },
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(
+          data.error ||
+          'Unable to verify the code.',
+        )
+        return
+      }
+
+      sessionStorage.setItem(
+        'farmartEmailVerified',
+        'true',
+      )
+
+      navigate('/reset-password')
+    } catch (error) {
+      console.error(
+        'Email verification error:',
+        error,
+      )
+
+      setError(
+        'Unable to connect to the Farmart server.',
+      )
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleResend = () => {
+  const handleResend = async () => {
     setError('')
     setCode('')
+    setResending(true)
+
+    try {
+      const response = await fetch(
+        'http://localhost:5000/auth/forgot-password',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            email: email.trim(),
+          }),
+        },
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(
+          data.error ||
+          'Unable to resend the verification code.',
+        )
+        return
+      }
+    } catch (error) {
+      console.error(
+        'Resend verification error:',
+        error,
+      )
+
+      setError(
+        'Unable to connect to the Farmart server.',
+      )
+    } finally {
+      setResending(false)
+    }
   }
 
   return (
     <>
-<style>{`
+      <style>{`
   .verify-page {
     min-height: 100vh;
     width: 100%;
@@ -269,12 +364,18 @@ function VerifyEmail() {
 
     transition:
       background 180ms ease,
-      box-shadow 180ms ease;
+      box-shadow 180ms ease,
+      opacity 180ms ease;
   }
 
-  .verify-submit:hover {
+  .verify-submit:hover:not(:disabled) {
     background: #236b3d;
     box-shadow: 0 10px 24px var(--farm-green-glow);
+  }
+
+  .verify-submit:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 
   .verify-resend {
@@ -301,7 +402,12 @@ function VerifyEmail() {
     cursor: pointer;
   }
 
-  .verify-resend button:hover {
+  .verify-resend button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .verify-resend button:hover:not(:disabled) {
     color: var(--farm-text);
   }
 
@@ -369,7 +475,10 @@ function VerifyEmail() {
               {email}
             </p>
 
-            <form onSubmit={handleSubmit} className="verify-form">
+            <form
+              onSubmit={handleSubmit}
+              className="verify-form"
+            >
               <label className="verify-field">
                 <span>Verification code</span>
 
@@ -380,8 +489,13 @@ function VerifyEmail() {
                     maxLength="6"
                     placeholder="000000"
                     value={code}
-                    onChange={(e) => setCode(e.target.value)}
+                    onChange={(e) =>
+                      setCode(
+                        e.target.value.replace(/\D/g, ''),
+                      )
+                    }
                     autoComplete="one-time-code"
+                    disabled={loading}
                   />
                 </div>
               </label>
@@ -392,16 +506,31 @@ function VerifyEmail() {
                 </p>
               )}
 
-              <button type="submit" className="verify-submit">
-                Verify & continue
-                <FiArrowRight size={18} />
+              <button
+                type="submit"
+                className="verify-submit"
+                disabled={loading}
+              >
+                {loading
+                  ? 'Verifying...'
+                  : 'Verify & continue'}
+
+                {!loading && (
+                  <FiArrowRight size={18} />
+                )}
               </button>
             </form>
 
             <p className="verify-resend">
               Didn't receive a code?{' '}
-              <button type="button" onClick={handleResend}>
-                Resend code
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={resending || loading}
+              >
+                {resending
+                  ? 'Sending...'
+                  : 'Resend code'}
               </button>
             </p>
 
