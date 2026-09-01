@@ -15,9 +15,8 @@ def _convert_camel_to_snake(data):
     replacements = {
         "orderId": "order_id",
         "cardLast4": "card_last4",
-        "transactionId": "transaction_id",
-        "CreatedAt": "created_at",
-        "updatedAt": "updated_at",
+        "transactionReference": "transaction_reference",
+        "paidAt": "paid_at",
     }
 
     return {
@@ -43,12 +42,12 @@ class PaymentSchema(BaseSchema):
         as_string=True,
         places=2, 
     )
-    method = fields.Enum(
+    payment_method = fields.Enum(
         PaymentMethod,
         by_value=True,
         required=True,
     )
-    card_last4 = fields.String(
+    transaction_reference = fields.String(
         dump_only=True,
     )
     status = fields.Enum(
@@ -56,7 +55,7 @@ class PaymentSchema(BaseSchema):
         by_value=True, 
         required=True,
     )
-    transaction_id = fields.Integer(
+    paid_at = fields.DateTime(
         dump_only=True,
     )
 
