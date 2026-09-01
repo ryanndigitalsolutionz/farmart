@@ -1,7 +1,7 @@
 import secrets
 from urllib.parse import urlencode
 
-from flask import Blueprint, redirect, session
+from flask import Blueprint, redirect, request, session
 
 from config import Config
 
@@ -24,8 +24,24 @@ def google_login():
     Start the Google OAuth login flow.
     """
 
+    role = request.args.get("role", "farmer")
+
+    allowed_roles = {
+        "farmer",
+        "buyer",
+        "admin",
+    }
+
+    if role not in allowed_roles:
+        return {
+            "success": False,
+            "error": "Invalid role.",
+        }, 400
+
     state = secrets.token_urlsafe(32)
+
     session["google_oauth_state"] = state
+    session["google_oauth_role"] = role
 
     params = {
         "client_id": Config.GOOGLE_CLIENT_ID,
