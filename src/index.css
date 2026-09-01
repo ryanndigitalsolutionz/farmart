@@ -10,3 +10,28 @@
   --color-farmart-border: #d1e1d3;
   --color-farmart-surface: #f4f8f2;
 }
+
+:root {
+  --farm-green-glow: ...;
+  --farm-background: ...;
+  --farm-text: ...;
+  --farm-muted: ...;
+  --farm-green-border: ...;
+  --farm-green-soft: ...;
+  --farm-green: ...;
+  --farm-green-dark: ...;
+
+  --farm-heading-font: "IBM Plex Serif", serif;
+  --farm-body-font: "Modern Antiqua", serif;
+}
+
+.marketplace-page {
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      var(--farm-green-glow),
+      transparent 34%
+    ),
+    var(--farm-background);
+}
+
