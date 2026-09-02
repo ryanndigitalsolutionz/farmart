@@ -347,7 +347,7 @@ function VerifyEmail() {
           <div className="verify-content">
             <div className="login-logo">
               <img
-                src="/logo/farmart_full_logo_testing.png"
+                src="/favicon/farm.png"
                 alt="Farmart"
               />
             </div>
