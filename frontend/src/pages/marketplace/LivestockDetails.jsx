@@ -131,13 +131,13 @@ function LivestockDetails() {
       <div className="flex flex-col items-center justify-center">
         <Link 
             to="/marketplace"
-            className="group relative mt-3 text-gray-400 hover:text-[var(--farm-green-dark)]"
+          className="group relative mt-3 text-gray-400 hover:text-(--farm-green-dark)"
         >
         Back to Marketplace
         <span
-            className="absolute -bottom-1 left-1/2 h-[2px] w-6
+          className="absolute -bottom-1 left-1/2 h-0.5 w-6
                     -translate-x-1/2 scale-x-0 rounded-full
-                    bg-[var(--farm-green-dark)]
+              bg-(--farm-green-dark)
                     transition-transform duration-300
                     group-hover:scale-x-100"
         />
