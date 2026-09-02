@@ -285,7 +285,7 @@ function FarmerDashboardLayout() {
               className="farmer-brand"
             >
               <img
-                src="/logo/farmart_full_logo_testing.png"
+                src="/favicon/farm.png"
                 alt="Farmart"
               />
 
