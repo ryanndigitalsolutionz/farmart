@@ -535,16 +535,18 @@ function Marketplace() {
                         KSh {item.price.toLocaleString()}
                       </div>
 
-                      <button
-                        type="button"
-                        className="marketplace-card-button w-full mt-[15px] p-[12px] 
-                        border border-[var(--farm-green)] rounded-[11px] bg-[var(--farm-green)] 
-                        text-white font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer
-                        transition-[background,transform] duration-[160ms] ease-[ease] 
-                        hover:bg-[var(--farm-green-dark)] hover:translate-y-[-1px]"
-                      >
-                        View livestock
-                      </button>
+                      <Link to="/your-route" className="block w-full">
+                        <button
+                            type="button"
+                            className="marketplace-card-button w-full mt-[15px] p-[12px]
+                            border border-[var(--farm-green)] rounded-[11px] bg-[var(--farm-green)]
+                            text-white font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer
+                            transition-[background,transform] duration-[160ms] ease-[ease]
+                            hover:bg-[var(--farm-green-dark)] hover:translate-y-[-1px]"
+                        >
+                            View livestock
+                        </button>
+                      </Link>
 
                     </div>
 

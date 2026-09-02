@@ -8,7 +8,7 @@ function CheckoutSteps({ currentStep }) {
     ];
 
   return (
-    <div className="flex justify-center items-center gap-4 mb-4"> 
+    <div className="flex justify-center items-center gap-4 mb-4 mt-5"> 
         {steps.map((step, index) => (
             <div key={step.number} className="flex items-center gap-2">
                 <div className="flex flex-col items-center">
