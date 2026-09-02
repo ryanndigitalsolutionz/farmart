@@ -1,13 +1,28 @@
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { FaArrowRight } from 'react-icons/fa'
 
 function Welcome() {
   const navigate = useNavigate()
 
   const handleRoleSelect = (role) => {
+    if (role === 'admin') return
     navigate('/login', {
       state: { role },
     })
+  }
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 24 },
+    visible: (i) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: 0.15 * i,
+        duration: 0.45,
+        ease: "easeOut",
+      },
+    }),
   }
 
   return (
@@ -34,34 +49,23 @@ function Welcome() {
             color 180ms ease;
         }
 
-        .welcome-card {
-          width: min(100%, 580px);
-          padding: 68px 64px 58px;
-          border: 1px solid var(--farm-green-border);
-          border-radius: 30px;
-          background: var(--farm-green-soft);
-          box-shadow:
-            0 28px 80px var(--farm-green-glow),
-            0 6px 20px var(--farm-green-glow);
-          transition:
-            background 180ms ease,
-            border-color 180ms ease,
-            box-shadow 180ms ease;
-        }
-
         .welcome-content {
           width: 100%;
+          max-width: 580px;
           display: flex;
           flex-direction: column;
           align-items: center;
           text-align: center;
         }
 
+        .farmart-logo-frame {
+          margin-bottom: 28px;
+        }
+
         .farmart-logo {
-          width: min(220px, 70%);
+          width: min(180px, 55%);
           height: auto;
           display: block;
-          margin-bottom: 32px;
         }
 
         .welcome-heading {
@@ -149,42 +153,14 @@ function Welcome() {
           flex-shrink: 0;
         }
 
-        .admin-link {
-          margin-top: 32px;
-          padding: 8px 10px;
-          border: none;
-          background: transparent;
-          color: var(--farm-muted);
-          font-family: "Modern Antiqua", serif;
-          font-size: 14px;
-          line-height: 1.7;
-          cursor: pointer;
-          transition: color 160ms ease;
-        }
-
-        .admin-link span {
-          margin-left: 6px;
-          color: var(--farm-green);
-          font-weight: 600;
-        }
-
-        .admin-link:hover {
-          color: var(--farm-text);
-        }
-
         @media (max-width: 600px) {
           .welcome-page {
             padding: 36px 16px;
           }
 
-          .welcome-card {
-            padding: 54px 28px 46px;
-            border-radius: 25px;
-          }
-
           .farmart-logo {
-            width: min(190px, 75%);
-            margin-bottom: 28px;
+            width: min(150px, 65%);
+            margin-bottom: 24px;
           }
 
           .welcome-description {
@@ -202,10 +178,6 @@ function Welcome() {
             padding: 24px 12px;
           }
 
-          .welcome-card {
-            padding: 46px 20px 40px;
-          }
-
           .welcome-description {
             font-size: 15px;
           }
@@ -217,69 +189,91 @@ function Welcome() {
       `}</style>
 
       <main className="welcome-page">
-        <section className="welcome-card">
-          <div className="welcome-content">
+        <div className="welcome-content">
 
-            <div className="farmart-logo-frame">
-              <img
-                src="/logo/farmart_full_logo_testing.png"
-                alt="Farmart"
-                className="farmart-logo"
-              />
-            </div>
+          <motion.div
+            className="farmart-logo-frame"
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
+            <img
+              src="/favicon/farm.png"
+              alt="Farmart"
+              className="farmart-logo"
+            />
+          </motion.div>
 
-            <h1 className="welcome-heading">
-              Welcome to Farmart
-            </h1>
+          <motion.h1
+            className="welcome-heading"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.4, ease: "easeOut" }}
+          >
+            Welcome to Farmart
+          </motion.h1>
 
-            <p className="welcome-description">
-              A direct marketplace for{' '}
-              <span className="marketplace-highlight">
-                livestock and farm products
-              </span>
-              , connecting farmers with buyers without unnecessary
-              middlemen.
-            </p>
+          <motion.p
+            className="welcome-description"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18, duration: 0.4, ease: "easeOut" }}
+          >
+            A direct marketplace for{' '}
+            <span className="marketplace-highlight">
+              livestock and farm products
+            </span>
+            , connecting farmers with buyers without unnecessary
+            middlemen.
+          </motion.p>
 
-            <div className="role-actions">
-
-              <button
-                type="button"
-                className="role-button role-button-primary"
-                onClick={() => handleRoleSelect('farmer')}
-              >
-                <span>
-                  I'm a Farmer — sell directly
-                </span>
-
-                <FaArrowRight size={16} />
-              </button>
-
-              <button
-                type="button"
-                className="role-button role-button-secondary"
-                onClick={() => handleRoleSelect('buyer')}
-              >
-                <span>
-                  I'm a Buyer — browse & order
-                </span>
-
-                <FaArrowRight size={16} />
-              </button>
-
-            </div>
-
-            <button
+          <motion.div
+            className="role-actions"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              visible: {
+                transition: {
+                  staggerChildren: 0.12,
+                },
+              },
+            }}
+          >
+            <motion.button
               type="button"
-              className="admin-link"
-              onClick={() => handleRoleSelect('admin')}
+              className="role-button role-button-primary"
+              variants={cardVariants}
+              custom={0}
+              whileHover={{ y: -2 }}
+              whileTap={{ y: 0 }}
+              onClick={() => handleRoleSelect('farmer')}
             >
-              Platform administrator?
-              <span>Continue as Admin</span>
-            </button>
+              <span>
+                I'm a Farmer — sell directly
+              </span>
 
-          </div>
-        </section>
+              <FaArrowRight size={16} />
+            </motion.button>
+
+            <motion.button
+              type="button"
+              className="role-button role-button-secondary"
+              variants={cardVariants}
+              custom={1}
+              whileHover={{ y: -2 }}
+              whileTap={{ y: 0 }}
+              onClick={() => handleRoleSelect('buyer')}
+            >
+              <span>
+                I'm a Buyer — browse & order
+              </span>
+
+              <FaArrowRight size={16} />
+            </motion.button>
+
+          </motion.div>
+
+        </div>
       </main>
     </>
   )
