@@ -25,6 +25,12 @@
   --landing-light-5: #eee8df;
 
   --landing-light-frame: #c9b9a6;
+
+  --color-surface: var(--farm-background);
+  --color-border: var(--farm-green-border);
+  --color-primary: var(--farm-green);
+  --color-text: var(--farm-text);
+  --color-text-muted: var(--farm-muted);
 }
 
 * {
@@ -38,6 +44,7 @@ body,
   min-height: 100%;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
 }
 
 html {
@@ -147,6 +154,12 @@ select:focus-visible {
   --landing-section-6: #1b2c22;
 
   --landing-frame: #30463a;
+
+  --color-surface: var(--farm-background);
+  --color-border: var(--farm-green-border);
+  --color-primary: var(--farm-mint);
+  --color-text: var(--farm-text);
+  --color-text-muted: var(--farm-muted);
 }
 
 [data-theme="dark"] body {
@@ -1090,4 +1103,992 @@ select:focus-visible {
   .landing-hero-button:hover {
     width: min(100%, 285px);
   }
+}
+
+/* ========================================
+   NAVBAR
+   ======================================== */
+
+.farmart-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  width: 100%;
+
+  background: rgba(244, 248, 242, 0.82);
+  border-bottom: 1px solid var(--farm-green-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  transition:
+    background 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+[data-theme='dark'] .farmart-navbar {
+  background: rgba(20, 32, 26, 0.82);
+  border-bottom-color: var(--farm-green-border);
+}
+
+.farmart-navbar--scrolled {
+  background: rgba(244, 248, 242, 0.95);
+  border-bottom-color: var(--farm-green-border);
+  box-shadow: 0 8px 24px var(--farm-green-glow);
+}
+
+[data-theme='dark'] .farmart-navbar--scrolled {
+  background: rgba(20, 32, 26, 0.95);
+}
+
+.farmart-navbar-inner {
+  width: min(100% - 48px, 1240px);
+  margin: 0 auto;
+  padding: 0 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+
+  min-height: 68px;
+}
+
+.farmart-navbar-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  text-decoration: none;
+  color: var(--farm-text);
+
+  flex-shrink: 0;
+}
+
+.farmart-navbar-logo-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.farmart-navbar-logo-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  font-family: 'IBM Plex Serif', serif;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.3px;
+  color: var(--farm-text);
+}
+
+.farmart-navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.farmart-navbar-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 8px 14px;
+  border-radius: 10px;
+
+  color: var(--farm-muted);
+  font-family: 'Modern Antiqua', serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+
+  transition:
+    background 180ms ease,
+    color 180ms ease;
+}
+
+.farmart-navbar-link:hover {
+  color: var(--farm-text);
+  background: var(--farm-green-soft);
+}
+
+.farmart-navbar-link--active {
+  color: var(--farm-green);
+  background: var(--farm-green-soft);
+}
+
+.farmart-navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.farmart-navbar-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+
+  background: transparent;
+  color: var(--farm-muted);
+
+  cursor: pointer;
+
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease;
+}
+
+.farmart-navbar-icon-button:hover {
+  color: var(--farm-green);
+  background: var(--farm-green-soft);
+  border-color: var(--farm-green-border);
+}
+
+.farmart-navbar-auth {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.farmart-navbar-auth-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+
+  font-family: 'Modern Antiqua', serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+
+  cursor: pointer;
+
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.farmart-navbar-auth-button--secondary {
+  background: transparent;
+  color: var(--farm-brown);
+  border-color: var(--farm-green-border);
+}
+
+.farmart-navbar-auth-button--secondary:hover {
+  border-color: var(--farm-green);
+  color: var(--farm-green);
+}
+
+.farmart-navbar-auth-button--primary {
+  background: var(--farm-green);
+  color: #ffffff;
+  border-color: var(--farm-green);
+  box-shadow: 0 8px 20px var(--farm-green-glow);
+}
+
+.farmart-navbar-auth-button--primary:hover {
+  background: var(--farm-green-dark);
+  border-color: var(--farm-green-dark);
+}
+
+.farmart-navbar-user {
+  position: relative;
+}
+
+.farmart-navbar-user-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 6px 10px 6px 6px;
+  border-radius: 12px;
+  border: 1px solid var(--farm-green-border);
+  background: var(--farm-white);
+  color: var(--farm-text);
+
+  font-family: 'Modern Antiqua', serif;
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+[data-theme='dark'] .farmart-navbar-user-button {
+  background: var(--farm-green-soft);
+}
+
+.farmart-navbar-user-button:hover {
+  border-color: var(--farm-green);
+  box-shadow: 0 0 0 3px var(--farm-green-glow);
+}
+
+.farmart-navbar-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--farm-green-soft);
+  color: var(--farm-green);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.farmart-navbar-user-label {
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.farmart-navbar-chevron {
+  transition: transform 180ms ease;
+}
+
+.farmart-navbar-chevron--open {
+  transform: rotate(180deg);
+}
+
+.farmart-navbar-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+
+  min-width: 200px;
+  padding: 8px;
+
+  border-radius: 14px;
+  border: 1px solid var(--farm-green-border);
+  background: var(--farm-white);
+  box-shadow: 0 16px 40px var(--farm-green-glow);
+
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  animation: farmart-dropdown-in 160ms ease;
+}
+
+[data-theme='dark'] .farmart-navbar-dropdown {
+  background: var(--farm-green-soft);
+}
+
+@keyframes farmart-dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.farmart-navbar-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 12px;
+  border-radius: 10px;
+
+  color: var(--farm-text);
+  font-family: 'Modern Antiqua', serif;
+  font-size: 14px;
+  text-decoration: none;
+
+  transition: background 180ms ease;
+}
+
+.farmart-navbar-dropdown-item:hover {
+  background: var(--farm-green-soft);
+}
+
+.farmart-navbar-dropdown-arrow {
+  margin-left: auto;
+  opacity: 0;
+  color: var(--farm-muted);
+  transition: opacity 180ms ease;
+}
+
+.farmart-navbar-dropdown-item:hover .farmart-navbar-dropdown-arrow {
+  opacity: 1;
+}
+
+.farmart-navbar-dropdown-divider {
+  height: 1px;
+  margin: 6px 8px;
+  background: var(--farm-green-border);
+}
+
+.farmart-navbar-dropdown-item--danger {
+  color: var(--farm-error);
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.farmart-navbar-dropdown-item--danger:hover {
+  background: rgba(182, 68, 68, 0.08);
+}
+
+.farmart-navbar-mobile-toggle {
+  display: none;
+  width: 38px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--farm-text);
+  cursor: pointer;
+  transition: background 180ms ease;
+}
+
+.farmart-navbar-mobile-toggle:hover {
+  background: var(--farm-green-soft);
+}
+
+.farmart-navbar-mobile-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 998;
+  background: rgba(0, 0, 0, 0.32);
+  animation: farmart-backdrop-in 180ms ease;
+}
+
+@keyframes farmart-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.farmart-navbar-mobile {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(320px, 88vw);
+  z-index: 999;
+
+  background: var(--farm-white);
+  border-left: 1px solid var(--farm-green-border);
+  box-shadow: -12px 0 40px var(--farm-green-glow);
+
+  transform: translateX(100%);
+  transition: transform 260ms ease;
+  overflow-y: auto;
+}
+
+[data-theme='dark'] .farmart-navbar-mobile {
+  background: var(--farm-green-soft);
+}
+
+.farmart-navbar-mobile--open {
+  transform: translateX(0);
+}
+
+.farmart-navbar-mobile-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 24px;
+  padding-top: 88px;
+}
+
+.farmart-navbar-mobile-links {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.farmart-navbar-mobile-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 14px 16px;
+  border-radius: 12px;
+
+  color: var(--farm-text);
+  font-family: 'Modern Antiqua', serif;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+
+  transition: background 180ms ease;
+}
+
+.farmart-navbar-mobile-link:hover,
+.farmart-navbar-mobile-link--active {
+  background: var(--farm-green-soft);
+  color: var(--farm-green);
+}
+
+.farmart-navbar-mobile-link--danger {
+  color: var(--farm-error);
+}
+
+.farmart-navbar-mobile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--farm-green-border);
+}
+
+.farmart-navbar-mobile-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--farm-green-border);
+  background: var(--farm-background);
+  color: var(--farm-muted);
+  font-family: 'Modern Antiqua', serif;
+  font-size: 14px;
+  text-decoration: none;
+
+  transition: border-color 180ms ease;
+}
+
+.farmart-navbar-mobile-search:hover {
+  border-color: var(--farm-green);
+  color: var(--farm-green);
+}
+
+.farmart-navbar-mobile-theme {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--farm-green-border);
+  background: transparent;
+  color: var(--farm-text);
+  font-family: 'Modern Antiqua', serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+
+  transition: background 180ms ease;
+}
+
+.farmart-navbar-mobile-theme:hover {
+  background: var(--farm-green-soft);
+}
+
+.farmart-navbar-mobile-auth {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.farmart-navbar-mobile-auth-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-family: 'Modern Antiqua', serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+
+  transition: background 180ms ease;
+}
+
+.farmart-navbar-mobile-auth-button--secondary {
+  background: transparent;
+  color: var(--farm-brown);
+  border-color: var(--farm-green-border);
+}
+
+.farmart-navbar-mobile-auth-button--secondary:hover {
+  border-color: var(--farm-green);
+  color: var(--farm-green);
+}
+
+.farmart-navbar-mobile-auth-button--primary {
+  background: var(--farm-green);
+  color: #ffffff;
+  border-color: var(--farm-green);
+}
+
+.farmart-navbar-mobile-auth-button--primary:hover {
+  background: var(--farm-green-dark);
+  border-color: var(--farm-green-dark);
+}
+
+@media (max-width: 860px) {
+  .farmart-navbar-inner {
+    gap: 14px;
+    padding: 0 20px;
+  }
+
+  .farmart-navbar-logo-text {
+    font-size: 18px;
+  }
+
+  .farmart-navbar-logo-img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .farmart-navbar-links {
+    gap: 2px;
+  }
+
+  .farmart-navbar-link {
+    padding: 8px 10px;
+    font-size: 13px;
+    gap: 4px;
+  }
+
+  .farmart-navbar-link svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .farmart-navbar-actions {
+    gap: 4px;
+  }
+
+  .farmart-navbar-icon-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .farmart-navbar-icon-button svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .farmart-navbar-auth {
+    gap: 6px;
+  }
+
+  .farmart-navbar-auth-button {
+    padding: 6px 10px;
+    font-size: 12px;
+    gap: 4px;
+  }
+
+  .farmart-navbar-auth-button svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .farmart-navbar-user-button {
+    padding: 5px 8px 5px 5px;
+    gap: 6px;
+  }
+
+  .farmart-navbar-user-label {
+    font-size: 12px;
+  }
+
+  .farmart-navbar-avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  .farmart-navbar-avatar svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .farmart-navbar-chevron {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+@media (max-width: 600px) {
+  .farmart-navbar-links,
+  .farmart-navbar-auth,
+  .farmart-navbar-user-label {
+    display: none;
+  }
+
+  .farmart-navbar-mobile-toggle {
+    display: inline-flex;
+  }
+
+  .farmart-navbar-actions {
+    gap: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .farmart-navbar-inner {
+    padding: 0 14px;
+    min-height: 60px;
+  }
+
+  .farmart-navbar-logo-text {
+    font-size: 17px;
+  }
+
+  .farmart-navbar-logo-img {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+[data-theme='dark'] .farmart-navbar-link {
+  color: var(--farm-muted);
+}
+
+[data-theme='dark'] .farmart-navbar-link:hover,
+[data-theme='dark'] .farmart-navbar-link--active {
+  color: var(--farm-mint);
+  background: rgba(111, 201, 138, 0.08);
+}
+
+[data-theme='dark'] .farmart-navbar-icon-button {
+  color: var(--farm-muted);
+}
+
+[data-theme='dark'] .farmart-navbar-icon-button:hover {
+  color: var(--farm-mint);
+  background: rgba(111, 201, 138, 0.08);
+  border-color: var(--farm-green-border);
+}
+
+[data-theme='dark'] .farmart-navbar-auth-button--secondary {
+  color: var(--farm-brown-light);
+  border-color: var(--farm-green-border);
+}
+
+[data-theme='dark'] .farmart-navbar-auth-button--secondary:hover {
+  border-color: var(--farm-mint);
+  color: var(--farm-mint);
+}
+
+[data-theme='dark'] .farmart-navbar-auth-button--primary {
+  background: var(--farm-green);
+  border-color: var(--farm-green);
+  color: #ffffff;
+}
+
+[data-theme='dark'] .farmart-navbar-auth-button--primary:hover {
+  background: var(--farm-green-dark);
+  border-color: var(--farm-green-dark);
+}
+
+[data-theme='dark'] .farmart-navbar-mobile-link {
+  color: var(--farm-text);
+}
+
+[data-theme='dark'] .farmart-navbar-mobile-link:hover,
+[data-theme='dark'] .farmart-navbar-mobile-link--active {
+  background: rgba(111, 201, 138, 0.08);
+  color: var(--farm-mint);
+}
+
+[data-theme='dark'] .farmart-navbar-mobile-link--danger {
+  color: #f87171;
+}
+
+[data-theme='dark'] .farmart-navbar-mobile-auth-button--secondary {
+  color: var(--farm-brown-light);
+  border-color: var(--farm-green-border);
+}
+
+[data-theme='dark'] .farmart-navbar-mobile-auth-button--secondary:hover {
+  border-color: var(--farm-mint);
+  color: var(--farm-mint);
+}
+
+[data-theme='dark'] .farmart-navbar-mobile-auth-button--primary {
+  background: var(--farm-green);
+  color: #ffffff;
+}
+
+[data-theme='dark'] .farmart-navbar-mobile-auth-button--primary:hover {
+  background: var(--farm-green-dark);
+}
+
+[data-theme='dark'] .farmart-navbar-mobile-search {
+  border-color: var(--farm-green-border);
+  color: var(--farm-muted);
+}
+
+[data-theme='dark'] .farmart-navbar-mobile-search:hover {
+  border-color: var(--farm-mint);
+  color: var(--farm-mint);
+}
+
+[data-theme='dark'] .farmart-navbar-mobile-theme {
+  border-color: var(--farm-green-border);
+  color: var(--farm-text);
+}
+
+[data-theme='dark'] .farmart-navbar-mobile-theme:hover {
+  background: rgba(111, 201, 138, 0.08);
+}
+
+[data-theme='dark'] .farmart-navbar-dropdown-item {
+  color: var(--farm-text);
+}
+
+[data-theme='dark'] .farmart-navbar-dropdown-item:hover {
+  background: rgba(111, 201, 138, 0.08);
+}
+
+[data-theme='dark'] .farmart-navbar-dropdown-divider {
+  background: var(--farm-green-border);
+}
+
+[data-theme='dark'] .farmart-navbar-dropdown-item--danger {
+  color: #f87171;
+}
+
+[data-theme='dark'] .farmart-navbar-dropdown-item--danger:hover {
+  background: rgba(248, 113, 113, 0.08);
+}
+
+/* ========================================
+   FOOTER
+   ======================================== */
+
+.farmart-footer {
+  width: 100%;
+  padding: 72px max(28px, calc((100% - 1240px) / 2)) 28px;
+  border-top: 1px solid var(--farm-green-border);
+  background: var(--farm-background);
+  color: var(--farm-text);
+}
+
+.farmart-footer--dark {
+  background: var(--farm-background);
+}
+
+.farmart-footer-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.farmart-footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(3, 1fr);
+  gap: 48px;
+  padding-bottom: 48px;
+}
+
+.farmart-footer-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.farmart-footer-brand p {
+  max-width: 280px;
+  margin-top: 16px;
+  color: var(--farm-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.farmart-footer-socials {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.farmart-footer-social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--farm-green-border);
+  background: transparent;
+  color: var(--farm-muted);
+
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.farmart-footer-social-link:hover {
+  background: var(--farm-green-soft);
+  color: var(--farm-green);
+  border-color: var(--farm-green);
+  transform: translateY(-2px);
+}
+
+.farmart-footer-column h3 {
+  margin: 0 0 20px;
+  color: var(--farm-text);
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.farmart-footer-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.farmart-footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--farm-muted);
+  font-family: 'Modern Antiqua', serif;
+  font-size: 14px;
+  text-decoration: none;
+
+  transition:
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.farmart-footer-link:hover {
+  color: var(--farm-green);
+  transform: translateX(2px);
+}
+
+.farmart-footer-link-arrow {
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.farmart-footer-link:hover .farmart-footer-link-arrow {
+  opacity: 1;
+}
+
+.farmart-footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: 24px;
+  border-top: 1px solid var(--farm-green-border);
+  font-size: 13px;
+  color: var(--farm-muted);
+}
+
+.farmart-footer-legal {
+  display: flex;
+  gap: 18px;
+}
+
+.farmart-footer-legal-link {
+  color: var(--farm-muted);
+  font-family: 'Modern Antiqua', serif;
+  font-size: 13px;
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.farmart-footer-legal-link:hover {
+  color: var(--farm-green);
+}
+
+[data-theme='dark'] .farmart-footer-social-link {
+  color: var(--farm-muted);
+  border-color: var(--farm-green-border);
+}
+
+[data-theme='dark'] .farmart-footer-social-link:hover {
+  background: rgba(111, 201, 138, 0.08);
+  color: var(--farm-mint);
+  border-color: var(--farm-mint);
+}
+
+[data-theme='dark'] .farmart-footer-link {
+  color: var(--farm-muted);
+}
+
+[data-theme='dark'] .farmart-footer-link:hover {
+  color: var(--farm-mint);
+}
+
+[data-theme='dark'] .farmart-footer-legal-link {
+  color: var(--farm-muted);
+}
+
+[data-theme='dark'] .farmart-footer-legal-link:hover {
+  color: var(--farm-mint);
+}
+
+@media (max-width: 900px) {
+  .farmart-footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 36px;
+  }
+}
+
+@media (max-width: 600px) {
+  .farmart-footer {
+    padding: 52px 20px 20px;
+  }
+
+  .farmart-footer-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .farmart-footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
+/* ========================================
+   MAIN CONTENT
+   ======================================== */
+
+.farmart-main {
+  width: 100%;
+  min-height: calc(100vh - 68px);
+  display: flex;
+  flex-direction: column;
 }

@@ -78,7 +78,7 @@ function Loader({
       >
         <div className="farmart-loader-mark">
           <img
-            src="/logo/farmart_logo.png"
+            src="/favicon/farm.png"
             alt=""
             aria-hidden="true"
           />
