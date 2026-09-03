@@ -19,8 +19,8 @@ with app.app_context():
 
     else:
         farmer = User(
-            first_name="Ryan",
-            last_name="Makori",
+            first_name="Dalion",
+            last_name="Gamer",
             email=farmer_email,
             password_hash=bcrypt.generate_password_hash(
                 "2026NmO."
