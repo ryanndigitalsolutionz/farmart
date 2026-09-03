@@ -3,8 +3,8 @@ from datetime import datetime, timezone
 from extensions import db
 
 
-class Livestock(db.Model):
-    __tablename__ = "livestock"
+class Product(db.Model):
+    __tablename__ = "products"
 
     id = db.Column(
         db.Integer,
@@ -27,33 +27,8 @@ class Livestock(db.Model):
         nullable=False,
     )
 
-    breed = db.Column(
-        db.String,
-        nullable=False,
-    )
-
-    age = db.Column(
-        db.Integer,
-        nullable=False,
-    )
-
-    sex = db.Column(
-        db.String,
-        nullable=False,
-    )
-
-    weight = db.Column(
-        db.Numeric(10, 2),
-        nullable=True,
-    )
-
-    weight_unit = db.Column(
-        db.String,
-        nullable=True,
-    )
-
-    location = db.Column(
-        db.String,
+    description = db.Column(
+        db.Text,
         nullable=False,
     )
 
@@ -63,22 +38,32 @@ class Livestock(db.Model):
     )
 
     quantity = db.Column(
-        db.Integer,
+        db.Numeric(10, 2),
+        nullable=False,
+    )
+
+    unit = db.Column(
+        db.String,
+        nullable=False,
+    )
+
+    date_produced = db.Column(
+        db.Date,
+        nullable=False,
+    )
+
+    expiry_date = db.Column(
+        db.Date,
+        nullable=False,
+    )
+
+    location = db.Column(
+        db.String,
         nullable=False,
     )
 
     image = db.Column(
         db.String,
-        nullable=True,
-    )
-
-    description = db.Column(
-        db.Text,
-        nullable=False,
-    )
-
-    health_information = db.Column(
-        db.Text,
         nullable=True,
     )
 
@@ -103,10 +88,10 @@ class Livestock(db.Model):
 
     farmer = db.relationship(
         "User",
-        back_populates="livestock",
+        back_populates="products",
     )
 
     order_items = db.relationship(
         "OrderItem",
-        back_populates="livestock",
+        back_populates="product",
     )

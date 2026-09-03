@@ -1,8 +1,7 @@
-from enum import Enum
 from datetime import datetime, timezone
+from enum import Enum
 
-from . import db
-
+from extensions import db
 
 class PaymentMethod(Enum):
     CARD = "card"
@@ -10,43 +9,75 @@ class PaymentMethod(Enum):
     CASH = "cash"
     BANK_TRANSFER = "bank_transfer"
 
+
 class PaymentStatus(Enum):
     PENDING = "pending"
     COMPLETED = "completed"
     FAILED = "failed"
 
+
 class Payment(db.Model):
     __tablename__ = "payments"
 
     id = db.Column(db.Integer, primary_key=True)
+
     order_id = db.Column(
-        db.Integer, 
-        db.ForeignKey("orders.id"), 
+        db.Integer,
+        db.ForeignKey("orders.id"),
         nullable=False,
     )
-    amount = db.Column(db.Numeric(10, 2), nullable=False)
-    method = db.Column(db.Enum(PaymentMethod), nullable=False)
-    card_last4 = db.Column(db.String(4), nullable=True)
+
+    amount = db.Column(
+        db.Numeric(10, 2),
+        nullable=False,
+    )
+
+    method = db.Column(
+        db.Enum(PaymentMethod),
+        nullable=False,
+    )
+
+    card_last4 = db.Column(
+        db.String(4),
+        nullable=True,
+    )
+
     status = db.Column(
-        db.Enum(PaymentStatus), 
+        db.Enum(PaymentStatus),
         nullable=False,
         default=PaymentStatus.PENDING,
     )
-    transaction_id = db.Column(db.String(50), nullable=False)
+
+    transaction_id = db.Column(
+        db.String(100),
+        nullable=True,
+    )
+
+    checkout_request_id = db.Column(
+        db.String(100),
+        nullable=True,
+        unique=True,
+    )
+
+    merchant_request_id = db.Column(
+        db.String(100),
+        nullable=True,
+    )
+
     created_at = db.Column(
-        db.DateTime(timezone=True), 
-        default=lambda: datetime.now(timezone.utc), 
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
+
     updated_at = db.Column(
-        db.DateTime(timezone=True), 
-        default=lambda: datetime.now(timezone.utc), 
-        onupdate=lambda: datetime.now(timezone.utc), 
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
 
     order = db.relationship(
-        "Order", 
-        back_populates="payments"
-    )    
-    
+        "Order",
+        back_populates="payments",
+    )

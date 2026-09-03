@@ -21,5 +21,3 @@ class OrderResource(Resource):
         orders = order.query.all()
 
         return order_schema.dump(orders), 200
-
-    

@@ -16,6 +16,9 @@ class User(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False,)
 
     profile = db.relationship("Profile", backref="user", uselist=False, cascade="all, delete-orphan")
+    farmer = db.relationship("User", back_populates="livestock")
+    livestock = db.relationship("Livestock", back_populates="farmer")
+    products = db.relationship("Product", back_populates="farmer")
 
     def __repr__(self):
         return f"<User {self.email}>"
