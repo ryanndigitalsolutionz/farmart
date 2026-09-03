@@ -26,7 +26,7 @@ import CreateListings from './pages/farmer/CreateListings'
 import FarmerOrders from './pages/farmer/Orders'
 import FarmerAnalytics from './pages/farmer/Analytics'
 
-import BuyerRoute from './pages/Routes/BuyerRoute'
+import BuyerRoute from './pages/routes/BuyerRoute'
 
 import AdminDashboard from './pages/admin/Dashboard'
 import Users from './pages/admin/Users'
