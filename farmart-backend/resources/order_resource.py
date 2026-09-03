@@ -18,6 +18,6 @@ class OrderResource(Resource):
 
             return order_schema.dump(order), 200
 
-        orders = order.query.all()
+        orders = Order.query.all()
 
         return order_schema.dump(orders), 200

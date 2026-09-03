@@ -26,4 +26,4 @@ class Config:
     MPESA_SHORTCODE = os.getenv("MPESA_SHORTCODE")
     MPESA_PASSKEY = os.getenv("MPESA_PASSKEY")
     MPESA_CALLBACK_URL = os.getenv("MPESA_CALLBACK_URL")
-    MPESA_BASE_URL = os.getenv("MPESA_BASE_URL", "https://sandbox.safaricom.co.ke")
+    MPESA_BASE_URL = os.getenv("MPESA_BASE_URL", "https://api.safaricom.co.ke")

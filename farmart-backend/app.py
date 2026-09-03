@@ -1,5 +1,7 @@
+import os
 
 from flask import Flask
+from flask_restful import Api
 
 from config import Config
 from extensions import (
@@ -8,7 +10,6 @@ from extensions import (
     migrate,
     bcrypt,
     cors,
-    api,
 )
 
 from models import User, Profile
@@ -39,7 +40,7 @@ def create_app():
         supports_credentials=True,
     )
 
-    api.init_app(app)
+    api = Api(app)
 
     app.register_blueprint(
         auth_bp,
@@ -61,11 +62,13 @@ def create_app():
         MpesaCallbackResource,
         "/payments/mpesa/callback",
     )
+
     api.add_resource(
         LivestockResource,
         "/livestock",
         "/livestock/<int:livestock_id>",
     )
+
     api.add_resource(
         ProductResource,
         "/products",
@@ -80,7 +83,7 @@ app = create_app()
 
 if __name__ == "__main__":
     app.run(
-        debug=True,
-        host="127.0.0.1",
-        port=5000,
+        debug=False,
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", 5000)),
     )
