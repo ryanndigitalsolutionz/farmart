@@ -26,7 +26,7 @@ function Cart() {
 
                 <p className="mb-3">Add livestock to your cart before checking out</p>
                 <Link 
-                    to="/marketplace"
+                    to="/buyer/marketplace"
                     className="group relative mt-3 text-gray-400 hover:text-(--farm-green-dark)"
                 >
                     <span
@@ -42,11 +42,11 @@ function Cart() {
             </div>
             
         ): (
-            <div>
+            <div className="flex flex-col justify-center items-center mt-5 ">
                 {cart.map((animal) => (
                     <div 
-                    key={animal.id}
-                    className="flex gap-5 mb-2 p-3 border-black"
+                        key={animal.id}
+                        className="flex gap-10 mb-2 p-3 border-[var(--farm-green-border)] border-1 rounded-xl"
                     >
                         <img 
                             src={animal.image} 
@@ -59,13 +59,14 @@ function Cart() {
                             <p>Type: {animal.type}</p>
                             <p>Breed: {animal.breed}</p>
                             <p>Price: Ksh {Number(animal.price).toLocaleString()}</p>
-
-                            <button 
-                                onClick={() => removeFromCart(animal.id)} 
-                                className="mt-1">
-                                <FaTrash size={20} className="text-red-500" />
-                            </button>
+                            <div className="flex justify-center items-center">
+                                <button 
+                                    onClick={() => removeFromCart(animal.id)} 
+                                    className="mt-1 ">
+                                    <FaTrash size={20} className="text-red-500" />
+                                </button>
                             </div>
+                        </div>
                     </div>
                 ))}
 
@@ -74,7 +75,7 @@ function Cart() {
                           
                 <div className="flex gap-2 mt-3 mb-1">
                     <Link 
-                        to="/checkout" 
+                        to="/buyer/checkout" 
                         className="block w-full"
                     >
                         <button 
@@ -91,8 +92,8 @@ function Cart() {
                 </div>
                 <div className="flex flex-col items-center justify-center">
                     <Link 
-                        to="/marketplace"
-                    className="group relative mt-3 text-gray-400 hover:text-(--farm-green-dark) "
+                        to="/buyer/marketplace"
+                        className="group relative mt-3 text-gray-400 hover:text-(--farm-green-dark) "
                     >
                         <span
                             className="absolute -bottom-1 left-1/2 h-0.5 w-6
