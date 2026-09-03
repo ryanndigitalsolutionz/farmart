@@ -59,36 +59,38 @@ function LivestockDetails() {
       </div>
 
       <div className="flex items-center justify-between">
-        <span className="flex items-center gap-5"><GiDna2 /> Breed</span>
+        <span className="flex items-center gap-5 font-bold"><GiDna2 /> Breed</span>
         <span>{animal.breed}</span>
       </div>
       <div className="flex items-center justify-between">
-        <span className="flex items-center gap-5"><FaCalendarAlt /> Age</span>
+        <span className="flex items-center gap-5 font-bold"><FaCalendarAlt /> Age</span>
         <span>{animal.age} years</span>
       </div>
       <div className="flex items-center justify-between">
-        <span className="flex items-center gap-5"><LuWeight /> Weight</span>
+        <span className="flex items-center gap-5 font-bold"><LuWeight /> Weight</span>
         <span>{animal.weight} kg</span>
       </div>
       <div className="flex items-center justify-between">
-        <span className="flex items-center gap-5"><LuMapPinned /> Location</span>
+        <span className="flex items-center gap-5 font-bold"><LuMapPinned /> Location</span>
         <span>{animal.location}</span>
       </div>
       <div className="flex items-center justify-between">
-        <span className="flex items-center gap-5"><GrStatusInfo size={20} /> Status</span>
+        <span className="flex items-center gap-5 font-bold"><GrStatusInfo size={20} /> Status</span>
         <span className={`p-1 rounded-lg text-white font-semibold ${animal.availability?.toLowerCase() === "available" ? "bg-green-600" : "bg-red-600"}`}>
           {animal.availability}
         </span>
       </div>
       <div className="flex items-center justify-between">
-        <span className="flex items-center gap-5"><GiHealthNormal size={20} /> Health Info</span>
+        <span className="flex items-center gap-5 font-bold"><GiHealthNormal size={20} /> Health Info</span>
         <span>{animal.health?.vaccinated ? "Vaccinated, Healthy" : "Not Vaccinated"}</span>
       </div>
 
-      <div className="flex items-center justify-between">
-        <span className="flex items-center gap-5"><GiFarmTractor size={20} /> Farm</span>
+      <div className="flex items-center justify-between mt-1">
+        <span className="flex items-center gap-5 font-bold">
+          <GiFarmTractor size={20} /> Farm</span>
         <div className="flex flex-col">
-          <span className="font-bold text-end">{animal.seller.name}</span>
+          <span className="font-bold text-end">
+            {animal.seller.name}</span>
           <div className="flex gap-2 text-sm items-center">
             <FaStar size={20} color="gold" />
             <span>{animal.seller.rating}</span>            
@@ -105,30 +107,35 @@ function LivestockDetails() {
 
       {animal.availability?.toLowerCase() === "available" ? (
         <div className="mb-4 mt-2 flex gap-4 justify-center">
-          <button onClick={() => addToCart(animal)} 
-          className="w-70 mt-[15px] p-[12px] border border-[var(--farm-green)] rounded-[11px] bg-[var(--farm-green)]
-          text-white font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer
-          transition-[background,transform] duration-[160ms] ease-[ease]
-          hover:bg-[var(--farm-green-dark)] hover:translate-y-[-1px]"
+          <button 
+            onClick={() => addToCart(animal)} 
+            className="w-70 mt-[15px] p-[12px] border border-[var(--farm-green)] rounded-[11px] bg-[var(--farm-green)]
+            text-white font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer
+            transition-[background,transform] duration-[160ms] ease-[ease]
+            hover:bg-[var(--farm-green-dark)] hover:translate-y-[-1px]"
           >
             Add to Cart
           </button>
 
+        {/* // TODO: Add a link to the cart page with a shopping cart icon
+        // Remove after implementation */}
           <Link 
             to="/buyer/cart" 
-            className="fleX items-center justify-center w-50% 
-            mt-[15px] p-[12px] border border-[var(--farm-green)] rounded-[11px] bg-white"
+            className="fleX items-center justify-center  
+            mt-3.75 p-3 rounded-[11px] bg-white"
           >
             <LuShoppingCart  size={29}/>
           </Link>
         </div>
       ) : (
-        <p className="text-red-500 mb-3 font-semibold mt-2">This Animal is currently unavailable</p>
+        <p className="text-red-500 mb-3 font-semibold mt-2">
+          This Animal is currently unavailable
+          </p>
       )}
 
       <div className="flex flex-col items-center justify-center">
         <Link 
-            to="/marketplace"
+            to="/buyer/marketplace"
           className="group relative mt-3 text-gray-400 hover:text-(--farm-green-dark)"
         >
         Back to Marketplace

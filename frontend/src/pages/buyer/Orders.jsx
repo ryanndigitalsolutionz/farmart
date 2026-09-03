@@ -33,8 +33,8 @@ function Orders() {
         ): (
             <div className='flex flex-col gap-2 '>
                 {orders.map((order) => (
-                    <div key={order.id} className='border border-gray-400 p-2 w-150 flex justify-between mt-5 rounded-2xl'>
-                        <div className='px-2'>
+                    <div key={order.id} className='border-0 shadow-xl p-2 w-150 flex justify-between mt-5 rounded-2xl'>
+                        <div className='px-3 p-1'>
                             <h2 className='font-semibold'>{order.id}</h2>
 
                             <p>
