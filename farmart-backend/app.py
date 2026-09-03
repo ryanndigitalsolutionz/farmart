@@ -6,6 +6,8 @@ from flask_restful import Api
 from config import Config
 from extensions import db, ma, migrate, bcrypt, cors
 
+from resources.revenue_record_resource import RevenueRecordResource
+
 from models import (
     User,
     Profile,
@@ -56,6 +58,12 @@ def create_app():
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(google_callback_bp, url_prefix="/auth")
+
+    api.add_resource(
+        RevenueRecordResource,
+        "/api/revenue",
+        "/api/revenue/<int:revenue_id>",
+    )
 
     api.add_resource(
         AnnouncementListResource,
