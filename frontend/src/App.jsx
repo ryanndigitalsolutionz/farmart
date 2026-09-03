@@ -5,9 +5,10 @@ import { AnimatePresence } from 'framer-motion'
 import SplashScreen from './components/SplashScreen'
 import Header from './components/layout/Header'
 import FarmerDashboardLayout from './components/layout/FarmerDashboardLayout'
+import DashboardLayout from './components/layout/DashboardLayout'
 
 import LandingPage from './pages/LandingPage'
-
+import FAQs from './pages/FAQs'
 import Welcome from './pages/auth/Welcome'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
@@ -70,6 +71,7 @@ function App() {
 
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/faqs" element={<FAQs />} />
 
         <Route path="/welcome" element={<Welcome />} />
         <Route path="/login" element={<Login />} />
@@ -107,7 +109,7 @@ function App() {
           <Route path="reviews" element={<BuyerReviews />} />
         </Route>
 
-        <Route path="/admin">
+        <Route path="/admin" element={<DashboardLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<Users />} />
@@ -135,6 +137,7 @@ function App() {
         <Route
           path="*"
           element={<Navigate to="/" replace />}
+          
         />
       </Routes>
     </>

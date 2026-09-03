@@ -1,7 +1,9 @@
-import { useState } from "react";
+import PageHeader from "../../components/layout/PageHeader";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-
+import { motion, AnimatePresence, useSpring, useTransform } from "framer-motion";
+import { getPendingFarmers, approveFarmer, rejectFarmer } from "../../data/farmersStore";
+import RejectReasonModal from "../../components/common/RejectReasonModal";
 
 const metrics = {
   total_users: 0,
@@ -14,7 +16,20 @@ const loading = false;
 
 export default function Dashboard() {
   const [tab, setTab] = useState("farmers");
+  const [pendingFarmers, setPendingFarmers] = useState(() => getPendingFarmers());
+  const [rejectTarget, setRejectTarget] = useState(null);
   const navigate = useNavigate();
+
+  const handleApprove = (farmerId) => {
+    approveFarmer(farmerId);
+    setPendingFarmers((list) => list.filter((f) => f.id !== farmerId));
+  };
+
+  const handleRejectSubmit = (reason) => {
+    rejectFarmer(rejectTarget.id, reason);
+    setPendingFarmers((list) => list.filter((f) => f.id !== rejectTarget.id));
+    setRejectTarget(null);
+  };
 
   return (
     <div>
@@ -23,7 +38,22 @@ export default function Dashboard() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
       >
-        <PageHeader title="Platform overview" subtitle="Snapshot of Farmart's health across all roles" />
+        <div style={{ marginBottom: 20 }}>
+          <h1
+            style={{
+              fontFamily: "var(--font-display, 'IBM Plex Serif', serif)",
+              fontSize: 22,
+              fontWeight: 600,
+              color: "var(--green-900, #163420)",
+              margin: 0,
+            }}
+          >
+            Platform overview
+          </h1>
+          <p style={{ color: "var(--text-muted, #66766A)", fontSize: 13, marginTop: 4 }}>
+            Snapshot of Farmart's health across all roles
+          </p>
+        </div>
       </motion.div>
 
       {/* --- Metric cards --- */}
@@ -161,7 +191,7 @@ export default function Dashboard() {
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      onClick={() => handleReject(farmer.id)}
+                      onClick={() => setRejectTarget(farmer)}
                       style={{
                         background: "#fff",
                         color: "#B2503E",
@@ -209,6 +239,14 @@ export default function Dashboard() {
           </motion.p>
         )}
       </AnimatePresence>
+
+      {rejectTarget && (
+        <RejectReasonModal
+          farmerName={rejectTarget.farm_name}
+          onCancel={() => setRejectTarget(null)}
+          onSubmit={handleRejectSubmit}
+        />
+      )}
     </div>
   );
 }
@@ -254,4 +292,4 @@ function AnimatedNumber({ value }) {
   }, [value, spring]);
 
   return <motion.span>{display}</motion.span>;
-}// commit 27
+}

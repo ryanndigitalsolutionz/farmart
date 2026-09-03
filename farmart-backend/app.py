@@ -1,5 +1,4 @@
 from flask import Flask
-
 from config import Config
 from extensions import db, ma, migrate, bcrypt, cors, api
 
@@ -7,6 +6,8 @@ from models import User, Profile
 
 from resources.auth_resource import auth_bp
 from resources.google_callback_resource import google_callback_bp
+from resources.announcement_resource import AnnouncementListResource, AnnouncementResource
+from resources.report_resource import ReportListResource, ReportResource
 
 
 def create_app():
@@ -20,6 +21,11 @@ def create_app():
     bcrypt.init_app(app)
     cors.init_app(app)
     api.init_app(app)
+
+    api.add_resource(AnnouncementListResource, "/api/announcements")
+    api.add_resource(AnnouncementResource, "/api/announcements/<int:announcement_id>")
+    api.add_resource(ReportListResource, "/api/reports")
+    api.add_resource(ReportResource, "/api/reports/<int:report_id>")
 
     app.register_blueprint(
         auth_bp,
@@ -35,7 +41,6 @@ def create_app():
 
 
 app = create_app()
-
 
 if __name__ == "__main__":
     app.run(debug=True)

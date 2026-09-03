@@ -1,16 +1,16 @@
+import PageHeader from "../../components/layout/PageHeader";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { getAllFarmers } from "../../data/farmersStore";
 
-
-const MOCK_FARMERS = [
-  { id: 1, name: "Kiambu Green Pastures", status: "pending" },
-  { id: 2, name: "Nakuru Boran Ranch", status: "pending" },
-  { id: 3, name: "Eldoret Dairy Farm", status: "verified" },
-  { id: 4, name: "Machakos Poultry Co-op", status: "verified" },
-];
+const STATUS_COLORS = {
+  verified: "var(--green-700, #2F6D3F)",
+  pending: "var(--yellow-500, #E8B93D)",
+  rejected: "#B2503E",
+};
 
 export default function Farmers() {
-  const [farmers] = useState(MOCK_FARMERS);
+  const [farmers] = useState(() => getAllFarmers());
 
   return (
     <div>
@@ -30,12 +30,12 @@ export default function Farmers() {
               color: "var(--text-dark, #1E2A1F)",
             }}
           >
-            <span style={{ fontWeight: 600 }}>{f.name}</span>
+            <span style={{ fontWeight: 600 }}>{f.farm_name}</span>
             <span
               style={{
                 fontSize: 12,
                 fontWeight: 700,
-                color: f.status === "verified" ? "var(--green-700, #2F6D3F)" : "var(--yellow-500, #E8B93D)",
+                color: STATUS_COLORS[f.status] || "var(--text-muted, #66766A)",
                 textTransform: "capitalize",
               }}
             >
@@ -46,4 +46,5 @@ export default function Farmers() {
       </div>
     </div>
   );
-}// commit 30
+}
+// commit 30

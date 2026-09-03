@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import PageHeader from "../../components/layout/PageHeader";
 
 // TODO: replace with real fetch("/api/admin/users") once backend is ready
 const MOCK_USERS = [
@@ -38,4 +38,4 @@ export default function Users() {
       </table>
     </div>
   );
-}// commit 36
+}
