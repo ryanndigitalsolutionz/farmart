@@ -2,8 +2,7 @@ import PageHeader from "../../components/layout/PageHeader";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAdmin } from "../../hooks/useAdmin";
-import { getFarmerById, approveFarmer, rejectFarmer } from "../../data/farmersStore";
-import { suspendUser } from "../../services/adminApi";
+import { getFarmerDetail, verifyFarmer, rejectFarmer, suspendUser } from "../../services/adminApi";
 import RejectReasonModal from "../../components/common/RejectReasonModal";
 
 export default function FarmerDetails() {
@@ -15,21 +14,20 @@ export default function FarmerDetails() {
   const [showRejectModal, setShowRejectModal] = useState(false);
 
   useEffect(() => {
-    const found = getFarmerById(farmerId);
-    setFarmer(found);
+    getFarmerDetail(farmerId).then(setFarmer).catch(() => setFarmer(null));
   }, [farmerId]);
 
   const handleVerify = async () => {
     setBusy(true);
-    approveFarmer(farmerId);
+    await verifyFarmer(farmerId);
     refreshOverview();
     navigate("/admin/dashboard");
     setBusy(false);
   };
 
-  const handleRejectSubmit = (reason) => {
+  const handleRejectSubmit = async (reason) => {
     setBusy(true);
-    rejectFarmer(farmerId, reason);
+    await rejectFarmer(farmerId, reason);
     refreshOverview();
     setShowRejectModal(false);
     navigate("/admin/dashboard");
@@ -52,8 +50,8 @@ export default function FarmerDetails() {
   return (
     <div style={{ maxWidth: 640 }}>
       <PageHeader
-        title={farmer.farm_name}
-        subtitle={`${farmer.location} · joined ${farmer.joined_date || "—"}`}
+        title={farmer.farm_name || "(No farm name yet)"}
+        subtitle={`${farmer.location || "—"} · joined ${farmer.joined_date ? new Date(farmer.joined_date).toLocaleDateString() : "—"}`}
       />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 22 }}>

@@ -50,7 +50,7 @@ class Order(db.Model):
         back_populates="orders"
     )
 
-    payment = db.relationship(
+    payments = db.relationship(
         "Payment",
         back_populates="order",
         cascade="all, delete-orphan"

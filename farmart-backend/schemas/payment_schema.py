@@ -5,13 +5,12 @@ from marshmallow import (
     validate,
     pre_load,
 )
-
 from models import PaymentMethod, PaymentStatus
+
 
 def _convert_camel_to_snake(data):
     if not isinstance(data, dict):
         return data
-
     replacements = {
         "orderId": "order_id",
         "cardLast4": "card_last4",
@@ -19,11 +18,12 @@ def _convert_camel_to_snake(data):
         "CreatedAt": "created_at",
         "updatedAt": "updated_at",
     }
-
     return {
         replacements.get(k, k): _convert_camel_to_snake(v)
         for k, v in data.items()
     }
+
+
 class BaseSchema(Schema):
     class Meta:
         unknown = RAISE
@@ -56,7 +56,7 @@ class PaymentSchema(BaseSchema):
         by_value=True, 
         required=True,
     )
-    transaction_id = fields.Integer(
+    transaction_id = fields.String(
         dump_only=True,
     )
 
