@@ -1,5 +1,7 @@
+import PageHeader from "../../components/layout/PageHeader";
 import { useState } from "react";
 import { useTheme } from "../../context/ThemeContext";
+import { useAuth } from "../../hooks/useAuth";
 
 
 export default function Settings() {
@@ -163,4 +165,4 @@ export default function Settings() {
       </div>
     </div>
   );
-}// commit 34
+}

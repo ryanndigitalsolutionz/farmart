@@ -111,15 +111,14 @@ class Livestock(db.Model):
         back_populates="livestock",
     )
 
-    wishlist = db.relationship(
-        "Wishlist",
-        back_populates="livestock",
-        cascade="all, delete-orphan",
-    )
-
     reviews = db.relationship(
         "Review",
         back_populates="livestock",
         cascade="all, delete-orphan",
     )
-    
+
+    wishlist = db.relationship(
+        "Wishlist",
+        back_populates="livestock",
+        cascade="all, delete-orphan",
+    )

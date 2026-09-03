@@ -8,9 +8,10 @@ import { WishlistProvider } from './context/WishlistContext'
 import SplashScreen from './components/SplashScreen'
 import Header from './components/layout/Header'
 import FarmerDashboardLayout from './components/layout/FarmerDashboardLayout'
+import DashboardLayout from './components/layout/DashboardLayout'
 
 import LandingPage from './pages/LandingPage'
-
+import FAQs from './pages/FAQs'
 import Welcome from './pages/auth/Welcome'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
@@ -62,68 +63,67 @@ function App() {
         {showSplash && <SplashScreen key="splash" />}
       </AnimatePresence>
 
-    <LivestockProvider>
-      <WishlistProvider>
-        <CartProvider>
-          <Routes>
-            
-            <Route path="/" element={<LandingPage />} />
+      <LivestockProvider>
+        <WishlistProvider>
+          <CartProvider>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/faqs" element={<FAQs />} />
 
-            <Route path="/welcome" element={<Welcome />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/verify-email" element={<VerifyEmail />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/farm-setup" element={<FarmSetup />} />
+              <Route path="/welcome" element={<Welcome />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/farm-setup" element={<FarmSetup />} />
 
-            <Route path="/farmer" element={<FarmerDashboardLayout />}>
-              <Route index element={<FarmerDashboard />} />
-              <Route path="dashboard" element={<FarmerDashboard />} />
-              <Route path="create-listing" element={<CreateListings />} />
-              <Route path="listings" element={<CreateListings />} />
-              <Route path="orders" element={<FarmerOrders />} />
-              <Route path="analytics" element={<FarmerAnalytics />} />
-              <Route path="farm-profile" element={<FarmProfile />} />
-              <Route path="profile" element={<FarmerProfile />} />
-            </Route>          
-          
-            <Route path="/buyer/*" element={<BuyerRoute />} />
-              
-            <Route path="/admin">
-              <Route index element={<Navigate to="dashboard" replace />} />
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="users" element={<Users />} />
-              <Route path="farmers" element={<Farmers />} />
-              <Route
-                path="farmers/:farmerId"
-                element={<FarmerDetails />}
-              />
-              <Route
-                path="buyers/:buyerId"
-                element={<BuyerDetails />}
-              />
-              <Route path="listings" element={<Listings />} />
-              <Route path="orders" element={<AdminOrders />} />
-              <Route path="transactions" element={<Transactions />} />
-              <Route path="reports" element={<Reports />} />
-              <Route path="disputes" element={<Disputes />} />
-              <Route
-                path="announcements"
-                element={<Announcements />}
-              />
-              <Route path="settings" element={<Settings />} />
-            </Route>
+              <Route path="/farmer" element={<FarmerDashboardLayout />}>
+                <Route index element={<FarmerDashboard />} />
+                <Route path="dashboard" element={<FarmerDashboard />} />
+                <Route path="create-listing" element={<CreateListings />} />
+                <Route path="listings" element={<CreateListings />} />
+                <Route path="orders" element={<FarmerOrders />} />
+                <Route path="analytics" element={<FarmerAnalytics />} />
+                <Route path="farm-profile" element={<FarmProfile />} />
+                <Route path="profile" element={<FarmerProfile />} />
+              </Route>
 
-            <Route
-              path="*"
-              element={<Navigate to="/" replace />}
-            />
-          
-        </Routes>
-        </CartProvider>
-      </WishlistProvider>
-    </LivestockProvider>
+              <Route path="/buyer/*" element={<BuyerRoute />} />
+
+              <Route path="/admin" element={<DashboardLayout />}>
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path="dashboard" element={<AdminDashboard />} />
+                <Route path="users" element={<Users />} />
+                <Route path="farmers" element={<Farmers />} />
+                <Route
+                  path="farmers/:farmerId"
+                  element={<FarmerDetails />}
+                />
+                <Route
+                  path="buyers/:buyerId"
+                  element={<BuyerDetails />}
+                />
+                <Route path="listings" element={<Listings />} />
+                <Route path="orders" element={<AdminOrders />} />
+                <Route path="transactions" element={<Transactions />} />
+                <Route path="reports" element={<Reports />} />
+                <Route path="disputes" element={<Disputes />} />
+                <Route
+                  path="announcements"
+                  element={<Announcements />}
+                />
+                <Route path="settings" element={<Settings />} />
+              </Route>
+
+              <Route
+                path="*"
+                element={<Navigate to="/" replace />}
+              />
+            </Routes>
+          </CartProvider>
+        </WishlistProvider>
+      </LivestockProvider>
     </>
   )
 }

@@ -76,6 +76,11 @@ class OrderSchema(BaseSchema):
         dump_only=True,
     )
 
+    buyer_name = fields.Method(
+        "get_buyer_name",
+        dump_only=True,
+    )
+
     total_amount = fields.Decimal(
         dump_only=True,
         as_string=True,
@@ -93,6 +98,11 @@ class OrderSchema(BaseSchema):
         many=True,
         dump_only=True,
     )
+
+    def get_buyer_name(self, obj):
+        if obj.buyer:
+            return f"{obj.buyer.first_name} {obj.buyer.last_name}"
+        return None
 
     @pre_load
     def normalize_keys(self, data, **kwargs):

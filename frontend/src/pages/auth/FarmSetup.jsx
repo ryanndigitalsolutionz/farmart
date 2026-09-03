@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   FiMapPin,
@@ -7,6 +7,7 @@ import {
   FiEdit3,
   FiShield,
 } from 'react-icons/fi'
+import { addPendingFarmer, getFarmerById } from '../../data/farmersStore'
 
 function FarmSetup() {
   const navigate = useNavigate()
@@ -19,6 +20,10 @@ function FarmSetup() {
   })
 
   const [isSaving, setIsSaving] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [pendingFarmerId, setPendingFarmerId] = useState(null)
+  const [rejected, setRejected] = useState(false)
+  const [rejectionReason, setRejectionReason] = useState('')
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -33,6 +38,13 @@ function FarmSetup() {
     event.preventDefault()
     setIsSaving(true)
 
+    const newFarmer = addPendingFarmer({
+      farm_name: formData.farmName,
+      location: formData.location,
+      phone_number: formData.contact,
+      description: formData.description,
+    })
+
     localStorage.setItem(
       'farmartFarmProfile',
       JSON.stringify({
@@ -43,9 +55,41 @@ function FarmSetup() {
 
     setTimeout(() => {
       setIsSaving(false)
-      navigate('/farmer/dashboard')
+      setPendingFarmerId(newFarmer.id)
+      setSubmitted(true)
     }, 700)
   }
+
+  const handleTryAgain = () => {
+    setSubmitted(false)
+    setRejected(false)
+    setPendingFarmerId(null)
+    setRejectionReason('')
+  }
+
+  // Poll for admin approval while the farmer waits, and redirect automatically.
+  useEffect(() => {
+    if (!submitted || !pendingFarmerId) return
+
+    const interval = setInterval(() => {
+      const farmer = getFarmerById(pendingFarmerId)
+
+      if (!farmer) return
+
+      if (farmer.status === 'verified') {
+        clearInterval(interval)
+        navigate('/farmer/dashboard')
+      }
+
+      if (farmer.status === 'rejected') {
+        setRejectionReason(farmer.rejection_reason || '')
+        setRejected(true)
+        clearInterval(interval)
+      }
+    }, 2000)
+
+    return () => clearInterval(interval)
+  }, [submitted, pendingFarmerId, navigate])
 
   return (
     <>
@@ -393,6 +437,132 @@ function FarmSetup() {
           cursor: not-allowed;
         }
 
+        /* Pending / waiting screen */
+
+        .farm-setup-pending {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          gap: 6px;
+          padding: 12px 0 4px;
+        }
+
+        .farm-setup-pending-orb {
+          position: relative;
+          width: 92px;
+          height: 92px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 12px;
+        }
+
+        .farm-setup-pending-ring {
+          position: absolute;
+          inset: 0;
+          border-radius: 50%;
+          border: 2px solid var(--farm-green);
+          opacity: 0;
+          animation: farm-pending-pulse 2.4s ease-out infinite;
+        }
+
+        .farm-setup-pending-ring:nth-child(2) {
+          animation-delay: 0.8s;
+        }
+
+        .farm-setup-pending-ring:nth-child(3) {
+          animation-delay: 1.6s;
+        }
+
+        @keyframes farm-pending-pulse {
+          0% {
+            transform: scale(0.55);
+            opacity: 0.55;
+          }
+          100% {
+            transform: scale(1.7);
+            opacity: 0;
+          }
+        }
+
+        .farm-setup-pending-icon {
+          position: relative;
+          z-index: 1;
+          width: 54px;
+          height: 54px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--farm-green);
+          color: #ffffff;
+          box-shadow: 0 8px 20px var(--farm-green-glow);
+          animation: farm-pending-sway 3s ease-in-out infinite;
+        }
+
+        @keyframes farm-pending-sway {
+          0%, 100% { transform: rotate(0deg); }
+          50% { transform: rotate(7deg); }
+        }
+
+        .farm-setup-pending-title {
+          font-family: "IBM Plex Serif", serif;
+          font-size: 24px;
+          font-weight: 700;
+          color: var(--farm-text);
+          margin: 0;
+        }
+
+        .farm-setup-pending-copy {
+          max-width: 360px;
+          color: var(--farm-muted);
+          font-size: 14.5px;
+          line-height: 1.7;
+          margin: 10px 0 0;
+        }
+
+        .farm-setup-pending-copy strong {
+          color: var(--farm-text);
+        }
+
+        .farm-setup-pending-faint {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: var(--farm-muted);
+          opacity: 0.65;
+          font-size: 12.5px;
+          font-style: italic;
+          margin: 22px 0 0;
+        }
+
+        .farm-setup-pending-dots span {
+          display: inline-block;
+          width: 5px;
+          height: 5px;
+          margin-left: 2px;
+          border-radius: 50%;
+          background: var(--farm-green);
+          animation: farm-pending-dot 1.4s ease-in-out infinite both;
+        }
+
+        .farm-setup-pending-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .farm-setup-pending-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes farm-pending-dot {
+          0%, 80%, 100% { transform: scale(0.6); opacity: 0.35; }
+          40% { transform: scale(1); opacity: 1; }
+        }
+
+        .farm-setup-rejected-copy {
+          max-width: 360px;
+          color: var(--farm-muted);
+          font-size: 14.5px;
+          line-height: 1.7;
+          margin: 10px 0 26px;
+        }
+
         /* Responsive */
 
         @media (max-width: 620px) {
@@ -460,116 +630,188 @@ function FarmSetup() {
               />
             </div>
 
-            <h1 className="farm-setup-heading">Set up your farm</h1>
-
-            <p className="farm-setup-subtitle">
-              Tell buyers a little about your farm before you start selling.
-            </p>
-
-            <form onSubmit={handleSubmit} className="farm-setup-form">
-              <label className="farm-setup-field">
-                <span className="farm-setup-field-icon">
-                  <FiHome size={18} />
-                </span>
-
-                <span className="farm-setup-field-content">
-                  <span className="farm-setup-field-label">Farm name</span>
-
-                  <input
-                    type="text"
-                    name="farmName"
-                    placeholder="e.g. Kiambu Green Pastures"
-                    value={formData.farmName}
-                    onChange={handleChange}
-                    required
-                  />
-                </span>
-              </label>
-
-              <label className="farm-setup-field">
-                <span className="farm-setup-field-icon">
-                  <FiMapPin size={18} />
-                </span>
-
-                <span className="farm-setup-field-content">
-                  <span className="farm-setup-field-label">Location</span>
-
-                  <input
-                    type="text"
-                    name="location"
-                    placeholder="e.g. Kiambu County"
-                    value={formData.location}
-                    onChange={handleChange}
-                    required
-                  />
-                </span>
-              </label>
-
-              <label className="farm-setup-field">
-                <span className="farm-setup-field-icon">
-                  <FiPhone size={18} />
-                </span>
-
-                <span className="farm-setup-field-content">
-                  <span className="farm-setup-field-label">
-                    Contact number
-                  </span>
-
-                  <input
-                    type="tel"
-                    name="contact"
-                    placeholder="e.g. 0712 345 678"
-                    value={formData.contact}
-                    onChange={handleChange}
-                    required
-                  />
-                </span>
-              </label>
-
-              <label className="farm-setup-field">
-                <span className="farm-setup-field-icon">
-                  <FiEdit3 size={18} />
-                </span>
-
-                <span className="farm-setup-field-content">
-                  <span className="farm-setup-field-label">
-                    About your farm
-                  </span>
-
-                  <textarea
-                    name="description"
-                    placeholder="Tell buyers briefly what you farm or sell..."
-                    value={formData.description}
-                    onChange={handleChange}
-                    rows="3"
-                    required
-                  />
-                </span>
-              </label>
-
-              <div className="farm-setup-divider" />
-
-              <div className="farm-setup-verification">
-                <div className="farm-setup-verification-icon">
-                  <FiShield size={18} />
-                </div>
-
-                <div className="farm-setup-verification-copy">
-                  <strong>Verification pending</strong>
-                  <span>
-                    Your farm will be reviewed by Farmart admin.
+            {submitted && !rejected && (
+              <div className="farm-setup-pending">
+                <div className="farm-setup-pending-orb">
+                  <span className="farm-setup-pending-ring" />
+                  <span className="farm-setup-pending-ring" />
+                  <span className="farm-setup-pending-ring" />
+                  <span className="farm-setup-pending-icon">
+                    <FiShield size={22} />
                   </span>
                 </div>
+
+                <h1 className="farm-setup-pending-title">
+                  Almost there!
+                </h1>
+
+                <p className="farm-setup-pending-copy">
+                  <strong>{formData.farmName}</strong> has been submitted for
+                  review. You'll be taken to your dashboard automatically
+                  once it's approved.
+                </p>
+
+                <span className="farm-setup-pending-faint">
+                  The admin will approve you soon
+                  <span className="farm-setup-pending-dots">
+                    <span />
+                    <span />
+                    <span />
+                  </span>
+                </span>
               </div>
+            )}
 
-              <button
-                type="submit"
-                className="farm-setup-submit"
-                disabled={isSaving}
-              >
-                {isSaving ? 'Saving your farm...' : 'Save & continue'}
-              </button>
-            </form>
+            {submitted && rejected && (
+              <div className="farm-setup-pending">
+                <div className="farm-setup-pending-orb">
+                  <span className="farm-setup-pending-icon" style={{ background: '#B2503E' }}>
+                    <FiShield size={22} />
+                  </span>
+                </div>
+
+                <h1 className="farm-setup-pending-title">
+                  Not approved this time
+                </h1>
+
+                <p className="farm-setup-rejected-copy">
+                  Your farm profile wasn't approved.
+                  {rejectionReason && (
+                    <>
+                      <br />
+                      <br />
+                      <strong>Admin's note:</strong> {rejectionReason}
+                    </>
+                  )}
+                  <br />
+                  <br />
+                  You can update your details and submit again.
+                </p>
+
+                <button
+                  type="button"
+                  className="farm-setup-submit"
+                  onClick={handleTryAgain}
+                >
+                  Try again
+                </button>
+              </div>
+            )}
+
+            {!submitted && (
+              <>
+                <h1 className="farm-setup-heading">Set up your farm</h1>
+
+                <p className="farm-setup-subtitle">
+                  Tell buyers a little about your farm before you start selling.
+                </p>
+
+                <form onSubmit={handleSubmit} className="farm-setup-form">
+                  <label className="farm-setup-field">
+                    <span className="farm-setup-field-icon">
+                      <FiHome size={18} />
+                    </span>
+
+                    <span className="farm-setup-field-content">
+                      <span className="farm-setup-field-label">Farm name</span>
+
+                      <input
+                        type="text"
+                        name="farmName"
+                        placeholder="e.g. Kiambu Green Pastures"
+                        value={formData.farmName}
+                        onChange={handleChange}
+                        required
+                      />
+                    </span>
+                  </label>
+
+                  <label className="farm-setup-field">
+                    <span className="farm-setup-field-icon">
+                      <FiMapPin size={18} />
+                    </span>
+
+                    <span className="farm-setup-field-content">
+                      <span className="farm-setup-field-label">Location</span>
+
+                      <input
+                        type="text"
+                        name="location"
+                        placeholder="e.g. Kiambu County"
+                        value={formData.location}
+                        onChange={handleChange}
+                        required
+                      />
+                    </span>
+                  </label>
+
+                  <label className="farm-setup-field">
+                    <span className="farm-setup-field-icon">
+                      <FiPhone size={18} />
+                    </span>
+
+                    <span className="farm-setup-field-content">
+                      <span className="farm-setup-field-label">
+                        Contact number
+                      </span>
+
+                      <input
+                        type="tel"
+                        name="contact"
+                        placeholder="e.g. 0712 345 678"
+                        value={formData.contact}
+                        onChange={handleChange}
+                        required
+                      />
+                    </span>
+                  </label>
+
+                  <label className="farm-setup-field">
+                    <span className="farm-setup-field-icon">
+                      <FiEdit3 size={18} />
+                    </span>
+
+                    <span className="farm-setup-field-content">
+                      <span className="farm-setup-field-label">
+                        About your farm
+                      </span>
+
+                      <textarea
+                        name="description"
+                        placeholder="Tell buyers briefly what you farm or sell..."
+                        value={formData.description}
+                        onChange={handleChange}
+                        rows="3"
+                        required
+                      />
+                    </span>
+                  </label>
+
+                  <div className="farm-setup-divider" />
+
+                  <div className="farm-setup-verification">
+                    <div className="farm-setup-verification-icon">
+                      <FiShield size={18} />
+                    </div>
+
+                    <div className="farm-setup-verification-copy">
+                      <strong>Verification pending</strong>
+                      <span>
+                        Your farm will be reviewed by Farmart admin.
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="farm-setup-submit"
+                    disabled={isSaving}
+                  >
+                    {isSaving ? 'Saving your farm...' : 'Save & continue'}
+                  </button>
+                </form>
+              </>
+            )}
           </div>
         </section>
       </main>
