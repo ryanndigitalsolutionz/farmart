@@ -50,7 +50,7 @@ function Marketplace() {
         dateProduced: '2026-08-10',
         expiryDate: '2026-08-24',
         quantity: 30,
-        price: 450,
+        price: 20,
         image: farmartImages.products.eggs[0],
       },
       {
@@ -60,7 +60,7 @@ function Marketplace() {
         dateProduced: '2026-08-25',
         expiryDate: '2026-08-30',
         quantity: 1000,
-        price: 180,
+        price: 70,
         image: farmartImages.products.milk[0],
       },
       {
@@ -70,7 +70,7 @@ function Marketplace() {
         dateProduced: '2026-08-18',
         expiryDate: '2026-09-18',
         quantity: 500,
-        price: 600,
+        price: 100,
         image: farmartImages.products.butter[0],
       },
     ],
@@ -473,7 +473,7 @@ function Marketplace() {
                         KSh {item.price.toLocaleString()}
                       </div>
 
-                      <Link to="/your-route" className="block w-full">
+                      <Link to={`/buyer/livestock/${item.id}`} className="block w-full">
                         <button
                             type="button"
                             className="marketplace-card-button w-full mt-[15px] p-[12px]

@@ -8,21 +8,21 @@ import { GiFarmTractor, GiDna2, GiHealthNormal } from "react-icons/gi";
 import { FaCalendarAlt, FaStar, FaHeart, FaRegHeart } from "react-icons/fa";
 import { useWishlist } from "../../context/WishlistContext";
 import ReviewList from "../../components/reviews/ReviewList";
+import { LuShoppingCart } from "react-icons/lu";
 
 function LivestockDetails() {
   const { id } = useParams();
   const { livestock, loading } = useLivestock();
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
-  const [selectedImage, setSelectedImage] = useState(null);
 
   if (loading) {
     return <p>Loading livestock...</p>;
   }
 
-  const animal = livestock.find((livestockAnimal) => livestockAnimal.id === id);
-  const mainImage = selectedImage || animal?.images?.[0];
-
+  const animal = livestock.find(
+    (livestockAnimal) => livestockAnimal.id === Number(id));
+  
   if (!animal) {
     return <p>Livestock not found.</p>;
   }
@@ -30,23 +30,10 @@ function LivestockDetails() {
   return (
     <div className="p-5 max-w-2xl mx-auto shadow-2xl m-1">
       <img
-        src={mainImage}
+        src={animal.image}
         alt={animal.type}
         className="w-full h-77 rounded-lg mb-4 object-cover object-[center_40%]"
       />
-
-      <div className="flex gap-3 flex-wrap">
-        {animal.images?.map((image, index) => (
-          <img
-            key={index}
-            src={image}
-            alt={`${animal.name} ${index + 1}`}
-            onClick={() => setSelectedImage(image)}
-            style={{ margin: "5px" }}
-            className="w-22.5 h-22.5 lg:w-27.5 lg:h-27.5 object-cover rounded-lg cursor-pointer"
-          />
-        ))}
-      </div>
 
       <div className="flex justify-end">
         <button
@@ -104,8 +91,9 @@ function LivestockDetails() {
           <span className="font-bold text-end">{animal.seller.name}</span>
           <div className="flex gap-2 text-sm items-center">
             <FaStar size={20} color="gold" />
-            <span>{animal.seller.rating}</span>
-            <div><ReviewList animalId={animal.id} /></div>
+            <span>{animal.seller.rating}</span>            
+            <ReviewList livestockId={animal.id} />
+            
           </div>
         </div>
       </div>
@@ -116,12 +104,22 @@ function LivestockDetails() {
       </p>
 
       {animal.availability?.toLowerCase() === "available" ? (
-        <div className="mb-4 mt-2 flex gap-2">
-          <button onClick={() => addToCart(animal)} className="bg-yellow-500 p-2 rounded-lg font-medium cursor-pointer">
+        <div className="mb-4 mt-2 flex gap-4 justify-center">
+          <button onClick={() => addToCart(animal)} 
+          className="w-70 mt-[15px] p-[12px] border border-[var(--farm-green)] rounded-[11px] bg-[var(--farm-green)]
+          text-white font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer
+          transition-[background,transform] duration-[160ms] ease-[ease]
+          hover:bg-[var(--farm-green-dark)] hover:translate-y-[-1px]"
+          >
             Add to Cart
           </button>
-          <Link to="/cart" className="bg-green-100 p-2 rounded-lg font-medium">
-            View cart
+
+          <Link 
+            to="/buyer/cart" 
+            className="fleX items-center justify-center w-50% 
+            mt-[15px] p-[12px] border border-[var(--farm-green)] rounded-[11px] bg-white"
+          >
+            <LuShoppingCart  size={29}/>
           </Link>
         </div>
       ) : (

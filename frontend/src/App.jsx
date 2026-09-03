@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { CartProvider } from './context/CartContext'
 import { LivestockProvider } from './context/LivestockContext'
+import { WishlistProvider } from './context/WishlistContext'
 
 import SplashScreen from './components/SplashScreen'
 import Header from './components/layout/Header'
@@ -62,64 +63,66 @@ function App() {
       </AnimatePresence>
 
     <LivestockProvider>
-      <CartProvider>
-        <Routes>
-          
-          <Route path="/" element={<LandingPage />} />
-
-          <Route path="/welcome" element={<Welcome />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/farm-setup" element={<FarmSetup />} />
-
-          <Route path="/farmer" element={<FarmerDashboardLayout />}>
-            <Route index element={<FarmerDashboard />} />
-            <Route path="dashboard" element={<FarmerDashboard />} />
-            <Route path="create-listing" element={<CreateListings />} />
-            <Route path="listings" element={<CreateListings />} />
-            <Route path="orders" element={<FarmerOrders />} />
-            <Route path="analytics" element={<FarmerAnalytics />} />
-            <Route path="farm-profile" element={<FarmProfile />} />
-            <Route path="profile" element={<FarmerProfile />} />
-          </Route>          
-        
-          <Route path="/buyer/*" element={<BuyerRoute />} />
+      <WishlistProvider>
+        <CartProvider>
+          <Routes>
             
-          <Route path="/admin">
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="users" element={<Users />} />
-            <Route path="farmers" element={<Farmers />} />
-            <Route
-              path="farmers/:farmerId"
-              element={<FarmerDetails />}
-            />
-            <Route
-              path="buyers/:buyerId"
-              element={<BuyerDetails />}
-            />
-            <Route path="listings" element={<Listings />} />
-            <Route path="orders" element={<AdminOrders />} />
-            <Route path="transactions" element={<Transactions />} />
-            <Route path="reports" element={<Reports />} />
-            <Route path="disputes" element={<Disputes />} />
-            <Route
-              path="announcements"
-              element={<Announcements />}
-            />
-            <Route path="settings" element={<Settings />} />
-          </Route>
+            <Route path="/" element={<LandingPage />} />
 
-          <Route
-            path="*"
-            element={<Navigate to="/" replace />}
-          />
-        
-      </Routes>
-      </CartProvider>
+            <Route path="/welcome" element={<Welcome />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/farm-setup" element={<FarmSetup />} />
+
+            <Route path="/farmer" element={<FarmerDashboardLayout />}>
+              <Route index element={<FarmerDashboard />} />
+              <Route path="dashboard" element={<FarmerDashboard />} />
+              <Route path="create-listing" element={<CreateListings />} />
+              <Route path="listings" element={<CreateListings />} />
+              <Route path="orders" element={<FarmerOrders />} />
+              <Route path="analytics" element={<FarmerAnalytics />} />
+              <Route path="farm-profile" element={<FarmProfile />} />
+              <Route path="profile" element={<FarmerProfile />} />
+            </Route>          
+          
+            <Route path="/buyer/*" element={<BuyerRoute />} />
+              
+            <Route path="/admin">
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="users" element={<Users />} />
+              <Route path="farmers" element={<Farmers />} />
+              <Route
+                path="farmers/:farmerId"
+                element={<FarmerDetails />}
+              />
+              <Route
+                path="buyers/:buyerId"
+                element={<BuyerDetails />}
+              />
+              <Route path="listings" element={<Listings />} />
+              <Route path="orders" element={<AdminOrders />} />
+              <Route path="transactions" element={<Transactions />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="disputes" element={<Disputes />} />
+              <Route
+                path="announcements"
+                element={<Announcements />}
+              />
+              <Route path="settings" element={<Settings />} />
+            </Route>
+
+            <Route
+              path="*"
+              element={<Navigate to="/" replace />}
+            />
+          
+        </Routes>
+        </CartProvider>
+      </WishlistProvider>
     </LivestockProvider>
     </>
   )
