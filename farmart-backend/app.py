@@ -1,6 +1,7 @@
 import os
 
 from flask import Flask
+from flask_restful import Api
 
 from config import Config
 from extensions import (
@@ -9,7 +10,6 @@ from extensions import (
     migrate,
     bcrypt,
     cors,
-    api,
 )
 
 from models import User, Profile
@@ -40,7 +40,7 @@ def create_app():
         supports_credentials=True,
     )
 
-    api.init_app(app)
+    api = Api(app)
 
     app.register_blueprint(
         auth_bp,

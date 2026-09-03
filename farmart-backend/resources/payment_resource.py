@@ -10,6 +10,7 @@ from models.order import Order, OrderStatus
 from schemas.payment_schema import PaymentSchema
 from services.mpesa_service import MpesaService
 
+
 payment_schema = PaymentSchema()
 payments_schema = PaymentSchema(many=True)
 
@@ -153,9 +154,15 @@ class MpesaCallbackResource(Resource):
 
         if not payment:
             return {
-                "ResultCode": 1,
-                "ResultDesc": "Payment not found",
-            }, 404
+                "ResultCode": 0,
+                "ResultDesc": "Callback received",
+            }, 200
+
+        if payment.status == PaymentStatus.COMPLETED:
+            return {
+                "ResultCode": 0,
+                "ResultDesc": "Payment already completed",
+            }, 200
 
         result_code = stk_callback.get("ResultCode")
 
@@ -175,7 +182,9 @@ class MpesaCallbackResource(Resource):
 
             payment.status = PaymentStatus.COMPLETED
 
-            receipt_number = metadata.get("MpesaReceiptNumber")
+            receipt_number = metadata.get(
+                "MpesaReceiptNumber"
+            )
 
             if receipt_number:
                 payment.transaction_id = str(receipt_number)
