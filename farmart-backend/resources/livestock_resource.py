@@ -1,15 +1,16 @@
-from flask import session, request
+from flask import request, session
 from flask_restful import Resource
 
-from models import db, Livestock
+from extensions import db
+from models.livestock import Livestock
 from schemas.livestock_schema import LivestockSchema
 
-
 livestock_schema = LivestockSchema()
-livestocks_schema = LivestockSchema(many=True)
+livestock_list_schema = LivestockSchema(many=True)
 
 
 class LivestockResource(Resource):
+
     def get(self, livestock_id=None):
         if livestock_id:
             livestock = db.session.get(Livestock, livestock_id)
@@ -21,8 +22,8 @@ class LivestockResource(Resource):
 
         livestock = Livestock.query.all()
 
-        return livestocks_schema.dump(livestock), 200
-    
+        return livestock_list_schema.dump(livestock), 200
+
     def post(self):
         farmer_id = session.get("user_id")
 
@@ -32,32 +33,33 @@ class LivestockResource(Resource):
         if session.get("user_role") != "farmer":
             return {"message": "Farmer access required"}, 403
 
-        data = livestock_schema.load(request.get_json())
+        data = request.get_json() or {}
 
-        livestock = Livestock(
-            farmer_id=farmer_id,
-            name=data.get("name"),
-            type=data["type"],
-            breed=data.get("breed"),
-            age=data.get("age"),
-            sex=data.get("sex"),
-            weight=data["weight"],
-            location=data["location"],
-            price=data["price"],
-            image=data.get("image"),
-            description=data.get("description"),
-            availability=data.get("availability"),
-            health_status=data.get("health_status"),
-            vaccinated=data.get("vaccinated"),
-            last_checkup=data.get("last_checkup"),
-        )
+        try:
+            livestock_data = livestock_schema.load(data)
 
-        db.session.add(livestock)
-        db.session.commit()
+            livestock = Livestock(
+                farmer_id=farmer_id,
+                **livestock_data,
+            )
 
-        return livestock_schema.dump(livestock), 201
+            db.session.add(livestock)
+            db.session.commit()
 
-    def patch(self, livestock_id):
+            return {
+                "message": "Livestock listing created successfully",
+                "livestock": livestock_schema.dump(livestock),
+            }, 201
+
+        except Exception as error:
+            db.session.rollback()
+
+            return {
+                "message": "Unable to create livestock listing",
+                "error": str(error),
+            }, 400
+
+    def put(self, livestock_id):
         farmer_id = session.get("user_id")
 
         if not farmer_id:
@@ -74,58 +76,61 @@ class LivestockResource(Resource):
         if livestock.farmer_id != farmer_id:
             return {"message": "Access denied"}, 403
 
-        data = livestock_schema.load(
-            request.get_json(),
-            partial=True,
-        )
+        data = request.get_json() or {}
 
-        if "name" in data:
-            livestock.name = data["name"]
+        try:
+            livestock_data = livestock_schema.load(
+                data,
+                partial=True,
+            )
 
-        if "type" in data:
-            livestock.type = data["type"]
+            for key, value in livestock_data.items():
+                setattr(livestock, key, value)
 
-        if "breed" in data:
-            livestock.breed = data["breed"]
+            db.session.commit()
 
-        if "age" in data:
-            livestock.age = data["age"]
+            return {
+                "message": "Livestock listing updated successfully",
+                "livestock": livestock_schema.dump(livestock),
+            }, 200
 
-        if "sex" in data:
-            livestock.sex = data["sex"]
+        except Exception as error:
+            db.session.rollback()
 
-        if "weight" in data:
-            livestock.weight = data["weight"]
+            return {
+                "message": "Unable to update livestock listing",
+                "error": str(error),
+            }, 400
 
-        if "location" in data:
-            livestock.location = data["location"]
+    def delete(self, livestock_id):
+        farmer_id = session.get("user_id")
 
-        if "price" in data:
-            livestock.price = data["price"]
+        if not farmer_id:
+            return {"message": "Authorization required"}, 401
 
-        if "image" in data:
-            livestock.image = data["image"]
+        if session.get("user_role") != "farmer":
+            return {"message": "Farmer access required"}, 403
 
-        if "description" in data:
-            livestock.description = data["description"]
+        livestock = db.session.get(Livestock, livestock_id)
 
-        if "availability" in data:
-            livestock.availability = data["availability"]
+        if not livestock:
+            return {"message": "Livestock not found"}, 404
 
-        if "health_status" in data:
-            livestock.health_status = data["health_status"]
+        if livestock.farmer_id != farmer_id:
+            return {"message": "Access denied"}, 403
 
-        if "vaccinated" in data:
-            livestock.vaccinated = data["vaccinated"]
+        try:
+            db.session.delete(livestock)
+            db.session.commit()
 
-        if "last_checkup" in data:
-            livestock.last_checkup = data["last_checkup"]
+            return {
+                "message": "Livestock listing deleted successfully",
+            }, 200
 
-        db.session.commit()
+        except Exception as error:
+            db.session.rollback()
 
-        return livestock_schema.dump(livestock), 200
-
-
-
-
-
+            return {
+                "message": "Unable to delete livestock listing",
+                "error": str(error),
+            }, 400

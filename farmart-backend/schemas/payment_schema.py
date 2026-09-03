@@ -6,7 +6,7 @@ from marshmallow import (
     pre_load,
 )
 
-from models import PaymentMethod
+from models.payment import PaymentMethod, PaymentStatus
 
 
 def _convert_camel_to_snake(data):
@@ -15,8 +15,13 @@ def _convert_camel_to_snake(data):
 
     replacements = {
         "orderId": "order_id",
-        "transactionReference": "transaction_reference",
+        "cardLast4": "card_last4",
+        "transactionId": "transaction_id",
+        "checkoutRequestId": "checkout_request_id",
+        "merchantRequestId": "merchant_request_id",
         "paidAt": "paid_at",
+        "createdAt": "created_at",
+        "updatedAt": "updated_at",
     }
 
     return {
@@ -29,8 +34,17 @@ class BaseSchema(Schema):
     class Meta:
         unknown = RAISE
 
-    id = fields.Integer(dump_only=True)
-    created_at = fields.DateTime(dump_only=True)
+    id = fields.Integer(
+        dump_only=True,
+    )
+
+    created_at = fields.DateTime(
+        dump_only=True,
+    )
+
+    updated_at = fields.DateTime(
+        dump_only=True,
+    )
 
 
 class PaymentSchema(BaseSchema):
@@ -45,17 +59,31 @@ class PaymentSchema(BaseSchema):
         places=2,
     )
 
-    payment_method = fields.Enum(
+    method = fields.Enum(
         PaymentMethod,
         by_value=True,
-        required=True,
-    )
-
-    transaction_reference = fields.String(
         dump_only=True,
     )
 
-    status = fields.String(
+    card_last4 = fields.String(
+        dump_only=True,
+    )
+
+    status = fields.Enum(
+        PaymentStatus,
+        by_value=True,
+        dump_only=True,
+    )
+
+    transaction_id = fields.String(
+        dump_only=True,
+    )
+
+    checkout_request_id = fields.String(
+        dump_only=True,
+    )
+
+    merchant_request_id = fields.String(
         dump_only=True,
     )
 

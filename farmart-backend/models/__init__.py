@@ -8,6 +8,7 @@ from models.livestock import Livestock
 from models.order import Order, OrderStatus
 from models.order_item import OrderItem
 from models.payment import Payment, PaymentMethod, PaymentStatus
+from models.product import Product
 from models.wishlist import Wishlist
 from models.review import Review
 
@@ -24,6 +25,7 @@ __all__ = [
     "Payment",
     "PaymentMethod",
     "PaymentStatus",
+    "Product",
     "Wishlist",
     "Review",
 ]

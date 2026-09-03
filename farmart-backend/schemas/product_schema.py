@@ -7,8 +7,8 @@ def _convert_camel_to_snake(data):
 
     replacements = {
         "farmerId": "farmer_id",
-        "weightUnit": "weight_unit",
-        "healthInformation": "health_information",
+        "dateProduced": "date_produced",
+        "expiryDate": "expiry_date",
         "createdAt": "created_at",
         "updatedAt": "updated_at",
     }
@@ -19,7 +19,7 @@ def _convert_camel_to_snake(data):
     }
 
 
-class LivestockSchema(Schema):
+class ProductSchema(Schema):
     class Meta:
         unknown = RAISE
 
@@ -28,7 +28,8 @@ class LivestockSchema(Schema):
     )
 
     farmer_id = fields.Integer(
-        dump_only=True,
+        required=True,
+        validate=validate.Range(min=1),
     )
 
     name = fields.String(
@@ -41,33 +42,7 @@ class LivestockSchema(Schema):
         validate=validate.Length(min=1),
     )
 
-    breed = fields.String(
-        required=True,
-        validate=validate.Length(min=1),
-    )
-
-    age = fields.Integer(
-        required=True,
-        validate=validate.Range(min=0),
-    )
-
-    sex = fields.String(
-        required=True,
-        validate=validate.Length(min=1),
-    )
-
-    weight = fields.Decimal(
-        allow_none=True,
-        as_string=True,
-        places=2,
-        validate=validate.Range(min=0),
-    )
-
-    weight_unit = fields.String(
-        allow_none=True,
-    )
-
-    location = fields.String(
+    description = fields.String(
         required=True,
         validate=validate.Length(min=1),
     )
@@ -79,21 +54,32 @@ class LivestockSchema(Schema):
         validate=validate.Range(min=0),
     )
 
-    quantity = fields.Integer(
+    quantity = fields.Decimal(
         required=True,
-        validate=validate.Range(min=1),
+        as_string=True,
+        places=2,
+        validate=validate.Range(min=0),
     )
 
-    image = fields.String(
-        allow_none=True,
-    )
-
-    description = fields.String(
+    unit = fields.String(
         required=True,
         validate=validate.Length(min=1),
     )
 
-    health_information = fields.String(
+    date_produced = fields.Date(
+        required=True,
+    )
+
+    expiry_date = fields.Date(
+        required=True,
+    )
+
+    location = fields.String(
+        required=True,
+        validate=validate.Length(min=1),
+    )
+
+    image = fields.String(
         allow_none=True,
     )
 
