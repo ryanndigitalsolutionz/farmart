@@ -10,8 +10,6 @@ def _convert_camel_to_snake(data):
         "livestockId": "livestock_id",
         "productId": "product_id",
         "unitPrice": "unit_price",
-        "createdAt": "created_at",
-        "updatedAt": "updated_at",
     }
 
     return {

@@ -9,7 +9,9 @@ def _convert_camel_to_snake(data):
 
     replacements = {
         "buyerId": "buyer_id",
-        "totalAmount": "total_amount",
+        "livestockId": "livestock_id",
+        "productId": "product_id",
+        "unitPrice": "unit_price",
         "createdAt": "created_at",
         "updatedAt": "updated_at",
     }
@@ -21,21 +23,52 @@ def _convert_camel_to_snake(data):
 
 
 class OrderItemSchema(Schema):
-    id = fields.Integer(dump_only=True)
-    livestock_id = fields.Integer(allow_none=True)
-    product_id = fields.Integer(allow_none=True)
-    quantity = fields.Integer(required=True)
-    unit_price = fields.Decimal(as_string=True, places=2)
-    subtotal = fields.Decimal(as_string=True, places=2)
+    class Meta:
+        unknown = RAISE
+
+    id = fields.Integer(
+        dump_only=True,
+    )
+
+    livestock_id = fields.Integer(
+        allow_none=True,
+    )
+
+    product_id = fields.Integer(
+        allow_none=True,
+    )
+
+    quantity = fields.Integer(
+        required=True,
+        validate=validate.Range(min=1),
+    )
+
+    unit_price = fields.Decimal(
+        as_string=True,
+        places=2,
+    )
+
+    subtotal = fields.Decimal(
+        as_string=True,
+        places=2,
+    )
 
 
 class BaseSchema(Schema):
     class Meta:
         unknown = RAISE
 
-    id = fields.Integer(dump_only=True)
-    created_at = fields.DateTime(dump_only=True)
-    updated_at = fields.DateTime(dump_only=True)
+    id = fields.Integer(
+        dump_only=True,
+    )
+
+    created_at = fields.DateTime(
+        dump_only=True,
+    )
+
+    updated_at = fields.DateTime(
+        dump_only=True,
+    )
 
 
 class OrderSchema(BaseSchema):

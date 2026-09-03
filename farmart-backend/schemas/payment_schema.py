@@ -19,6 +19,7 @@ def _convert_camel_to_snake(data):
         "transactionId": "transaction_id",
         "checkoutRequestId": "checkout_request_id",
         "merchantRequestId": "merchant_request_id",
+        "paidAt": "paid_at",
         "createdAt": "created_at",
         "updatedAt": "updated_at",
     }
@@ -33,9 +34,17 @@ class BaseSchema(Schema):
     class Meta:
         unknown = RAISE
 
-    id = fields.Integer(dump_only=True)
-    created_at = fields.DateTime(dump_only=True)
-    updated_at = fields.DateTime(dump_only=True)
+    id = fields.Integer(
+        dump_only=True,
+    )
+
+    created_at = fields.DateTime(
+        dump_only=True,
+    )
+
+    updated_at = fields.DateTime(
+        dump_only=True,
+    )
 
 
 class PaymentSchema(BaseSchema):
@@ -75,6 +84,10 @@ class PaymentSchema(BaseSchema):
     )
 
     merchant_request_id = fields.String(
+        dump_only=True,
+    )
+
+    paid_at = fields.DateTime(
         dump_only=True,
     )
 

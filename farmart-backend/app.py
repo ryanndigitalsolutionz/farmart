@@ -20,6 +20,9 @@ from resources.payment_resource import PaymentResource, MpesaCallbackResource
 from resources.livestock_resource import LivestockResource
 from resources.product_resource import ProductResource
 from resources.order_resource import OrderResource
+from resources.order_item_resource import OrderItemsResource
+from resources.review_resource import ReviewResource
+from resources.wishlist_resource import WishlistResource
 
 
 def create_app():
@@ -40,8 +43,49 @@ def create_app():
         ],
         supports_credentials=True,
     )
-
+    
     api = Api(app)
+
+    api.add_resource(
+        LivestockResource,
+        "/livestock",
+        "/livestock/<int:livestock_id>",
+    )
+
+    api.add_resource(
+        WishlistResource,
+        "/wishlist",
+        "/wishlist/<int:wishlist_id>",
+    )
+
+    api.add_resource(
+        ReviewResource,
+        "/reviews",
+        "/reviews/<int:review_id>",
+    )
+
+    api.add_resource(
+        OrderResource,
+        "/orders",
+        "/orders/<int:order_id>",
+    )
+
+    api.add_resource(
+        OrderItemsResource,
+        "/order-items",
+        "/order-items/<int:item_id>",
+    )
+
+    api.add_resource(
+        PaymentResource,
+        "/payments",
+        "/payments/<int:payment_id>",
+    )
+
+    app.register_blueprint(
+        auth_bp,
+        url_prefix="/auth",
+    )
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(google_callback_bp, url_prefix="/auth")

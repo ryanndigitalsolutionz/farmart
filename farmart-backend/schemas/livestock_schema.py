@@ -23,11 +23,12 @@ class LivestockSchema(Schema):
     class Meta:
         unknown = RAISE
 
-    id = fields.Integer(dump_only=True)
+    id = fields.Integer(
+        dump_only=True,
+    )
 
     farmer_id = fields.Integer(
-        required=True,
-        validate=validate.Range(min=1),
+        dump_only=True,
     )
 
     name = fields.String(

@@ -40,8 +40,7 @@ class Review(db.Model):
     )
 
     buyer = db.relationship(
-        "User", 
-        back_populates="reviews"
+        "User"
     )
     livestock = db.relationship(
         "Livestock", 

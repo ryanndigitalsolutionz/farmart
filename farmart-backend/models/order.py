@@ -30,6 +30,7 @@ class Order(db.Model):
     status = db.Column(
         db.Enum(OrderStatus),
         nullable=False,
+        default=OrderStatus.PENDING,
     )
 
     created_at = db.Column(
@@ -61,3 +62,4 @@ class Order(db.Model):
         back_populates="order",
         cascade="all, delete-orphan",
     )
+    

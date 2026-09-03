@@ -232,6 +232,7 @@ function Marketplace() {
               />
             </div>
 
+            {/*TODO: heading fix to align */}
             <div className="marketplace-heading">
               <h1 className=' m-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] 
               text-[clamp(36px,6vw,50px)] font-bold leading-[1.1] tracking-[-1px]'
@@ -239,8 +240,8 @@ function Marketplace() {
                 Find what your farm has to offer.
               </h1>
 
-              <p className='max-w-[620px] mx-auto mt-[14px] text-[var(--farm-muted)] 
-              font-[var(--farm-body-font)] text-[15px] leading-[1.8]'>
+              <p className='max-w-[700px] mx-auto mt-[16px] text-[var(--farm-muted)] 
+              font-[var(--farm-body-font)] text-[15px] leading-[1.8] text-center px-15'>
                 Discover livestock and farm products directly
                 from farmers, with transparent prices and
                 trustworthy listings.
@@ -449,6 +450,11 @@ function Marketplace() {
                             <div className="marketplace-info-item text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[12px] leading-[1.5]">
                               Location: {item.location}
                             </div>
+
+                            <div className="marketplace-info-item text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[12px] leading-[1.5] text-[var(--farm-green-dark)] font-bold">
+                              Availability: {item.availability}
+                            </div>                           
+
                           </>
                         ) : (
                           <>

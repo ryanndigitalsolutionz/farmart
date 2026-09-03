@@ -3,6 +3,7 @@ from enum import Enum
 
 from extensions import db
 
+
 class PaymentMethod(Enum):
     CARD = "card"
     MPESA = "mpesa"
@@ -19,7 +20,10 @@ class PaymentStatus(Enum):
 class Payment(db.Model):
     __tablename__ = "payments"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+    )
 
     order_id = db.Column(
         db.Integer,
@@ -64,6 +68,11 @@ class Payment(db.Model):
         nullable=True,
     )
 
+    paid_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=True,
+    )
+
     created_at = db.Column(
         db.DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
@@ -81,3 +90,4 @@ class Payment(db.Model):
         "Order",
         back_populates="payments",
     )
+    

@@ -25,3 +25,4 @@ dist-ssr
 farmart-backend/.env
 farmart-backend/instance/
 farmart-backend/migrations/
+farmart-backend/__pycache__/
