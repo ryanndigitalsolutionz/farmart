@@ -1,4 +1,4 @@
-# app.py
+
 from flask import Flask
 
 from config import Config
@@ -15,6 +15,9 @@ from models import User, Profile
 
 from resources.auth_resource import auth_bp
 from resources.google_callback_resource import google_callback_bp
+from resources.payment_resource import PaymentResource, MpesaCallbackResource
+from resources.livestock_resource import LivestockResource
+from resources.product_resource import ProductResource
 
 
 def create_app():
@@ -46,6 +49,27 @@ def create_app():
     app.register_blueprint(
         google_callback_bp,
         url_prefix="/auth",
+    )
+
+    api.add_resource(
+        PaymentResource,
+        "/payments",
+        "/payments/<int:payment_id>",
+    )
+
+    api.add_resource(
+        MpesaCallbackResource,
+        "/payments/mpesa/callback",
+    )
+    api.add_resource(
+        LivestockResource,
+        "/livestock",
+        "/livestock/<int:livestock_id>",
+    )
+    api.add_resource(
+        ProductResource,
+        "/products",
+        "/products/<int:product_id>",
     )
 
     return app
