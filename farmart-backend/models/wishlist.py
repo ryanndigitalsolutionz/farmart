@@ -26,8 +26,7 @@ class Wishlist(db.Model):
     )
 
     buyer = db.relationship(
-        "User", 
-        back_populates="wishlist"
+        "User"
     )
     livestock = db.relationship(
         "Livestock", 

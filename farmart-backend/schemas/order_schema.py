@@ -17,13 +17,11 @@ def _convert_camel_to_snake(data):
         "buyerId": "buyer_id",
         "livestockId": "livestock_id",
         "createdAt": "created_at",
-        
     }
 
-    return {
-        replacements.get(k, k): _convert_camel_to_snake(v)
-        for k, v in data.items()
-    }
+    return {replacements.get(k, k): _convert_camel_to_snake(v) for k, v in data.items()}
+
+
 class BaseSchema(Schema):
     class Meta:
         unknown = RAISE
@@ -37,6 +35,14 @@ class OrderSchema(BaseSchema):
     buyer_id = fields.Integer(
         dump_only=True,
     )
+    livestock_id = fields.Integer(
+        required=True,
+        validate=validate.Range(min=1),
+    )
+    quantity = fields.Integer(
+        required=True,
+        validate=validate.Range(min=1),
+    )
 
     total_amount = fields.Decimal(
         dump_only=True,
@@ -44,7 +50,7 @@ class OrderSchema(BaseSchema):
         places=2,
         validate=validate.Range(min=0),
     )
-    
+
     status = fields.String(
         dump_only=True,
     )

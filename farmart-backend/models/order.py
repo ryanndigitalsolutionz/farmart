@@ -47,8 +47,7 @@ class Order(db.Model):
     )
 
     buyer = db.relationship(
-        "User", 
-        back_populates="orders"
+        "User"
     )
 
     payments = db.relationship(
