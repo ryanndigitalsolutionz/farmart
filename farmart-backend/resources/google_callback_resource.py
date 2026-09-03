@@ -4,7 +4,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, jsonify, redirect, request, session
 
 from config import Config
 from extensions import db
@@ -32,10 +32,6 @@ GOOGLE_USERINFO_URL = (
     methods=["GET"],
 )
 def google_callback():
-    """
-    Handle Google's OAuth callback.
-    """
-
     error = request.args.get("error")
 
     if error:
@@ -59,9 +55,8 @@ def google_callback():
             "error": "Missing OAuth state.",
         }), 400
 
-    saved_state = session.pop(
+    saved_state = session.get(
         "google_oauth_state",
-        None,
     )
 
     if (
@@ -75,6 +70,11 @@ def google_callback():
             "success": False,
             "error": "Invalid OAuth state.",
         }), 400
+
+    session.pop(
+        "google_oauth_state",
+        None,
+    )
 
     role = session.pop(
         "google_oauth_role",
@@ -119,7 +119,6 @@ def google_callback():
         with urllib.request.urlopen(
             token_request
         ) as response:
-
             token_response = json.loads(
                 response.read().decode("utf-8")
             )
@@ -158,7 +157,6 @@ def google_callback():
         with urllib.request.urlopen(
             user_request
         ) as response:
-
             google_user = json.loads(
                 response.read().decode("utf-8")
             )
@@ -202,7 +200,6 @@ def google_callback():
         ).first()
 
     if not user:
-
         user = User(
             first_name=first_name or "",
             last_name=last_name or "",
@@ -217,7 +214,6 @@ def google_callback():
         db.session.flush()
 
     else:
-
         if not user.google_id:
             user.google_id = google_id
 
@@ -232,7 +228,6 @@ def google_callback():
     ).first()
 
     if not profile:
-
         profile = Profile(
             user_id=user.id,
             profile_picture=picture,
@@ -241,7 +236,6 @@ def google_callback():
         db.session.add(profile)
 
     elif picture:
-
         profile.profile_picture = picture
 
     db.session.commit()
@@ -249,27 +243,22 @@ def google_callback():
     session["user_id"] = user.id
     session["user_role"] = user.role
 
+    if user.role == "farmer":
+        return redirect(
+            "http://localhost:5173/farm-setup"
+        )
+
+    if user.role == "buyer":
+        return redirect(
+            "http://localhost:5173/buyer/marketplace"
+        )
+
+    if user.role == "admin":
+        return redirect(
+            "http://localhost:5173/admin/dashboard"
+        )
+
     return jsonify({
-        "success": True,
-        "message": (
-            "Google authentication "
-            "successful."
-        ),
-        "user": {
-            "id": user.id,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "email": user.email,
-            "google_id": user.google_id,
-            "role": user.role,
-            "is_verified": user.is_verified,
-            "profile": {
-                "id": profile.id,
-                "phone": profile.phone,
-                "location": profile.location,
-                "profile_picture": (
-                    profile.profile_picture
-                ),
-            },
-        },
-    }), 200
+        "success": False,
+        "error": "Unable to determine user role.",
+    }), 400

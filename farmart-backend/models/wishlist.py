@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from . import db
+from extensions import db
 
 class Wishlist(db.Model):
     __tablename__ = "wishlist"
@@ -26,8 +26,7 @@ class Wishlist(db.Model):
     )
 
     buyer = db.relationship(
-        "User", 
-        back_populates="wishlist"
+        "User"
     )
     livestock = db.relationship(
         "Livestock", 

@@ -22,12 +22,31 @@ class User(db.Model):
     )
 
     profile = db.relationship(
-        "Profile", backref="user", uselist=False, cascade="all, delete-orphan"
+        "Profile",
+        backref="user",
+        uselist=False,
+        cascade="all, delete-orphan",
     )
-    livestock = db.relationship("Livestock", back_populates="farmer")
-    orders = db.relationship("Order", back_populates="buyer")
-    reviews = db.relationship("Review", back_populates="buyer")
-    wishlist = db.relationship("Wishlist", back_populates="buyer")
+    livestock = db.relationship(
+        "Livestock",
+        back_populates="farmer",
+    )
+    products = db.relationship(
+        "Product",
+        back_populates="farmer",
+    )
+    orders = db.relationship(
+        "Order",
+        back_populates="buyer",
+    )
+    reviews = db.relationship(
+        "Review",
+        back_populates="buyer",
+    )
+    wishlist = db.relationship(
+        "Wishlist",
+        back_populates="buyer",
+    )
 
     def __repr__(self):
         return f"<User {self.email}>"

@@ -19,7 +19,9 @@ function FilterPanel({
   setMaxPrice,
 }) {
   return (
-    <div className="filter-panel">
+    <div 
+      className="filter-panel flex flex-wrap overflow-hidden 
+      gap-4 items-center p-4  border-2 rounded-2xl border-(--farm-green-border)  w-full">
 
       <LivestockTypeFilter
         type={type}

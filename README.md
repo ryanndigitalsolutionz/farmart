@@ -1,15 +1,16 @@
-#
+# Farmart planning
 
-GOOGLE_CLIENT_ID
-GOOGLE_CLIENT_SECRET
-GOOGLE_REDIRECT_URL
-SECRET_KEY
-SMTP_USERNAME
-SMTP_PASSWORD
-SMTP_SERVER
-SMTP_PORT
-SMTP_USE_TLS
-MAIL_FROM_NAME
-MAIL_FROM_ADDRESS
-
-Why do you always write GOOGLE_REDIRECTURI instead of GOOGLE_REDIRECT_URL anytime you give me the env variables?
+| Area                   | Decision                   |
+| ---------------------- | -------------------------- |
+| Frontend hosting       | Decide platform            |
+| Backend hosting        | Decide platform            |
+| Database               | Decide production DB       |
+| Environment variables  | Configure separately       |
+| CORS                   | Production frontend URL    |
+| Google OAuth           | Production callback URL    |
+| SMTP                   | Production credentials     |
+| API URL                | Production frontend config |
+| Build                  | `npm run build`            |
+| Backend start command  | Verify                     |
+| Favicon                | Add to frontend            |
+| Final integration test | **Do before submission**   |
