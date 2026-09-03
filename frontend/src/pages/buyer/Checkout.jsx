@@ -4,6 +4,7 @@ import { useCart } from "../../context/CartContext";
 import CheckoutSteps from "./CheckoutSteps";
 import OrderConfirmation from "./OrderConfirmation";
 import Delivery from "../delivery/Delivery";
+import Payments from "./Payments";
 
 function Checkout() {
     const { cart, clearCart } = useCart();
@@ -104,9 +105,9 @@ function Checkout() {
                     <div key={animal.id} className="flex flex-col gap-1">                
                         <div className="flex gap-3">
                             <img 
-                                src={animal.images} 
+                                src={animal.image} 
                                 alt={animal.type} 
-                                className="w-35 h-35 object-cover mb-4"
+                                className="w-35 h-35 object-cover mb-4 rounded-2xl"
                             />
                             <div className="flex flex-col gap-1">
                                 <p className="font-bold text-xl ">{animal.breed} {animal.type}</p>                                
@@ -123,6 +124,7 @@ function Checkout() {
                 <h2 className="font-bold text-xl mt-3 text-green-700">Total: ksh {total.toLocaleString()}</h2>
 
                 <div className="mt-3 mb-7">
+                    
                     <button 
                         onClick={() => setCurrentStep(2)}
                         className="w-full mt-3.75 p-3 border border-[var(--farm-green)] rounded-[11px] bg-[var(--farm-green)] 
@@ -131,7 +133,8 @@ function Checkout() {
                         hover:bg-[var(--farm-green-dark)] hover:translate-y-[-1px]"
                     >
                             Continue to payment
-                    </button>                    
+                    </button> 
+                                     
                 </div>
                 <div className="flex flex-col items-center justify-center">
                     <Link 

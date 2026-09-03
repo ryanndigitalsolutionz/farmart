@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
+import { FaTrash } from "react-icons/fa";
 
 function Cart() {
     const { cart, removeFromCart} = useCart();
@@ -11,7 +12,7 @@ function Cart() {
     )
 
   return (
-    <div className="p-4 ">
+    <div className="p-4 max-w-3xl mx-auto shadow-2xl m-1">
         <div className="text-center">
             <h1 className="text-2xl font-bold">Shopping Cart ({cart.length})</h1>
             <p className="font-medium">{itemCount} item{itemCount !== 1 ? "s" : ""}</p>
@@ -53,7 +54,7 @@ function Cart() {
                             className="w-30 h-30 object-cover rounded-xl"
                         />
                         <div className="">
-                            <h2>{animal.name}</h2>
+                            <h2 className="font-bold">{animal.type} ({animal.breed})</h2>
 
                             <p>Type: {animal.type}</p>
                             <p>Breed: {animal.breed}</p>
@@ -61,8 +62,8 @@ function Cart() {
 
                             <button 
                                 onClick={() => removeFromCart(animal.id)} 
-                                className="border bg-green-100 p-1 rounded-lg mt-1">
-                                Remove
+                                className="mt-1">
+                                <FaTrash size={20} className="text-red-500" />
                             </button>
                             </div>
                     </div>
