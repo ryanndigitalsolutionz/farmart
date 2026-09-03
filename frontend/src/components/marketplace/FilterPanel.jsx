@@ -21,7 +21,8 @@ function FilterPanel({
   return (
     <div 
       className="filter-panel flex flex-wrap overflow-hidden 
-      gap-4 items-center p-4  border-2 rounded-2xl border-(--farm-green-border)  w-full">
+      gap-4 items-center p-4 pl-15 border-2 rounded-2xl 
+      border-(--farm-green-border)  w-full shadow-xl">
 
       <LivestockTypeFilter
         type={type}

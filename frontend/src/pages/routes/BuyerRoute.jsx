@@ -5,7 +5,7 @@ import BuyerProfile from '../buyer/Profile'
 import Cart from '../buyer/Cart'
 import Checkout from '../buyer/Checkout'
 import LivestockDetails from '../marketplace/LivestockDetails'
-import BuyerPayments from '../buyer/Payments'
+import Payments from '../buyer/Payments'
 import BuyerOrders from '../buyer/Orders'
 import OrderDetails from '../buyer/OrderDetails'
 import OrderConfirmation from '../buyer/OrderConfirmation'
@@ -21,7 +21,7 @@ function BuyerRoute() {
         <Route path="cart" element={<Cart />} />
         <Route path="checkout" element={<Checkout />} />
         <Route path="livestock/:id" element={<LivestockDetails />} />
-        <Route path="payments" element={<BuyerPayments />} />
+        <Route path="payments/:id" element={<Payments />} />
         <Route path="orders" element={<BuyerOrders />} />      
 
         <Route path="orders/:orderId" element={<OrderDetails />} />

@@ -1,7 +1,13 @@
 function SortDropdown({ sort, setSort }) {
   return (
-    <div>
-        <select value={sort} onChange={(e) => setSort(e.target.value)}>
+    <div 
+      className="flex items-center"
+    >
+        <select 
+          value={sort} 
+          onChange={(e) => setSort(e.target.value)}
+          className="border-2 border-(--farm-green-border) rounded-xl p-2 "
+        >
             <option value="">Sort by</option>
             <option value="price-low">Price: Low to High</option>
             <option value="price-high">Price: High to low</option>
