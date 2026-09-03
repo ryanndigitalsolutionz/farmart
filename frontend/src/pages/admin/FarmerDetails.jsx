@@ -1,5 +1,9 @@
+import PageHeader from "../../components/layout/PageHeader";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAdmin } from "../../hooks/useAdmin";
+import { getFarmerDetail, verifyFarmer, rejectFarmer, suspendUser } from "../../services/adminApi";
+import RejectReasonModal from "../../components/common/RejectReasonModal";
 
 export default function FarmerDetails() {
   const { farmerId } = useParams();
@@ -7,33 +11,27 @@ export default function FarmerDetails() {
   const { refreshOverview } = useAdmin();
   const [farmer, setFarmer] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
 
   useEffect(() => {
-    getFarmerDetail(farmerId).then(setFarmer).catch(console.error);
+    getFarmerDetail(farmerId).then(setFarmer).catch(() => setFarmer(null));
   }, [farmerId]);
 
   const handleVerify = async () => {
     setBusy(true);
-    try {
-      await verifyFarmer(farmerId);
-      refreshOverview();
-      navigate("/admin/dashboard");
-    } finally {
-      setBusy(false);
-    }
+    await verifyFarmer(farmerId);
+    refreshOverview();
+    navigate("/admin/dashboard");
+    setBusy(false);
   };
 
-  const handleReject = async () => {
-    const reason = window.prompt("Reason for rejecting this farmer?");
-    if (reason === null) return;
+  const handleRejectSubmit = async (reason) => {
     setBusy(true);
-    try {
-      await rejectFarmer(farmerId, reason);
-      refreshOverview();
-      navigate("/admin/dashboard");
-    } finally {
-      setBusy(false);
-    }
+    await rejectFarmer(farmerId, reason);
+    refreshOverview();
+    setShowRejectModal(false);
+    navigate("/admin/dashboard");
+    setBusy(false);
   };
 
   const handleSuspend = async () => {
@@ -52,8 +50,8 @@ export default function FarmerDetails() {
   return (
     <div style={{ maxWidth: 640 }}>
       <PageHeader
-        title={farmer.farm_name}
-        subtitle={`${farmer.location} · joined ${farmer.joined_date || "—"}`}
+        title={farmer.farm_name || "(No farm name yet)"}
+        subtitle={`${farmer.location || "—"} · joined ${farmer.joined_date ? new Date(farmer.joined_date).toLocaleDateString() : "—"}`}
       />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 22 }}>
@@ -65,8 +63,8 @@ export default function FarmerDetails() {
       <div style={{ border: "1px solid var(--border, #DCE6D8)", borderRadius: 14, padding: 18, marginBottom: 20 }}>
         <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>Contact</div>
         <div style={{ fontSize: 12.5, color: "var(--text-muted, #66766A)", lineHeight: 1.8 }}>
-          <div>📞 {farmer.phone_number || "—"}</div>
-          <div>✉️ {farmer.email || "—"}</div>
+          <div>Phone: {farmer.phone_number || "—"}</div>
+          <div>Email: {farmer.email || "—"}</div>
         </div>
         {farmer.description && (
           <>
@@ -76,14 +74,24 @@ export default function FarmerDetails() {
             </p>
           </>
         )}
+        {farmer.status === "rejected" && farmer.rejection_reason && (
+          <>
+            <div style={{ fontWeight: 700, fontSize: 13, margin: "16px 0 6px", color: "#B2503E" }}>
+              Rejection reason sent to farmer
+            </div>
+            <p style={{ fontSize: 12.5, color: "var(--text-muted, #66766A)", lineHeight: 1.6 }}>
+              {farmer.rejection_reason}
+            </p>
+          </>
+        )}
       </div>
 
-      {!farmer.is_verified ? (
+      {farmer.status !== "verified" ? (
         <div style={{ display: "flex", gap: 10 }}>
           <button onClick={handleVerify} disabled={busy} style={primaryBtn}>
             {busy ? "Working…" : "Approve verification"}
           </button>
-          <button onClick={handleReject} disabled={busy} style={dangerOutlineBtn}>
+          <button onClick={() => setShowRejectModal(true)} disabled={busy} style={dangerOutlineBtn}>
             Reject
           </button>
         </div>
@@ -96,6 +104,14 @@ export default function FarmerDetails() {
             Suspend account
           </button>
         </div>
+      )}
+
+      {showRejectModal && (
+        <RejectReasonModal
+          farmerName={farmer.farm_name}
+          onCancel={() => setShowRejectModal(false)}
+          onSubmit={handleRejectSubmit}
+        />
       )}
     </div>
   );
@@ -131,4 +147,3 @@ const dangerOutlineBtn = {
   fontWeight: 700,
   cursor: "pointer",
 };
-// commit 29

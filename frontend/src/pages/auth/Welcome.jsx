@@ -269,15 +269,6 @@ function Welcome() {
 
             </div>
 
-            <button
-              type="button"
-              className="admin-link"
-              onClick={() => handleRoleSelect('admin')}
-            >
-              Platform administrator?
-              <span>Continue as Admin</span>
-            </button>
-
           </div>
         </section>
       </main>
