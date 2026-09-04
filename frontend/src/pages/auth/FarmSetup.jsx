@@ -1,155 +1,292 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  Home,
-  MapPin,
-  ShoppingBag,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react'
-import { useAuth } from '../../context/AuthContext'
+  FaMapMarkerAlt as MapPin,
+  FaPhone as Phone,
+  FaHome as House,
+  FaPen as PenLine,
+  FaShieldAlt as ShieldCheck,
+} from "react-icons/fa";
 
-const FARM_TYPES = [
-  'Crop farming',
-  'Livestock',
-  'Poultry',
-  'Mixed farming',
-  'Other',
-]
-
-const PRODUCT_CATEGORIES = [
-  'Vegetables',
-  'Fruits',
-  'Cereals',
-  'Dairy',
-  'Eggs',
-  'Poultry',
-  'Livestock',
-  'Herbs',
-  'Other',
-]
-
-const STEPS = [
-  { label: 'About your farm', icon: Home },
-  { label: 'Location', icon: MapPin },
-  { label: 'What you sell', icon: ShoppingBag },
-  { label: 'Review', icon: Check },
-]
-
-const STORAGE_KEY = 'farmart_farmSetupDraft'
-
-function loadDraft() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
-  } catch {
-    // ignore
-  }
-  return null
-}
+const API_BASE_URL = "http://localhost:5000";
 
 function FarmSetup() {
-  const navigate = useNavigate()
-  const { user, updateFarmProfile } = useAuth()
+  const navigate = useNavigate();
 
-  const [step, setStep] = useState(() => {
-    const draft = loadDraft()
-    return draft?.step || 0
-  })
+  const [formData, setFormData] = useState({
+    farmName: "",
+    location: "",
+    contact: "",
+    description: "",
+  });
 
-  const [formData, setFormData] = useState(() => {
-    const draft = loadDraft()
-    return {
-      farmName: draft?.farmName || '',
-      farmType: draft?.farmType || '',
-      county: draft?.county || '',
-      town: draft?.town || '',
-      detailedLocation: draft?.detailedLocation || '',
-      products: draft?.products || [],
-    }
-  })
+  const [isSaving, setIsSaving] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
 
-  const [isSaving, setIsSaving] = useState(false)
+  const handleChange = (event) => {
+    const { name, value } = event.target;
 
-  useEffect(() => {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ step, ...formData })
-    )
-  }, [step, formData])
+    setFormData((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+  };
 
-  const updateField = (name, value) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-  const toggleProduct = (product) => {
-    setFormData((prev) => ({
-      ...prev,
-      products: prev.products.includes(product)
-        ? prev.products.filter((p) => p !== product)
-        : [...prev.products, product],
-    }))
-  }
-
-  const canProceed = () => {
-    if (step === 0) return formData.farmName.trim().length > 0
-    if (step === 1) return formData.county.trim().length > 0 && formData.town.trim().length > 0
-    if (step === 2) return formData.products.length > 0
-    return true
-  }
-
-  const handleNext = () => {
-    if (step < STEPS.length - 1) {
-      setStep((s) => s + 1)
-    }
-  }
-
-  const handleBack = () => {
-    if (step > 0) {
-      setStep((s) => s - 1)
-    }
-  }
-
-  const handleSubmit = async () => {
-    setIsSaving(true)
-
-    const profile = {
-      farmName: formData.farmName,
-      farmType: formData.farmType,
-      location: `${formData.town}, ${formData.county}`,
-      county: formData.county,
-      town: formData.town,
-      detailedLocation: formData.detailedLocation,
-      products: formData.products,
-      verificationStatus: 'pending',
-    }
+    setError("");
+    setIsSaving(true);
 
     try {
-      localStorage.setItem('farmartFarmProfile', JSON.stringify(profile))
-      updateFarmProfile(profile)
+      const response = await fetch(`${API_BASE_URL}/api/farmers`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          farm_name: formData.farmName.trim(),
+          location: formData.location.trim(),
+          phone: formData.contact.trim(),
+          description: formData.description.trim(),
+        }),
+      });
 
-      if (user) {
-        try {
-          const { api } = await import('../../api')
-          await api.updateUser(user.id, {
-            farmName: formData.farmName,
-            location: profile.location,
-          })
-        } catch {
-          // best-effort sync; profile still saved locally
-        }
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            data.error ||
+            "Unable to submit your farm application."
+        );
       }
 
-      localStorage.removeItem(STORAGE_KEY)
-
-      setTimeout(() => {
-        navigate('/farmer/dashboard', { replace: true })
-      }, 400)
+      setSubmitted(true);
+    } catch (requestError) {
+      setError(
+        requestError.message ||
+          "Unable to connect to the Farmart server."
+      );
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
+  };
+
+  if (submitted) {
+    return (
+      <>
+        <style>{`
+          .farm-setup-page {
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 64px 28px;
+            box-sizing: border-box;
+            background:
+              radial-gradient(
+                circle at 50% 35%,
+                var(--farm-green-glow),
+                transparent 45%
+              ),
+              var(--farm-background);
+            color: var(--farm-text);
+            font-family: "Modern Antiqua", serif;
+            transition:
+              background 180ms ease,
+              color 180ms ease;
+          }
+
+          .farm-setup-frame {
+            width: min(100%, 560px);
+            background: var(--auth-card);
+            border: 1px solid var(--farm-green-border);
+            border-radius: 30px;
+            box-shadow:
+              0 28px 75px var(--farm-green-glow),
+              0 5px 18px var(--farm-green-glow);
+            overflow: hidden;
+            transition:
+              background 180ms ease,
+              border-color 180ms ease,
+              box-shadow 180ms ease;
+          }
+
+          .farm-setup-content {
+            padding: 58px 60px 54px;
+            text-align: center;
+          }
+
+          .farm-setup-logo-frame {
+            width: min(100%, 250px);
+            min-height: 78px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 18px;
+            margin: 0 auto 30px;
+            box-sizing: border-box;
+            border: 1px solid var(--farm-green-border);
+            border-radius: 18px;
+            background: var(--auth-logo-bg);
+          }
+
+          .farm-setup-logo {
+            width: 100%;
+            max-width: 220px;
+            height: auto;
+            display: block;
+            object-fit: contain;
+          }
+
+          .farm-setup-heading {
+            margin: 0;
+            color: var(--farm-text);
+            font-family: "IBM Plex Serif", serif;
+            font-size: clamp(32px, 5vw, 42px);
+            font-weight: 700;
+            line-height: 1.15;
+          }
+
+          .farm-setup-subtitle {
+            max-width: 420px;
+            margin: 18px auto 34px;
+            color: var(--farm-muted);
+            font-size: 16px;
+            line-height: 1.7;
+          }
+
+          .farm-setup-verification {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px;
+            text-align: left;
+            border: 1px solid var(--farm-green-border);
+            border-radius: 15px;
+            background: var(--farm-green-soft);
+          }
+
+          .farm-setup-verification-icon {
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: var(--farm-green-glow);
+            color: var(--farm-green);
+          }
+
+          .farm-setup-verification-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+          }
+
+          .farm-setup-verification-copy strong {
+            color: var(--farm-text);
+            font-size: 14px;
+          }
+
+          .farm-setup-verification-copy span {
+            color: var(--farm-muted);
+            font-size: 13px;
+            line-height: 1.5;
+          }
+
+          .farm-setup-back {
+            width: 100%;
+            min-height: 56px;
+            margin-top: 18px;
+            border: 1px solid var(--farm-green);
+            border-radius: 15px;
+            background: var(--farm-green);
+            color: var(--farm-white);
+            font-family: "Modern Antiqua", serif;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition:
+              background 180ms ease,
+              box-shadow 180ms ease;
+          }
+
+          .farm-setup-back:hover {
+            background: var(--green-700);
+            box-shadow: 0 9px 22px var(--farm-green-glow);
+          }
+
+          @media (max-width: 620px) {
+            .farm-setup-page {
+              padding: 34px 18px;
+            }
+
+            .farm-setup-content {
+              padding: 48px 28px 40px;
+            }
+          }
+
+          @media (max-width: 420px) {
+            .farm-setup-content {
+              padding: 42px 20px 34px;
+            }
+
+            .farm-setup-logo-frame {
+              width: min(100%, 220px);
+            }
+          }
+        `}</style>
+
+        <main className="farm-setup-page">
+          <section className="farm-setup-frame">
+            <div className="farm-setup-content">
+              <div className="farm-setup-logo-frame">
+                <img
+                  className="farm-setup-logo"
+                  src="/logo/farmart_full_logo_testing.png"
+                  alt="Farmart"
+                />
+              </div>
+
+              <h1 className="farm-setup-heading">
+                Application submitted
+              </h1>
+
+              <p className="farm-setup-subtitle">
+                Your farm application has been sent to Farmart for review.
+              </p>
+
+              <div className="farm-setup-verification">
+                <div className="farm-setup-verification-icon">
+                  <ShieldCheck size={20} />
+                </div>
+
+                <div className="farm-setup-verification-copy">
+                  <strong>Verification pending</strong>
+                  <span>
+                    You'll receive an email when an admin makes a decision.
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="farm-setup-back"
+                onClick={() => navigate("/farmer/dashboard")}
+              >
+                Continue
+              </button>
+            </div>
+          </section>
+        </main>
+      </>
+    );
   }
 
   return (
@@ -178,15 +315,15 @@ function FarmSetup() {
         }
 
         .farm-setup-frame {
-          width: min(100%, 580px);
-          position: relative;
-          overflow: hidden;
+          width: min(100%, 560px);
           background: var(--auth-card);
           border: 1px solid var(--farm-green-border);
           border-radius: 30px;
           box-shadow:
             0 28px 75px var(--farm-green-glow),
             0 5px 18px var(--farm-green-glow);
+          overflow: hidden;
+          position: relative;
           transition:
             background 180ms ease,
             border-color 180ms ease,
@@ -206,20 +343,29 @@ function FarmSetup() {
         }
 
         .farm-setup-content {
-          padding: 62px 60px 54px;
+          padding: 58px 60px 54px;
+        }
+
+        .farm-setup-logo-frame {
+          width: min(100%, 250px);
+          min-height: 78px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 12px 18px;
+          margin: 0 auto 30px;
+          box-sizing: border-box;
+          border: 1px solid var(--farm-green-border);
+          border-radius: 18px;
+          background: var(--auth-logo-bg);
         }
 
         .farm-setup-logo {
           width: 100%;
-          max-width: 100px;
-          margin: 0 auto 22px;
-        }
-
-        .farm-setup-logo img {
-          width: 100%;
+          max-width: 220px;
           height: auto;
-          object-fit: contain;
           display: block;
+          object-fit: contain;
         }
 
         .farm-setup-heading {
@@ -227,81 +373,19 @@ function FarmSetup() {
           text-align: center;
           color: var(--farm-text);
           font-family: "IBM Plex Serif", serif;
-          font-size: clamp(28px, 4.5vw, 38px);
+          font-size: clamp(32px, 5vw, 42px);
           font-weight: 700;
-          line-height: 1.2;
-          transition: color 180ms ease;
+          line-height: 1.15;
         }
 
         .farm-setup-subtitle {
-          max-width: 400px;
-          margin: 12px auto 28px;
+          max-width: 410px;
+          margin: 18px auto 42px;
           text-align: center;
           color: var(--farm-muted);
-          font-size: 15px;
+          font-size: 16px;
           line-height: 1.7;
-          transition: color 180ms ease;
         }
-
-        /* Progress */
-
-        .farm-setup-progress {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-          margin-bottom: 34px;
-        }
-
-        .farm-setup-progress-step {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-
-        .farm-setup-progress-dot {
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-family: "Modern Antiqua", serif;
-          font-size: 12px;
-          font-weight: 700;
-          border: 1px solid var(--farm-green-border);
-          background: var(--auth-input);
-          color: var(--farm-muted);
-          transition:
-            background 180ms ease,
-            border-color 180ms ease,
-            color 180ms ease;
-        }
-
-        .farm-setup-progress-dot--active {
-          background: var(--farm-green);
-          border-color: var(--farm-green);
-          color: #ffffff;
-        }
-
-        .farm-setup-progress-dot--done {
-          background: var(--farm-green-soft);
-          border-color: var(--farm-green);
-          color: var(--farm-green);
-        }
-
-        .farm-setup-progress-line {
-          width: 32px;
-          height: 1px;
-          background: var(--farm-green-border);
-          transition: background 180ms ease;
-        }
-
-        .farm-setup-progress-line--done {
-          background: var(--farm-green);
-        }
-
-        /* Form */
 
         .farm-setup-form {
           display: flex;
@@ -318,10 +402,10 @@ function FarmSetup() {
           box-sizing: border-box;
           border: 1px solid var(--farm-green-border);
           border-radius: 16px;
-          background: var(--auth-input);
+          background: var(--farm-green-soft);
           transition:
-            border-color 180ms ease,
             background 180ms ease,
+            border-color 180ms ease,
             box-shadow 180ms ease;
         }
 
@@ -359,7 +443,6 @@ function FarmSetup() {
         }
 
         .farm-setup-field input,
-        .farm-setup-field select,
         .farm-setup-field textarea {
           width: 100%;
           min-width: 0;
@@ -375,19 +458,8 @@ function FarmSetup() {
         }
 
         .farm-setup-field input::placeholder,
-        .farm-setup-field textarea::placeholder,
-        .farm-setup-field select {
+        .farm-setup-field textarea::placeholder {
           color: var(--farm-muted);
-        }
-
-        .farm-setup-field select {
-          appearance: none;
-          -webkit-appearance: none;
-          cursor: pointer;
-          padding-right: 20px;
-          background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2385a88f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9' /></svg>");
-          background-repeat: no-repeat;
-          background-position: right 0 center;
         }
 
         .farm-setup-field textarea {
@@ -395,216 +467,21 @@ function FarmSetup() {
           resize: vertical;
         }
 
-        /* Chips */
-
-        .farm-setup-chips {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 10px;
+        .farm-setup-divider {
+          width: 100%;
+          height: 1px;
+          margin: 8px 0 2px;
+          background: var(--farm-green-border);
         }
-
-        .farm-setup-chip {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 9px 16px;
-          border-radius: 999px;
-          border: 1px solid var(--farm-green-border);
-          background: var(--auth-input);
-          color: var(--farm-text);
-          font-family: "Modern Antiqua", serif;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          transition:
-            background 180ms ease,
-            border-color 180ms ease,
-            color 180ms ease,
-            box-shadow 180ms ease;
-          user-select: none;
-        }
-
-        .farm-setup-chip:hover {
-          border-color: var(--farm-green);
-        }
-
-        .farm-setup-chip--active {
-          background: var(--farm-green);
-          border-color: var(--farm-green);
-          color: #ffffff;
-          box-shadow: 0 4px 12px var(--farm-green-glow);
-        }
-
-        .farm-setup-chip-check {
-          width: 16px;
-          height: 16px;
-          border-radius: 4px;
-          border: 1px solid currentColor;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: background 180ms ease, border-color 180ms ease;
-        }
-
-        .farm-setup-chip--active .farm-setup-chip-check {
-          background: #ffffff;
-          border-color: #ffffff;
-          color: var(--farm-green);
-        }
-
-        /* Review */
-
-        .farm-setup-review {
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-        }
-
-        .farm-setup-review-row {
-          display: flex;
-          justify-content: space-between;
-          gap: 16px;
-          padding: 10px 0;
-          border-bottom: 1px solid var(--farm-green-border);
-        }
-
-        .farm-setup-review-row:last-child {
-          border-bottom: none;
-        }
-
-        .farm-setup-review-label {
-          color: var(--farm-muted);
-          font-size: 13px;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.04em;
-        }
-
-        .farm-setup-review-value {
-          color: var(--farm-text);
-          font-size: 14px;
-          font-weight: 600;
-          text-align: right;
-        }
-
-        /* Buttons */
-
-        .farm-setup-actions {
-          display: flex;
-          gap: 12px;
-          margin-top: 28px;
-        }
-
-        .farm-setup-back {
-          min-height: 54px;
-          padding: 0 20px;
-          border-radius: 14px;
-          border: 1px solid var(--farm-green-border);
-          background: transparent;
-          color: var(--farm-text);
-          font-family: "Modern Antiqua", serif;
-          font-size: 15px;
-          font-weight: 600;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          transition:
-            background 180ms ease,
-            border-color 180ms ease;
-        }
-
-        .farm-setup-back:hover {
-          background: var(--farm-green-soft);
-          border-color: var(--farm-green);
-        }
-
-        .farm-setup-back:disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
-        }
-
-        .farm-setup-next {
-          flex: 1;
-          min-height: 54px;
-          border-radius: 14px;
-          border: none;
-          background: var(--farm-green);
-          color: #ffffff;
-          font-family: "Modern Antiqua", serif;
-          font-size: 15px;
-          font-weight: 700;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          box-shadow: 0 6px 18px var(--farm-green-glow);
-          transition:
-            background 180ms ease,
-            box-shadow 180ms ease,
-            opacity 180ms ease;
-        }
-
-        .farm-setup-next:hover:not(:disabled) {
-          background: #216b3b;
-          box-shadow: 0 10px 24px var(--farm-green-glow);
-        }
-
-        .farm-setup-next:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .farm-setup-submit {
-          flex: 1;
-          min-height: 54px;
-          border-radius: 14px;
-          border: none;
-          background: var(--farm-green);
-          color: #ffffff;
-          font-family: "Modern Antiqua", serif;
-          font-size: 15px;
-          font-weight: 700;
-          cursor: pointer;
-          box-shadow: 0 6px 18px var(--farm-green-glow);
-          transition:
-            background 180ms ease,
-            box-shadow 180ms ease,
-            opacity 180ms ease;
-        }
-
-        .farm-setup-submit:hover:not(:disabled) {
-          background: #216b3b;
-          box-shadow: 0 10px 24px var(--farm-green-glow);
-        }
-
-        .farm-setup-submit:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .farm-setup-optional {
-          color: var(--farm-muted);
-          font-size: 12px;
-          font-weight: 500;
-          margin-top: 2px;
-        }
-
-        /* Verification */
 
         .farm-setup-verification {
           display: flex;
           align-items: center;
           gap: 14px;
           padding: 16px;
-          margin-top: 18px;
           border: 1px solid var(--farm-green-border);
           border-radius: 15px;
           background: var(--farm-green-soft);
-          transition:
-            background 180ms ease,
-            border-color 180ms ease;
         }
 
         .farm-setup-verification-icon {
@@ -637,7 +514,42 @@ function FarmSetup() {
           line-height: 1.5;
         }
 
-        /* Responsive */
+        .farm-setup-error {
+          margin: 0;
+          color: #b2503e;
+          font-size: 13px;
+          line-height: 1.5;
+          text-align: center;
+        }
+
+        .farm-setup-submit {
+          width: 100%;
+          min-height: 58px;
+          margin-top: 5px;
+          border: 1px solid var(--farm-green);
+          border-radius: 15px;
+          background: var(--farm-green);
+          color: var(--farm-white);
+          font-family: "Modern Antiqua", serif;
+          font-size: 16px;
+          font-weight: 700;
+          cursor: pointer;
+          box-shadow: 0 9px 22px var(--farm-green-glow);
+          transition:
+            background 180ms ease,
+            box-shadow 180ms ease,
+            opacity 180ms ease;
+        }
+
+        .farm-setup-submit:hover:not(:disabled) {
+          background: var(--green-700);
+          box-shadow: 0 11px 26px var(--farm-green-glow);
+        }
+
+        .farm-setup-submit:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
+        }
 
         @media (max-width: 620px) {
           .farm-setup-page {
@@ -662,290 +574,155 @@ function FarmSetup() {
             padding: 42px 20px 34px;
           }
 
-          .farm-setup-heading {
-            font-size: 28px;
-          }
-
-          .farm-setup-subtitle {
-            font-size: 14px;
-            margin-bottom: 28px;
-          }
-
-          .farm-setup-field {
-            padding: 15px;
-          }
-
-          .farm-setup-actions {
-            flex-direction: column-reverse;
+          .farm-setup-logo-frame {
+            width: min(100%, 220px);
           }
         }
       `}</style>
 
       <main className="farm-setup-page">
-        <motion.section
-          className="farm-setup-frame"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-        >
+        <section className="farm-setup-frame">
           <div className="farm-setup-content">
-
-            <div className="farm-setup-logo">
+            <div className="farm-setup-logo-frame">
               <img
-                src="/favicon/farm.png"
+                className="farm-setup-logo"
+                src="/logo/farmart_full_logo_testing.png"
                 alt="Farmart"
               />
             </div>
 
-            <h1 className="farm-setup-heading">Set up your farm</h1>
+            <h1 className="farm-setup-heading">
+              Set up your farm
+            </h1>
 
             <p className="farm-setup-subtitle">
-              {step === 0 && "Let's start with the basics about your farm."}
-              {step === 1 && "Where is your farm located?"}
-              {step === 2 && "What products do you grow or raise?"}
-              {step === 3 && "Review your details before finishing."}
+              Tell buyers a little about your farm before you start selling.
             </p>
 
-            {/* Progress indicator */}
-            <div className="farm-setup-progress">
-              {STEPS.map((s, i) => {
-                const Icon = s.icon
-                const isActive = i === step
-                const isDone = i < step
-                return (
-                  <div key={i} className="farm-setup-progress-step">
-                    <div
-                      className={`farm-setup-progress-dot ${
-                        isActive ? 'farm-setup-progress-dot--active' : ''
-                      } ${isDone ? 'farm-setup-progress-dot--done' : ''}`}
-                    >
-                      {isDone ? <Check size={14} /> : <Icon size={14} />}
-                    </div>
-                    {i < STEPS.length - 1 && (
-                      <div
-                        className={`farm-setup-progress-line ${
-                          isDone ? 'farm-setup-progress-line--done' : ''
-                        }`}
-                      />
-                    )}
-                  </div>
-                )
-              })}
-            </div>
+            <form
+              onSubmit={handleSubmit}
+              className="farm-setup-form"
+            >
+              <label className="farm-setup-field">
+                <span className="farm-setup-field-icon">
+                  <House size={18} />
+                </span>
 
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={step}
-                initial={{ opacity: 0, x: 18 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -18 }}
-                transition={{ duration: 0.25, ease: "easeInOut" }}
+                <span className="farm-setup-field-content">
+                  <span className="farm-setup-field-label">
+                    Farm name
+                  </span>
+
+                  <input
+                    type="text"
+                    name="farmName"
+                    placeholder="e.g. Kiambu Green Pastures"
+                    value={formData.farmName}
+                    onChange={handleChange}
+                    required
+                  />
+                </span>
+              </label>
+
+              <label className="farm-setup-field">
+                <span className="farm-setup-field-icon">
+                  <MapPin size={18} />
+                </span>
+
+                <span className="farm-setup-field-content">
+                  <span className="farm-setup-field-label">
+                    Location
+                  </span>
+
+                  <input
+                    type="text"
+                    name="location"
+                    placeholder="e.g. Kiambu County"
+                    value={formData.location}
+                    onChange={handleChange}
+                    required
+                  />
+                </span>
+              </label>
+
+              <label className="farm-setup-field">
+                <span className="farm-setup-field-icon">
+                  <Phone size={18} />
+                </span>
+
+                <span className="farm-setup-field-content">
+                  <span className="farm-setup-field-label">
+                    Contact number
+                  </span>
+
+                  <input
+                    type="tel"
+                    name="contact"
+                    placeholder="e.g. 0712 345 678"
+                    value={formData.contact}
+                    onChange={handleChange}
+                    required
+                  />
+                </span>
+              </label>
+
+              <label className="farm-setup-field">
+                <span className="farm-setup-field-icon">
+                  <PenLine size={18} />
+                </span>
+
+                <span className="farm-setup-field-content">
+                  <span className="farm-setup-field-label">
+                    About your farm
+                  </span>
+
+                  <textarea
+                    name="description"
+                    placeholder="Tell buyers briefly what you farm or sell..."
+                    value={formData.description}
+                    onChange={handleChange}
+                    rows="3"
+                    required
+                  />
+                </span>
+              </label>
+
+              <div className="farm-setup-divider" />
+
+              <div className="farm-setup-verification">
+                <div className="farm-setup-verification-icon">
+                  <ShieldCheck size={18} />
+                </div>
+
+                <div className="farm-setup-verification-copy">
+                  <strong>Verification pending</strong>
+                  <span>
+                    Your farm will be reviewed by Farmart admin.
+                  </span>
+                </div>
+              </div>
+
+              {error && (
+                <p className="farm-setup-error">
+                  {error}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                className="farm-setup-submit"
+                disabled={isSaving}
               >
-                {/* Step 1 — About Your Farm */}
-                {step === 0 && (
-                  <form className="farm-setup-form" onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
-                    <label className="farm-setup-field">
-                      <span className="farm-setup-field-icon">
-                        <Home size={18} />
-                      </span>
-                      <span className="farm-setup-field-content">
-                        <span className="farm-setup-field-label">Farm name <span style={{ color: 'var(--farm-error)' }}>*</span></span>
-                        <input
-                          type="text"
-                          placeholder="e.g. Kiambu Green Pastures"
-                          value={formData.farmName}
-                          onChange={(e) => updateField('farmName', e.target.value)}
-                          required
-                        />
-                      </span>
-                    </label>
-
-                    <label className="farm-setup-field">
-                      <span className="farm-setup-field-icon">
-                        <Home size={18} />
-                      </span>
-                      <span className="farm-setup-field-content">
-                        <span className="farm-setup-field-label">Farm type</span>
-                        <select
-                          value={formData.farmType}
-                          onChange={(e) => updateField('farmType', e.target.value)}
-                        >
-                          <option value="">Select farm type</option>
-                          {FARM_TYPES.map((t) => (
-                            <option key={t} value={t}>{t}</option>
-                          ))}
-                        </select>
-                      </span>
-                    </label>
-                  </form>
-                )}
-
-                {/* Step 2 — Location */}
-                {step === 1 && (
-                  <form className="farm-setup-form" onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
-                    <label className="farm-setup-field">
-                      <span className="farm-setup-field-icon">
-                        <MapPin size={18} />
-                      </span>
-                      <span className="farm-setup-field-content">
-                        <span className="farm-setup-field-label">County <span style={{ color: 'var(--farm-error)' }}>*</span></span>
-                        <input
-                          type="text"
-                          placeholder="e.g. Kiambu County"
-                          value={formData.county}
-                          onChange={(e) => updateField('county', e.target.value)}
-                          required
-                        />
-                      </span>
-                    </label>
-
-                    <label className="farm-setup-field">
-                      <span className="farm-setup-field-icon">
-                        <MapPin size={18} />
-                      </span>
-                      <span className="farm-setup-field-content">
-                        <span className="farm-setup-field-label">Town / Area <span style={{ color: 'var(--farm-error)' }}>*</span></span>
-                        <input
-                          type="text"
-                          placeholder="e.g. Kiambu Town"
-                          value={formData.town}
-                          onChange={(e) => updateField('town', e.target.value)}
-                          required
-                        />
-                      </span>
-                    </label>
-
-                    <label className="farm-setup-field">
-                      <span className="farm-setup-field-icon">
-                        <MapPin size={18} />
-                      </span>
-                      <span className="farm-setup-field-content">
-                        <span className="farm-setup-field-label">Detailed location <span className="farm-setup-optional">(optional)</span></span>
-                        <textarea
-                          placeholder="Village, landmark, GPS coordinates..."
-                          value={formData.detailedLocation}
-                          onChange={(e) => updateField('detailedLocation', e.target.value)}
-                          rows="3"
-                        />
-                      </span>
-                    </label>
-                  </form>
-                )}
-
-                {/* Step 3 — What Do You Sell */}
-                {step === 2 && (
-                  <form className="farm-setup-form" onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
-                    <div className="farm-setup-field" style={{ alignItems: 'flex-start' }}>
-                      <span className="farm-setup-field-icon" style={{ marginTop: 2 }}>
-                        <ShoppingBag size={18} />
-                      </span>
-                      <span className="farm-setup-field-content">
-                        <span className="farm-setup-field-label">Products <span style={{ color: 'var(--farm-error)' }}>*</span></span>
-                        <div className="farm-setup-chips">
-                          {PRODUCT_CATEGORIES.map((cat) => {
-                            const active = formData.products.includes(cat)
-                            return (
-                              <button
-                                key={cat}
-                                type="button"
-                                className={`farm-setup-chip ${active ? 'farm-setup-chip--active' : ''}`}
-                                onClick={() => toggleProduct(cat)}
-                              >
-                                <span className="farm-setup-chip-check">
-                                  {active && <Check size={10} />}
-                                </span>
-                                {cat}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </span>
-                    </div>
-                  </form>
-                )}
-
-                {/* Step 4 — Review */}
-                {step === 3 && (
-                  <div className="farm-setup-review">
-                    <div className="farm-setup-review-row">
-                      <span className="farm-setup-review-label">Farm name</span>
-                      <span className="farm-setup-review-value">{formData.farmName}</span>
-                    </div>
-                    {formData.farmType && (
-                      <div className="farm-setup-review-row">
-                        <span className="farm-setup-review-label">Farm type</span>
-                        <span className="farm-setup-review-value">{formData.farmType}</span>
-                      </div>
-                    )}
-                    <div className="farm-setup-review-row">
-                      <span className="farm-setup-review-label">Location</span>
-                      <span className="farm-setup-review-value">{formData.town}, {formData.county}</span>
-                    </div>
-                    {formData.detailedLocation && (
-                      <div className="farm-setup-review-row">
-                        <span className="farm-setup-review-label">Detailed</span>
-                        <span className="farm-setup-review-value">{formData.detailedLocation}</span>
-                      </div>
-                    )}
-                    <div className="farm-setup-review-row">
-                      <span className="farm-setup-review-label">Products</span>
-                      <span className="farm-setup-review-value">{formData.products.join(', ')}</span>
-                    </div>
-
-                    <div className="farm-setup-verification">
-                      <div className="farm-setup-verification-icon">
-                        <Check size={18} />
-                      </div>
-                      <div className="farm-setup-verification-copy">
-                        <strong>Ready to submit</strong>
-                        <span>
-                          Your farm details will be saved and you'll be taken to the Farmer Dashboard.
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
-
-            {/* Actions */}
-            <div className="farm-setup-actions">
-              {step > 0 && (
-                  <button
-                    type="button"
-                    className="farm-setup-back"
-                    onClick={handleBack}
-                  >
-                    <ChevronLeft size={16} /> Back
-                  </button>
-              )}
-
-              {step < STEPS.length - 1 ? (
-                <button
-                  type="button"
-                  className="farm-setup-next"
-                  onClick={handleNext}
-                  disabled={!canProceed()}
-                >
-                  Continue <ChevronRight size={16} />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="farm-setup-submit"
-                  onClick={handleSubmit}
-                  disabled={isSaving}
-                >
-                  {isSaving ? 'Saving...' : 'Go to Farmer Dashboard'}
-                </button>
-              )}
-            </div>
-
+                {isSaving
+                  ? "Submitting your application..."
+                  : "Submit for verification"}
+              </button>
+            </form>
           </div>
-        </motion.section>
+        </section>
       </main>
     </>
-  )
+  );
 }
 
-export default FarmSetup
+export default FarmSetup;

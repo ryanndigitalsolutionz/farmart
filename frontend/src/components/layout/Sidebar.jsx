@@ -1,279 +1,248 @@
-import { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { useAdmin } from "../../context/AdminContext";
-import { useAuth } from "../../context/AuthContext";
-import FarmartLogo from "../branding/FarmartLogo";
-import { LayoutDashboard, Users, FileText, Package, CreditCard, Scale, TrendingUp, Settings, Megaphone, X } from "lucide-react";
+import {
+  LuLayoutDashboard,
+  LuUsers,
+  LuTractor,
+  LuBeef,
+  LuPackage,
+  LuCreditCard,
+  LuScale,
+  LuChartNoAxesColumn,
+  LuSettings,
+  LuMegaphone,
+  LuLogOut,
+  LuMenu,
+  LuX,
+} from "react-icons/lu";
+import { useState } from "react";
 
-const NAV_ITEMS = [
-  { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/admin/users", label: "Users", icon: Users },
-  { to: "/admin/farmers", label: "Farmers", icon: Users, countKey: "pendingFarmerCount" },
-  { to: "/admin/listings", label: "Listings", icon: FileText, countKey: "flaggedListingCount" },
-  { to: "/admin/orders", label: "Orders", icon: Package },
-  { to: "/admin/transactions", label: "Transactions", icon: CreditCard },
-  { to: "/admin/disputes", label: "Disputes", icon: Scale, countKey: "openDisputeCount" },
-  { to: "/admin/reports", label: "Reports", icon: TrendingUp },
-  { to: "/admin/settings", label: "Settings", icon: Settings },
-  { to: "/admin/announcements", label: "Announcements", icon: Megaphone },
-];
-
-const outerStyle = {
-  width: 240,
-  position: "fixed",
-  top: 0,
-  left: 0,
-  bottom: 0,
-  borderRight: "1px solid var(--color-border)",
-  background: "var(--color-surface)",
-  display: "flex",
-  flexDirection: "column",
-  zIndex: 100,
-};
-
-const brandStyle = {
-  fontFamily: "var(--font-display, 'Fraunces', serif)",
-  fontWeight: 700,
-  fontSize: 18,
-  color: "var(--color-primary)",
-  padding: "20px 16px",
-  borderBottom: "1px solid var(--color-border)",
-};
-
-const navStyle = {
-  flex: 1,
-  padding: "12px",
-  display: "flex",
-  flexDirection: "column",
-  gap: 2,
-  overflowY: "auto",
-};
-
-const linkStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "10px 12px",
-  borderRadius: "var(--radius-sm, 8px)",
-  fontSize: 14,
-  fontWeight: 600,
-  textDecoration: "none",
-  color: "var(--color-text)",
-  transition: "background 0.15s ease, color 0.15s ease",
-};
-
-const activeStyle = {
-  background: "var(--color-surface-secondary)",
-  color: "var(--color-primary)",
-};
-
-const badgeStyle = {
-  background: "var(--color-warning)",
-  color: "var(--color-text)",
-  fontSize: 10.5,
-  fontWeight: 700,
-  borderRadius: 10,
-  padding: "1px 7px",
-};
-
-const logoutStyle = {
-  padding: "12px 16px",
-  borderTop: "1px solid var(--color-border)",
-  fontSize: 14,
-  fontWeight: 600,
-  color: "var(--color-text-muted)",
-  textDecoration: "none",
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  background: "transparent",
-  border: "none",
-  width: "100%",
-  textAlign: "left",
-  cursor: "pointer",
-};
-
-const mobileDrawerStyle = {
-  position: "fixed",
-  top: 0,
-  left: 0,
-  bottom: 0,
-  width: 280,
-  background: "var(--glass-bg-strong)",
-  borderRight: "1px solid var(--glass-border)",
-  backdropFilter: "blur(16px)",
-  WebkitBackdropFilter: "blur(16px)",
-  zIndex: 200,
-  display: "flex",
-  flexDirection: "column",
-};
-
-const hamburgerStyle = {
-  width: 40,
-  height: 40,
-  borderRadius: "var(--radius-sm, 8px)",
-  background: "var(--color-surface)",
-  border: "1px solid var(--color-border)",
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  cursor: "pointer",
-  color: "var(--color-text)",
-};
-
-const overlayStyle = {
-  position: "fixed",
-  inset: 0,
-  background: "rgba(0,0,0,0.35)",
-  zIndex: 199,
-};
-
-const drawerVariants = {
-  closed: { x: "-100%" },
-  open: { x: 0 },
-};
-
-const overlayVariants = {
-  closed: { opacity: 0 },
-  open: { opacity: 1 },
-};
-
-export default function Sidebar() {
-  const counts = useAdmin();
-  const [open, setOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches);
-  const { logout } = useAuth();
+function Sidebar() {
+  const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 767px)");
-    const handler = (e) => setIsMobile(e.matches);
-    mq.addEventListener?.("change", handler);
-    return () => mq.removeEventListener?.("change", handler);
-  }, []);
-
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const handleKey = (e) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
-  }, [open]);
+  const navigation = [
+    { label: "Dashboard", path: "/admin/dashboard", icon: LuLayoutDashboard },
+    { label: "Users", path: "/admin/users", icon: LuUsers },
+    { label: "Farmers", path: "/admin/farmers", icon: LuTractor },
+    { label: "Listings", path: "/admin/listings", icon: LuBeef },
+    { label: "Orders", path: "/admin/orders", icon: LuPackage },
+    { label: "Transactions", path: "/admin/transactions", icon: LuCreditCard },
+    { label: "Disputes", path: "/admin/disputes", icon: LuScale },
+    { label: "Reports", path: "/admin/reports", icon: LuChartNoAxesColumn },
+    { label: "Settings", path: "/admin/settings", icon: LuSettings },
+    { label: "Announcements", path: "/admin/announcements", icon: LuMegaphone },
+  ];
 
   const handleLogout = () => {
-    logout();
-    navigate("/");
+    navigate("/login");
   };
 
-  const content = (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      <div style={{ ...brandStyle, display: "inline-flex", justifyContent: "space-between", alignItems: "center" }}>
-        <FarmartLogo size="md" />
-        <button
-          type="button"
-          aria-label="Close menu"
-          onClick={() => setOpen(false)}
-          style={{
-            background: "transparent",
-            border: "none",
-            color: "var(--color-text)",
-            cursor: "pointer",
-            width: 32,
-            height: 32,
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: "var(--radius-sm, 8px)",
-          }}
-        >
-          <X size={20} />
-        </button>
-      </div>
-      <nav style={navStyle} aria-label="Admin navigation">
-        {NAV_ITEMS.map((item) => {
-          const count = item.countKey ? counts[item.countKey] : 0;
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              style={({ isActive }) => ({
-                ...linkStyle,
-                ...(isActive ? activeStyle : {}),
-              })}
-              onClick={() => setOpen(false)}
-            >
-              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span aria-hidden="true"><item.icon size={18} /></span>
-                {item.label}
-              </span>
-              {!!count && <span style={badgeStyle}>{count}</span>}
-            </NavLink>
-          );
-        })}
-      </nav>
-      <button type="button" onClick={handleLogout} style={logoutStyle}>
-        Logout
-      </button>
-    </div>
-  );
+  return (
+    <>
+      <style>{`
+        .admin-sidebar {
+          position: fixed;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          z-index: 100;
+          width: 250px;
+          display: flex;
+          flex-direction: column;
+          padding: 22px 15px;
+          border-right: 1px solid #26372c;
+          background: #131b16;
+          transition: width 180ms ease;
+          box-sizing: border-box;
+        }
 
-  if (isMobile) {
-    return (
-      <>
-        <button
-          type="button"
-          aria-label="Open menu"
-          aria-expanded={open}
-          style={hamburgerStyle}
-          onClick={() => setOpen(true)}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <line x1="4" y1="6" x2="20" y2="6" />
-            <line x1="4" y1="12" x2="20" y2="12" />
-            <line x1="4" y1="18" x2="20" y2="18" />
-          </svg>
-        </button>
-        <AnimatePresence>
-          {open && (
-            <>
-              <motion.div
-                initial="closed"
-                animate="open"
-                exit="closed"
-                variants={overlayVariants}
-                transition={{ duration: 0.25 }}
-                style={overlayStyle}
-                onClick={() => setOpen(false)}
-              />
-              <motion.aside
-                initial="closed"
-                animate="open"
-                exit="closed"
-                variants={drawerVariants}
-                transition={{ type: "spring", damping: 28, stiffness: 300 }}
-                style={mobileDrawerStyle}
+        .admin-sidebar.collapsed {
+          width: 82px;
+        }
+
+        .admin-sidebar-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          min-height: 48px;
+          margin-bottom: 25px;
+        }
+
+        .admin-brand {
+          min-width: 0;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          color: #4fdc82;
+          font-family: "IBM Plex Serif", serif;
+          font-size: 22px;
+          font-weight: 700;
+          text-decoration: none;
+        }
+
+        .admin-brand img {
+          width: 39px;
+          height: 39px;
+          object-fit: contain;
+          flex-shrink: 0;
+        }
+
+        .admin-collapse-button {
+          width: 35px;
+          height: 35px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid #35483a;
+          border-radius: 9px;
+          background: #19241d;
+          color: #a8b8ad;
+          cursor: pointer;
+        }
+
+        .admin-collapse-button:hover {
+          color: #72c9a3;
+          border-color: #4a9f7b;
+        }
+
+        .admin-navigation {
+          display: flex;
+          flex-direction: column;
+          gap: 7px;
+          overflow-y: auto;
+        }
+
+        .admin-nav-link {
+          min-height: 46px;
+          display: flex;
+          align-items: center;
+          gap: 13px;
+          padding: 0 14px;
+          border: 1px solid transparent;
+          border-radius: 12px;
+          color: #91a198;
+          text-decoration: none;
+          white-space: nowrap;
+          overflow: hidden;
+          font-family: "Modern Antiqua", serif;
+          font-size: 14px;
+          transition:
+            color 180ms ease,
+            background 180ms ease,
+            border-color 180ms ease;
+        }
+
+        .admin-nav-link:hover {
+          color: #edf4ee;
+          background: #1b2820;
+        }
+
+        .admin-nav-link.active {
+          color: #4fdc82;
+          background: #1c3023;
+          border-color: #294b35;
+        }
+
+        .admin-nav-link svg {
+          flex-shrink: 0;
+        }
+
+        .admin-sidebar-footer {
+          margin-top: auto;
+        }
+
+        .admin-logout {
+          width: 100%;
+          min-height: 47px;
+          display: flex;
+          align-items: center;
+          gap: 13px;
+          padding: 0 14px;
+          border: 1px solid transparent;
+          border-radius: 12px;
+          background: transparent;
+          color: #9b8370;
+          font-family: "Modern Antiqua", serif;
+          font-size: 14px;
+          cursor: pointer;
+          text-align: left;
+        }
+
+        .admin-logout:hover {
+          color: #d5a46d;
+          background: #241c17;
+        }
+
+        @media (max-width: 760px) {
+          .admin-sidebar {
+            width: 82px;
+          }
+
+          .admin-sidebar .admin-brand span,
+          .admin-sidebar .admin-nav-link span,
+          .admin-sidebar .admin-logout span {
+            display: none;
+          }
+
+          .admin-sidebar-header {
+            justify-content: center;
+          }
+
+          .admin-collapse-button {
+            display: none;
+          }
+
+          .admin-nav-link,
+          .admin-logout {
+            justify-content: center;
+            padding: 0;
+          }
+        }
+      `}</style>
+
+      <aside className={`admin-sidebar ${collapsed ? "collapsed" : ""}`}>
+        <div className="admin-sidebar-header">
+          <NavLink to="/admin/dashboard" className="admin-brand">
+            <img src="/logo/farmart_full_logo_testing.png" alt="Farmart" />
+            {!collapsed && <span>Farmart</span>}
+          </NavLink>
+
+          <button
+            type="button"
+            className="admin-collapse-button"
+            onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? <LuMenu size={18} /> : <LuX size={18} />}
+          </button>
+        </div>
+
+        <nav className="admin-navigation">
+          {navigation.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) => `admin-nav-link ${isActive ? "active" : ""}`}
               >
-                {content}
-              </motion.aside>
-            </>
-          )}
-        </AnimatePresence>
-      </>
-    );
-  }
+                <Icon size={19} />
+                {!collapsed && <span>{item.label}</span>}
+              </NavLink>
+            );
+          })}
+        </nav>
 
-  return <aside style={outerStyle}>{content}</aside>;
+        <div className="admin-sidebar-footer">
+          <button type="button" className="admin-logout" onClick={handleLogout}>
+            <LuLogOut size={19} />
+            {!collapsed && <span>Logout</span>}
+          </button>
+        </div>
+      </aside>
+    </>
+  );
 }
+
+export default Sidebar;

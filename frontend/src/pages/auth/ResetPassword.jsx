@@ -1,12 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import {
-  FiLock,
-  FiEye,
-  FiEyeOff,
-  FiArrowRight,
-} from 'react-icons/fi'
-
+import { FiLock, FiEye, FiEyeOff, FiArrowRight } from 'react-icons/fi'
 import { FaShieldAlt } from 'react-icons/fa'
 
 function ResetPassword() {
@@ -17,8 +11,25 @@ function ResetPassword() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    const savedEmail = sessionStorage.getItem(
+      'farmartResetEmail',
+    )
+
+    const verified = sessionStorage.getItem(
+      'farmartEmailVerified',
+    )
+
+    if (!savedEmail || verified !== 'true') {
+      navigate('/forgot-password', {
+        replace: true,
+      })
+    }
+  }, [navigate])
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
@@ -28,7 +39,9 @@ function ResetPassword() {
     }
 
     if (password.length < 8) {
-      setError('Your password must be at least 8 characters.')
+      setError(
+        'Your password must be at least 8 characters.',
+      )
       return
     }
 
@@ -37,15 +50,64 @@ function ResetPassword() {
       return
     }
 
-    sessionStorage.removeItem('farmartResetEmail')
-    sessionStorage.removeItem('farmartEmailVerified')
+    setLoading(true)
 
-    navigate('/login')
+    try {
+      const response = await fetch(
+        'http://localhost:5000/auth/reset-password',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            password,
+          }),
+        },
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(
+          data.error ||
+          'Unable to reset your password.',
+        )
+        return
+      }
+
+      sessionStorage.removeItem(
+        'farmartResetEmail',
+      )
+
+      sessionStorage.removeItem(
+        'farmartEmailVerified',
+      )
+
+      navigate('/login', {
+        replace: true,
+        state: {
+          message: 'Your password has been reset successfully.',
+        },
+      })
+    } catch (error) {
+      console.error(
+        'Reset password error:',
+        error,
+      )
+
+      setError(
+        'Unable to connect to the Farmart server.',
+      )
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <>
-<style>{`
+      <style>{`
   .reset-page {
     min-height: 100vh;
     width: 100%;
@@ -72,8 +134,8 @@ function ResetPassword() {
     width: min(100%, 520px);
 
     padding: 58px 56px 48px;
-    box-sizing: border-box;
 
+    box-sizing: border-box;
     position: relative;
     overflow: hidden;
 
@@ -309,12 +371,18 @@ function ResetPassword() {
 
     transition:
       background 180ms ease,
-      box-shadow 180ms ease;
+      box-shadow 180ms ease,
+      opacity 180ms ease;
   }
 
-  .reset-submit:hover {
+  .reset-submit:hover:not(:disabled) {
     background: #236b3d;
     box-shadow: 0 10px 24px var(--farm-green-glow);
+  }
+
+  .reset-submit:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 
   .reset-back {
@@ -357,6 +425,7 @@ function ResetPassword() {
       <main className="reset-page">
         <section className="reset-card">
           <div className="reset-content">
+
             <div className="login-logo">
               <img
                 src="/favicon/farm.png"
@@ -377,7 +446,10 @@ function ResetPassword() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="reset-form">
+            <form
+              onSubmit={handleSubmit}
+              className="reset-form"
+            >
               <label className="reset-field">
                 <span>New password</span>
 
@@ -385,19 +457,32 @@ function ResetPassword() {
                   <FiLock size={19} />
 
                   <input
-                    type={showPassword ? 'text' : 'password'}
+                    type={
+                      showPassword
+                        ? 'text'
+                        : 'password'
+                    }
                     placeholder="Create a new password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) =>
+                      setPassword(e.target.value)
+                    }
                     autoComplete="new-password"
+                    disabled={loading}
                   />
 
                   <button
                     type="button"
                     className="password-toggle"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() =>
+                      setShowPassword(
+                        !showPassword,
+                      )
+                    }
                     aria-label={
-                      showPassword ? 'Hide password' : 'Show password'
+                      showPassword
+                        ? 'Hide password'
+                        : 'Show password'
                     }
                   >
                     {showPassword ? (
@@ -416,18 +501,29 @@ function ResetPassword() {
                   <FiLock size={19} />
 
                   <input
-                    type={showConfirmPassword ? 'text' : 'password'}
+                    type={
+                      showConfirmPassword
+                        ? 'text'
+                        : 'password'
+                    }
                     placeholder="Confirm your new password"
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={(e) =>
+                      setConfirmPassword(
+                        e.target.value,
+                      )
+                    }
                     autoComplete="new-password"
+                    disabled={loading}
                   />
 
                   <button
                     type="button"
                     className="password-toggle"
                     onClick={() =>
-                      setShowConfirmPassword(!showConfirmPassword)
+                      setShowConfirmPassword(
+                        !showConfirmPassword,
+                      )
                     }
                     aria-label={
                       showConfirmPassword
@@ -446,7 +542,11 @@ function ResetPassword() {
 
               <div className="reset-security">
                 <FaShieldAlt size={17} />
-                <span>Your new password must be at least 8 characters.</span>
+
+                <span>
+                  Your new password must be at least
+                  8 characters.
+                </span>
               </div>
 
               {error && (
@@ -455,15 +555,27 @@ function ResetPassword() {
                 </p>
               )}
 
-              <button type="submit" className="reset-submit">
-                Reset Password
-                <FiArrowRight size={18} />
+              <button
+                type="submit"
+                className="reset-submit"
+                disabled={loading}
+              >
+                {loading
+                  ? 'Resetting password...'
+                  : 'Reset Password'}
+
+                {!loading && (
+                  <FiArrowRight size={18} />
+                )}
               </button>
             </form>
 
             <p className="reset-back">
-              <Link to="/login">Back to login</Link>
+              <Link to="/login">
+                Back to login
+              </Link>
             </p>
+
           </div>
         </section>
       </main>

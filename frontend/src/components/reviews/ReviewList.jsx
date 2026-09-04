@@ -12,21 +12,6 @@ function ReviewList({
           flex-direction: column;
           gap: 16px;
         }
-
-        .farmart-review-list-empty {
-          padding: 35px 20px;
-
-          border: 1px dashed #bdccc0;
-          border-radius: 16px;
-
-          background: #f7faf7;
-
-          color: #718078;
-
-          font-family: "Modern Antiqua", serif;
-          font-size: 14px;
-          text-align: center;
-        }
       `}</style>
 
       <section className="farmart-review-list">
@@ -39,7 +24,9 @@ function ReviewList({
             />
           ))
         ) : (
-          <div className="farmart-review-list-empty">
+          <div 
+          className="farmart-review-list-empty bg-[#f7faf7] text-[#718078] 
+          font-[var(--farm-body-font)] text-[14px] text-center">
             No reviews yet.
           </div>
         )}

@@ -1,24 +1,76 @@
+// ForgotPassword.jsx
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { FiMail, FiArrowRight } from 'react-icons/fi'
 
 function ForgotPassword() {
   const navigate = useNavigate()
+
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+
     setError('')
 
-    if (!email) {
+    const normalizedEmail = email.trim().toLowerCase()
+
+    if (!normalizedEmail) {
       setError('Please enter your email address.')
       return
     }
 
-    sessionStorage.setItem('farmartResetEmail', email)
+    setLoading(true)
 
-    navigate('/verify-email')
+    try {
+      const response = await fetch(
+        'http://localhost:5000/auth/forgot-password',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            email: normalizedEmail,
+          }),
+        },
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(
+          data.error ||
+          'Unable to send the verification code.',
+        )
+        return
+      }
+
+      sessionStorage.setItem(
+        'farmartResetEmail',
+        normalizedEmail,
+      )
+
+      sessionStorage.removeItem(
+        'farmartEmailVerified',
+      )
+
+      navigate('/verify-email')
+    } catch (error) {
+      console.error(
+        'Forgot password error:',
+        error,
+      )
+
+      setError(
+        'Unable to connect to the Farmart server.',
+      )
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -214,16 +266,22 @@ function ForgotPassword() {
     transition:
       transform 180ms ease,
       background 180ms ease,
-      box-shadow 180ms ease;
+      box-shadow 180ms ease,
+      opacity 180ms ease;
   }
 
-  .forgot-submit:hover {
+  .forgot-submit:hover:not(:disabled) {
     background: #236b3d;
     box-shadow: 0 10px 24px var(--farm-green-glow);
   }
 
   .forgot-submit:active {
     transform: translateY(0);
+  }
+
+  .forgot-submit:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 
   .forgot-switch {
@@ -269,23 +327,27 @@ function ForgotPassword() {
       <main className="forgot-page">
         <section className="forgot-card">
           <div className="forgot-content">
+
             <div className="login-logo">
-            <img
-              src="/favicon/farm.png"
-              alt="Farmart"
-            />
-          </div>
+              <img
+                src="/logo/farmart_full_logo_testing.png"
+                alt="Farmart"
+              />
+            </div>
 
             <div className="forgot-heading">
               <h1>Forgot password?</h1>
 
               <p>
-                Enter your email address and we'll guide you through
-                securing your Farmart account again.
+                Enter your email address and we'll guide you
+                through securing your Farmart account again.
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="forgot-form">
+            <form
+              onSubmit={handleSubmit}
+              className="forgot-form"
+            >
               <label className="forgot-field">
                 <span>Email address</span>
 
@@ -296,8 +358,11 @@ function ForgotPassword() {
                     type="email"
                     placeholder="farmer@boranfarm.co.ke"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) =>
+                      setEmail(e.target.value)
+                    }
                     autoComplete="email"
+                    disabled={loading}
                   />
                 </div>
               </label>
@@ -308,16 +373,28 @@ function ForgotPassword() {
                 </p>
               )}
 
-              <button type="submit" className="forgot-submit">
-                Continue
-                <FiArrowRight size={18} />
+              <button
+                type="submit"
+                className="forgot-submit"
+                disabled={loading}
+              >
+                {loading
+                  ? 'Sending code...'
+                  : 'Continue'}
+
+                {!loading && (
+                  <FiArrowRight size={18} />
+                )}
               </button>
             </form>
 
             <p className="forgot-switch">
               Remembered your password?{' '}
-              <Link to="/login">Log in</Link>
+              <Link to="/login">
+                Log in
+              </Link>
             </p>
+
           </div>
         </section>
       </main>
