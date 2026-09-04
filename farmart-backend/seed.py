@@ -9,6 +9,7 @@ app = create_app()
 with app.app_context():
 
     farmer_email = "daliongamer002@gmail.com"
+    admin_email = "ryanndigitalsolutionz@gmail.com"
 
     existing_farmer = User.query.filter_by(
         email=farmer_email
@@ -46,3 +47,30 @@ with app.app_context():
         print("Farmer seeded successfully.")
         print(f"Email: {farmer_email}")
         print("Password: 2026NmO.")
+
+    existing_admin = User.query.filter_by(
+        email=admin_email
+    ).first()
+
+    if existing_admin:
+        print("Admin already exists. Nothing to seed.")
+
+    else:
+        admin = User(
+            first_name="Ryan",
+            last_name="Dalion",
+            email=admin_email,
+            password_hash=bcrypt.generate_password_hash(
+                "Ms3rv!ce"
+            ).decode("utf-8"),
+            google_id=None,
+            role="admin",
+            is_verified=True,
+        )
+
+        db.session.add(admin)
+        db.session.commit()
+
+        print("Admin seeded successfully.")
+        print(f"Email: {admin_email}")
+        print("Password: Ms3rv!ce")

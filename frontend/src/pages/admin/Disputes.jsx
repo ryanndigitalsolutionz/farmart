@@ -31,7 +31,7 @@ export default function Disputes() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32, maxWidth: 480 }}>
         {disputes.length === 0 && (
-          <p style={{ color: "var(--text-muted, #66766A)", fontSize: 13 }}>No open disputes 🎉</p>
+          <p style={{ color: "var(--text-muted, #66766A)", fontSize: 13 }}>No open disputes</p>
         )}
         {disputes.map((dispute) => (
           <div

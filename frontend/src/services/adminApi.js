@@ -1,70 +1,77 @@
-// TODO: replace every function below with real fetch("/api/admin/...") calls once backend endpoints are ready
+const API_BASE_URL = "http://localhost:5000";
 
-const API_BASE_URL = "http://127.0.0.1:5000";
+async function request(url, options = {}) {
+  const response = await fetch(url, {
+    credentials: "include",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(
+      data.error ||
+      data.message ||
+      "The request could not be completed."
+    );
+  }
+
+  return data;
+}
 
 export async function getUsers() {
-  const response = await fetch(`${API_BASE_URL}/api/users`);
-  const data = await response.json();
-  if (!data.success) {
-    throw new Error(data.error || "Failed to load users.");
-  }
-  return data.users;
+  const data = await request(`${API_BASE_URL}/api/users`);
+  return data.users || data;
 }
 
 export async function getOrders() {
-  const response = await fetch(`${API_BASE_URL}/api/orders`);
-  const orders = await response.json();
-  return orders;
+  return request(`${API_BASE_URL}/api/orders`);
 }
 
 export async function getPayments() {
-  const response = await fetch(`${API_BASE_URL}/api/payments`);
-  const payments = await response.json();
-  return payments;
+  return request(`${API_BASE_URL}/api/payments`);
 }
 
 export async function getFarmers() {
-  const response = await fetch(`${API_BASE_URL}/api/farmers`);
-  const farmers = await response.json();
-  return farmers;
+  return request(`${API_BASE_URL}/api/farmers`);
 }
 
 export async function getFarmerDetail(farmerId) {
-  const response = await fetch(`${API_BASE_URL}/api/farmers/${farmerId}`);
-  if (!response.ok) {
-    throw new Error("Farmer not found.");
-  }
-  const farmer = await response.json();
-  return farmer;
+  return request(`${API_BASE_URL}/api/farmers/${farmerId}`);
 }
 
 export async function verifyFarmer(farmerId) {
-  const response = await fetch(`${API_BASE_URL}/api/farmers/${farmerId}`, {
+  return request(`${API_BASE_URL}/api/farmers/${farmerId}`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "verify" }),
+    body: JSON.stringify({
+      action: "verify",
+    }),
   });
-  return response.json();
 }
 
 export async function rejectFarmer(farmerId, reason) {
-  const response = await fetch(`${API_BASE_URL}/api/farmers/${farmerId}`, {
+  return request(`${API_BASE_URL}/api/farmers/${farmerId}`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "reject", reason }),
+    body: JSON.stringify({
+      action: "reject",
+      reason,
+    }),
   });
-  return response.json();
 }
 
-export async function getListingsForReview({ flaggedOnly } = {}) {
-  return []; // mock: no flagged listings yet
+export async function getListingsForReview() {
+  return [];
 }
 
-export async function approveListing(animalId) {
+export async function approveListing() {
   return { success: true };
 }
 
-export async function suspendListing(animalId, reason) {
+export async function suspendListing() {
   return { success: true };
 }
 
@@ -73,17 +80,25 @@ export async function getCommissionRate() {
 }
 
 export async function updateCommissionRate(percentage) {
-  return { success: true };
+  return {
+    success: true,
+    percentage,
+  };
 }
 
-export async function getDisputes({ status } = {}) {
-  return []; // mock: no open disputes yet
+export async function getDisputes() {
+  return [];
 }
 
-export async function resolveDispute(disputeId, notes) {
+export async function resolveDispute() {
   return { success: true };
 }
 
 export async function suspendUser(userId) {
-  return { success: true };
+  return request(`${API_BASE_URL}/api/users/${userId}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      action: "suspend",
+    }),
+  });
 }

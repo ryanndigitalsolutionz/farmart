@@ -1,5 +1,6 @@
 import mimetypes
 import smtplib
+import ssl
 from email.message import EmailMessage
 from pathlib import Path
 
@@ -19,22 +20,24 @@ def send_email(
     text_body,
     html_body,
 ):
-    """
-    Send a professional HTML email through
-    the Farmart Gmail SMTP account.
+    if not Config.SMTP_USERNAME:
+        raise RuntimeError("SMTP_USERNAME is not configured.")
 
-    The Farmart logo is embedded directly
-    into the email using Content-ID.
-    """
+    if not Config.SMTP_PASSWORD:
+        raise RuntimeError("SMTP_PASSWORD is not configured.")
+
+    if not Config.MAIL_FROM_ADDRESS:
+        raise RuntimeError("MAIL_FROM_ADDRESS is not configured.")
+
+    if not to_email:
+        raise ValueError("Recipient email address is required.")
 
     message = EmailMessage()
-
 
     message["From"] = (
         f"{Config.MAIL_FROM_NAME} "
         f"<{Config.MAIL_FROM_ADDRESS}>"
     )
-
     message["To"] = to_email
     message["Subject"] = subject
 
@@ -45,9 +48,7 @@ def send_email(
         subtype="html",
     )
 
-    # Embed Farmart logo
     if LOGO_PATH.exists():
-
         image_data = LOGO_PATH.read_bytes()
 
         mime_type, _ = mimetypes.guess_type(
@@ -73,10 +74,14 @@ def send_email(
     with smtplib.SMTP(
         Config.SMTP_SERVER,
         Config.SMTP_PORT,
+        timeout=30,
     ) as smtp:
+        smtp.ehlo()
 
         if Config.SMTP_USE_TLS:
-            smtp.starttls()
+            context = ssl.create_default_context()
+            smtp.starttls(context=context)
+            smtp.ehlo()
 
         smtp.login(
             Config.SMTP_USERNAME,
@@ -87,16 +92,13 @@ def send_email(
 
     return True
 
+
 def _email_template(
     title,
     body,
     button_text=None,
     button_url=None,
 ):
-    """
-    Build the common Farmart email layout.
-    """
-
     button = ""
 
     if button_text and button_url:
@@ -212,15 +214,11 @@ def _email_template(
 </html>
 """
 
+
 def send_farmer_application_received(
     farmer_name,
     farmer_email,
 ):
-    """
-    Tell a farmer that their application
-    has been received and is awaiting review.
-    """
-
     subject = "Farmart farmer application received"
 
     text_body = f"""
@@ -270,15 +268,11 @@ Livestock and farm produce, straight from the farm.
         html_body=html_body,
     )
 
+
 def send_farmer_approved(
     farmer_name,
     farmer_email,
 ):
-    """
-    Tell a farmer that their application
-    has been approved.
-    """
-
     subject = "Your Farmart farmer account is approved"
 
     text_body = f"""
@@ -297,7 +291,7 @@ Livestock and farm produce, straight from the farm.
 """
 
     html_body = _email_template(
-        title="You're approved! 🎉",
+        title="You're approved!",
         body=f"""
         <p>
             Hello <strong>{farmer_name}</strong>,
@@ -330,16 +324,12 @@ Livestock and farm produce, straight from the farm.
         html_body=html_body,
     )
 
+
 def send_farmer_rejected(
     farmer_name,
     farmer_email,
     reason,
 ):
-    """
-    Tell a farmer that their application
-    has been rejected.
-    """
-
     subject = "Update on your Farmart farmer application"
 
     text_body = f"""
@@ -403,15 +393,12 @@ Livestock and farm produce, straight from the farm.
         html_body=html_body,
     )
 
+
 def send_password_reset_otp(
     user_name,
     user_email,
     otp,
 ):
-    """
-    Send a 6-digit email verification OTP.
-    """
-
     subject = "Your Farmart verification code"
 
     text_body = f"""
