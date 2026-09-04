@@ -4,6 +4,7 @@ import {
   FaHeart,
   FaTrash,
   FaArrowRight,
+  FaArrowLeft,
   FaTag,
 } from 'react-icons/fa'
 import farmartImages from '../../data/farmartImages'
@@ -82,6 +83,34 @@ function Wishlist() {
         .buyer-wishlist-container {
           width: min(100%, 1150px);
           margin: 0 auto;
+        }
+
+        .buyer-wishlist-back {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 25px;
+          padding: 10px 15px;
+          border: 1px solid #d1e1d3;
+          border-radius: 10px;
+          background: #ffffff;
+          color: #53645a;
+          font-family: "Modern Antiqua", serif;
+          font-size: 13px;
+          font-weight: 600;
+          text-decoration: none;
+          transition:
+            border-color 180ms ease,
+            background 180ms ease,
+            color 180ms ease,
+            transform 180ms ease;
+        }
+
+        .buyer-wishlist-back:hover {
+          border-color: #2d7042;
+          background: #eef6ef;
+          color: #2d7042;
+          transform: translateX(-2px);
         }
 
         .buyer-wishlist-header {
@@ -353,6 +382,15 @@ function Wishlist() {
       <main className="buyer-wishlist-page">
         <div className="buyer-wishlist-container">
 
+          <button
+            type="button"
+            className="buyer-wishlist-back"
+            onClick={() => navigate('/buyer/marketplace')}
+          >
+            <FaArrowLeft size={12} />
+            Back to Marketplace
+          </button>
+
           <header className="buyer-wishlist-header">
             <div>
               <h1 className="buyer-wishlist-title">
@@ -368,7 +406,9 @@ function Wishlist() {
             <span className="buyer-wishlist-count">
               <FaHeart size={12} />
               {wishlist.length}{' '}
-              {wishlist.length === 1 ? 'Saved Item' : 'Saved Items'}
+              {wishlist.length === 1
+                ? 'Saved Item'
+                : 'Saved Items'}
             </span>
           </header>
 
@@ -391,7 +431,7 @@ function Wishlist() {
               <button
                 type="button"
                 className="buyer-wishlist-empty-button"
-                onClick={() => navigate('/buyer')}
+                onClick={() => navigate('/buyer/marketplace')}
               >
                 Browse Marketplace
                 <FaArrowRight size={12} />
@@ -468,7 +508,7 @@ function Wishlist() {
                       className="buyer-wishlist-view"
                       onClick={() =>
                         navigate(
-                          `/buyer/listing/${item.id}`,
+                          `/buyer/livestock/${item.id}`,
                         )
                       }
                     >
@@ -488,4 +528,3 @@ function Wishlist() {
 }
 
 export default Wishlist
-// commit 18

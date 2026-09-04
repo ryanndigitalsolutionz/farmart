@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { FaStar, FaEdit, FaTrash, FaPen } from 'react-icons/fa'
+import { Link } from 'react-router-dom'
+import { FaStar, FaEdit, FaTrash, FaPen, FaArrowLeft } from 'react-icons/fa'
 
 function Reviews() {
   const [reviews, setReviews] = useState([
@@ -71,6 +72,34 @@ function Reviews() {
         .buyer-reviews-container {
           width: min(100%, 1050px);
           margin: 0 auto;
+        }
+
+        .buyer-reviews-back {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 25px;
+          padding: 10px 15px;
+          border: 1px solid #d1e1d3;
+          border-radius: 10px;
+          background: #ffffff;
+          color: #53645a;
+          font-family: "Modern Antiqua", serif;
+          font-size: 13px;
+          font-weight: 600;
+          text-decoration: none;
+          transition:
+            border-color 180ms ease,
+            background 180ms ease,
+            color 180ms ease,
+            transform 180ms ease;
+        }
+
+        .buyer-reviews-back:hover {
+          border-color: #2d7042;
+          background: #eef6ef;
+          color: #2d7042;
+          transform: translateX(-2px);
         }
 
         .buyer-reviews-header {
@@ -341,6 +370,14 @@ function Reviews() {
       <main className="buyer-reviews-page">
         <div className="buyer-reviews-container">
 
+          <Link
+            to="/buyer/marketplace"
+            className="buyer-reviews-back"
+          >
+            <FaArrowLeft size={12} />
+            Back to Marketplace
+          </Link>
+
           <header className="buyer-reviews-header">
             <div>
               <h1 className="buyer-reviews-title">
@@ -498,4 +535,4 @@ function Reviews() {
   )
 }
 
-export default Reviews// commit 17
+export default Reviews
