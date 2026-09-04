@@ -3,12 +3,23 @@ import { useCart } from "../../context/CartContext";
 import { FaTrash, FaShoppingCart, FaArrowLeft } from "react-icons/fa";
 
 function Cart() {
-    const { cart, removeFromCart } = useCart();
+    const {
+        cart,
+        removeFromCart,
+        updateCartQuantity,
+    } = useCart();
 
-    const itemCount = cart.length;
+    const itemCount = cart.reduce(
+        (sum, item) =>
+            sum + Number(item.quantityInCart || 1),
+        0
+    );
 
     const total = cart.reduce(
-        (sum, item) => sum + Number(item.price),
+        (sum, item) =>
+            sum +
+            Number(item.price || 0) *
+                Number(item.quantityInCart || 1),
         0
     );
 
@@ -16,7 +27,6 @@ function Cart() {
         <main className="min-h-screen bg-[var(--farm-background)] text-[var(--farm-text)] px-4 py-8">
             <div className="max-w-4xl mx-auto">
 
-                {/* Header */}
                 <div className="mb-8 text-center">
                     <div className="flex justify-center mb-3">
                         <div className="w-14 h-14 rounded-full flex items-center justify-center bg-[var(--farm-green-soft)] text-[var(--farm-green)]">
@@ -33,9 +43,9 @@ function Cart() {
                     </p>
                 </div>
 
-                {/* Empty Cart */}
                 {cart.length === 0 ? (
                     <div className="bg-[var(--farm-green-soft)] border border-[var(--farm-green-border)] rounded-2xl p-10 text-center shadow-sm">
+
                         <div className="flex justify-center mb-4">
                             <div className="w-16 h-16 rounded-full bg-[var(--farm-background)] flex items-center justify-center text-[var(--farm-muted)]">
                                 <FaShoppingCart size={24} />
@@ -53,10 +63,7 @@ function Cart() {
 
                         <Link
                             to="/buyer/marketplace"
-                            className="inline-flex items-center justify-center gap-2 mt-6 px-5 py-3 rounded-xl
-                            bg-[var(--farm-green)] text-white text-sm font-semibold no-underline
-                            transition-all duration-200
-                            hover:bg-[var(--farm-green-dark)] hover:-translate-y-0.5"
+                            className="inline-flex items-center justify-center gap-2 mt-6 px-5 py-3 rounded-xl bg-[var(--farm-green)] text-white text-sm font-semibold no-underline transition-all duration-200 hover:bg-[var(--farm-green-dark)] hover:-translate-y-0.5"
                         >
                             <FaArrowLeft size={12} />
                             Continue Shopping
@@ -65,7 +72,6 @@ function Cart() {
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
 
-                        {/* Cart Items */}
                         <section className="space-y-4">
 
                             <div className="flex items-center justify-between mb-2">
@@ -78,88 +84,167 @@ function Cart() {
                                 </span>
                             </div>
 
-                            {cart.map((item) => (
-                                <article
-                                    key={item.id}
-                                    className="flex gap-4 p-4 bg-[var(--farm-green-soft)]
-                                    border border-[var(--farm-green-border)]
-                                    rounded-2xl shadow-sm
-                                    transition-all duration-200
-                                    hover:border-[var(--farm-green)]
-                                    hover:shadow-md"
-                                >
-                                    {/* Image */}
-                                    <div className="shrink-0">
-                                        <img
-                                            src={item.image}
-                                            alt={item.name || item.type}
-                                            className="w-24 h-24 sm:w-28 sm:h-28 object-cover rounded-xl"
-                                        />
-                                    </div>
+                            {cart.map((item) => {
+                                const quantity =
+                                    Number(item.quantityInCart || 1);
 
-                                    {/* Details */}
-                                    <div className="flex-1 min-w-0">
+                                const isProduct =
+                                    item.category === "product" ||
+                                    item.product_id;
 
-                                        <div className="flex items-start justify-between gap-3">
-                                            <div>
-                                                <p className="text-xs uppercase tracking-wide font-bold text-[var(--farm-green)]">
-                                                    {item.category || "Farm Item"}
-                                                </p>
+                                const maxQuantity = isProduct
+                                    ? Math.max(
+                                          1,
+                                          Math.floor(
+                                              Number(
+                                                  item.quantity || 1
+                                              )
+                                          )
+                                      )
+                                    : Math.max(
+                                          1,
+                                          Number(
+                                              item.quantity || 1
+                                          )
+                                      );
 
-                                                <h3 className="mt-1 text-base sm:text-lg font-bold font-[var(--farm-heading-font)]">
-                                                    {item.name || item.type}
-                                                </h3>
-                                            </div>
-
-                                            <button
-                                                type="button"
-                                                onClick={() => removeFromCart(item.id)}
-                                                aria-label={`Remove ${item.name || item.type} from cart`}
-                                                className="shrink-0 w-9 h-9 flex items-center justify-center
-                                                rounded-lg border border-transparent
-                                                text-red-500 bg-transparent cursor-pointer
-                                                transition-all duration-200
-                                                hover:bg-red-50 hover:border-red-100"
-                                            >
-                                                <FaTrash size={14} />
-                                            </button>
+                                return (
+                                    <article
+                                        key={item.cartKey || `${item.category}-${item.id}`}
+                                        className="flex gap-4 p-4 bg-[var(--farm-green-soft)] border border-[var(--farm-green-border)] rounded-2xl shadow-sm transition-all duration-200 hover:border-[var(--farm-green)] hover:shadow-md"
+                                    >
+                                        <div className="shrink-0">
+                                            {item.image ? (
+                                                <img
+                                                    src={item.image}
+                                                    alt={item.name || item.type}
+                                                    className="w-24 h-24 sm:w-28 sm:h-28 object-cover rounded-xl"
+                                                />
+                                            ) : (
+                                                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-[var(--farm-background)] flex items-center justify-center text-xs text-[var(--farm-muted)]">
+                                                    No image
+                                                </div>
+                                            )}
                                         </div>
 
-                                        {/* Livestock Details */}
-                                        {item.breed && (
-                                            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--farm-muted)]">
-                                                <span>
-                                                    <strong>Type:</strong> {item.type}
-                                                </span>
+                                        <div className="flex-1 min-w-0">
 
-                                                <span>
-                                                    <strong>Breed:</strong> {item.breed}
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div>
+                                                    <p className="text-xs uppercase tracking-wide font-bold text-[var(--farm-green)]">
+                                                        {isProduct
+                                                            ? "Farm Product"
+                                                            : "Livestock"}
+                                                    </p>
+
+                                                    <h3 className="mt-1 text-base sm:text-lg font-bold font-[var(--farm-heading-font)]">
+                                                        {item.name || item.type}
+                                                    </h3>
+                                                </div>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        removeFromCart(item)
+                                                    }
+                                                    aria-label={`Remove ${item.name || item.type} from cart`}
+                                                    className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border border-transparent text-red-500 bg-transparent cursor-pointer transition-all duration-200 hover:bg-red-50 hover:border-red-100"
+                                                >
+                                                    <FaTrash size={14} />
+                                                </button>
+                                            </div>
+
+                                            {!isProduct && item.breed && (
+                                                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--farm-muted)]">
+                                                    <span>
+                                                        <strong>Type:</strong>{" "}
+                                                        {item.type}
+                                                    </span>
+
+                                                    <span>
+                                                        <strong>Breed:</strong>{" "}
+                                                        {item.breed}
+                                                    </span>
+                                                </div>
+                                            )}
+
+                                            {isProduct && item.type && (
+                                                <div className="mt-2 text-xs text-[var(--farm-muted)]">
+                                                    <strong>Type:</strong>{" "}
+                                                    {item.type}
+                                                </div>
+                                            )}
+
+                                            {isProduct && item.unit && (
+                                                <div className="mt-1 text-xs text-[var(--farm-muted)]">
+                                                    <strong>Unit:</strong>{" "}
+                                                    {item.unit}
+                                                </div>
+                                            )}
+
+                                            <div className="mt-3 flex flex-wrap items-center gap-4">
+
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs text-[var(--farm-muted)]">
+                                                        Quantity
+                                                    </span>
+
+                                                    <select
+                                                        value={quantity}
+                                                        onChange={(event) =>
+                                                            updateCartQuantity(
+                                                                item,
+                                                                Math.min(
+                                                                    maxQuantity,
+                                                                    Number(
+                                                                        event
+                                                                            .target
+                                                                            .value
+                                                                    )
+                                                                )
+                                                            )
+                                                        }
+                                                        className="border border-[var(--farm-green-border)] rounded-lg bg-white px-2 py-1 text-sm"
+                                                    >
+                                                        {Array.from(
+                                                            {
+                                                                length: maxQuantity,
+                                                            },
+                                                            (_, index) =>
+                                                                index + 1
+                                                        ).map(
+                                                            (value) => (
+                                                                <option
+                                                                    key={value}
+                                                                    value={
+                                                                        value
+                                                                    }
+                                                                >
+                                                                    {value}
+                                                                </option>
+                                                            )
+                                                        )}
+                                                    </select>
+                                                </div>
+
+                                                <span className="text-lg font-bold text-[var(--farm-text)]">
+                                                    KSh{" "}
+                                                    {(
+                                                        Number(
+                                                            item.price || 0
+                                                        ) *
+                                                        quantity
+                                                    ).toLocaleString()}
                                                 </span>
                                             </div>
-                                        )}
-
-                                        {/* Product Details */}
-                                        {!item.breed && item.type && (
-                                            <p className="mt-2 text-xs text-[var(--farm-muted)]">
-                                                Type: {item.type}
-                                            </p>
-                                        )}
-
-                                        <div className="mt-3">
-                                            <span className="text-lg font-bold text-[var(--farm-text)]">
-                                                KSh {Number(item.price).toLocaleString()}
-                                            </span>
                                         </div>
-                                    </div>
-                                </article>
-                            ))}
+                                    </article>
+                                );
+                            })}
                         </section>
 
-                        {/* Order Summary */}
                         <aside className="lg:sticky lg:top-6 h-fit">
-                            <div className="bg-[var(--farm-green-soft)]
-                                border border-[var(--farm-green-border)]
-                                rounded-2xl p-5 shadow-sm">
+                            <div className="bg-[var(--farm-green-soft)] border border-[var(--farm-green-border)] rounded-2xl p-5 shadow-sm">
 
                                 <h2 className="text-lg font-bold font-[var(--farm-heading-font)]">
                                     Order Summary
@@ -183,7 +268,8 @@ function Cart() {
                                         </span>
 
                                         <span className="text-xl font-bold text-[var(--farm-green)]">
-                                            KSh {total.toLocaleString()}
+                                            KSh{" "}
+                                            {total.toLocaleString()}
                                         </span>
                                     </div>
                                 </div>
@@ -194,15 +280,7 @@ function Cart() {
                                 >
                                     <button
                                         type="button"
-                                        className="w-full py-3 px-4 rounded-xl
-                                        border border-[var(--farm-green)]
-                                        bg-[var(--farm-green)]
-                                        text-white font-semibold text-sm
-                                        cursor-pointer
-                                        transition-all duration-200
-                                        hover:bg-[var(--farm-green-dark)]
-                                        hover:-translate-y-0.5
-                                        hover:shadow-md"
+                                        className="w-full py-3 px-4 rounded-xl border border-[var(--farm-green)] bg-[var(--farm-green)] text-white font-semibold text-sm cursor-pointer transition-all duration-200 hover:bg-[var(--farm-green-dark)] hover:-translate-y-0.5 hover:shadow-md"
                                     >
                                         Proceed to Checkout
                                     </button>
@@ -210,16 +288,15 @@ function Cart() {
 
                                 <Link
                                     to="/buyer/marketplace"
-                                    className="flex items-center justify-center gap-2
-                                    mt-4 text-sm text-[var(--farm-muted)]
-                                    no-underline
-                                    hover:text-[var(--farm-green-dark)]"
+                                    className="flex items-center justify-center gap-2 mt-4 text-sm text-[var(--farm-muted)] no-underline hover:text-[var(--farm-green-dark)]"
                                 >
                                     <FaArrowLeft size={11} />
                                     Continue Shopping
                                 </Link>
+
                             </div>
                         </aside>
+
                     </div>
                 )}
             </div>

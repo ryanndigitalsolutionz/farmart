@@ -2,9 +2,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useCart } from "../../context/CartContext";
 import CheckoutSteps from "./CheckoutSteps";
-import OrderConfirmation from "./OrderConfirmation";
 import Delivery from "../delivery/Delivery";
-import Payments from "./Payments";
+
+const API_BASE = "http://localhost:5000";
 
 function Checkout() {
   const { cart, clearCart } = useCart();
@@ -14,38 +14,94 @@ function Checkout() {
   const [location, setLocation] = useState("");
   const [orderNote, setOrderNote] = useState("");
   const [error, setError] = useState("");
-
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState("");
-
-  const navigate = useNavigate();
 
   const [deliverMethod, setDeliveryMethod] = useState("standard");
   const [currentStep, setCurrentStep] = useState(1);
 
-  // Get the logged-in user's saved information
+  const navigate = useNavigate();
+
   useEffect(() => {
-    const savedUser = JSON.parse(
-      localStorage.getItem("farmartUser") || "null"
-    );
+    const loadBuyerProfile = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/profile/me`, {
+          credentials: "include",
+        });
 
-    if (savedUser) {
-      const savedName =
-        `${savedUser.first_name || ""} ${savedUser.last_name || ""}`.trim();
+        const data = await response.json();
 
-      setName(savedName);
-      setPhone(savedUser.phone || "");
-      setLocation(savedUser.location || "");
-    }
+        if (!response.ok) {
+          throw new Error(
+            data.error ||
+              data.message ||
+              "Unable to load your profile."
+          );
+        }
+
+        const savedName = [
+          data.user?.first_name,
+          data.user?.last_name,
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+        setName(savedName);
+        setPhone(data.profile?.phone || "");
+        setLocation(data.profile?.location || "");
+      } catch (requestError) {
+        setError(
+          requestError.message ||
+            "Unable to load your profile information."
+        );
+      }
+    };
+
+    loadBuyerProfile();
   }, []);
 
   const total = cart.reduce(
-    (sum, animal) => sum + (Number(animal.price) || 0),
+    (sum, item) =>
+      sum +
+      (Number(item.price) || 0) *
+        Number(item.quantityInCart || 1),
     0
   );
 
-  const handlePlaceOrder = () => {
+  const createOrderPayload = () => {
+    return {
+      items: cart.map((item) => {
+        const quantity = Number(item.quantityInCart || 1);
+
+        if (item.product_id) {
+          return {
+            product_id: Number(item.product_id),
+            quantity,
+          };
+        }
+
+        if (item.livestock_id) {
+          return {
+            livestock_id: Number(item.livestock_id),
+            quantity,
+          };
+        }
+
+        throw new Error(
+          `Unable to identify ${item.name || "one of the cart items"}. Please remove it and add it again from the marketplace.`
+        );
+      }),
+    };
+  };
+
+  const handlePlaceOrder = async () => {
     if (submitting) return;
+
+    setError("");
+
+    if (cart.length === 0) {
+      setError("Your cart is empty.");
+      return;
+    }
 
     if (!name.trim() || !phone.trim() || !location.trim()) {
       setError("Please fill all buyer information.");
@@ -53,52 +109,88 @@ function Checkout() {
     }
 
     setSubmitting(true);
-    setError("");
 
-    const order = {
-      id: `ORD-${Date.now()}`,
+    try {
+      const payload = createOrderPayload();
 
-      buyer: {
-        name,
-        phone,
-      },
+      const response = await fetch(`${API_BASE}/orders`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-      delivery: {
-        location,
-        method: deliverMethod,
-        note: orderNote,
-      },
+      const data = await response.json();
 
-      items: cart,
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            data.error ||
+            "Unable to place your order."
+        );
+      }
 
-      total,
+      const orderId =
+        data.order_id ||
+        data.order?.id;
 
-      status: "pending",
+      if (!orderId) {
+        throw new Error(
+          "The server created the order but did not return an order ID."
+        );
+      }
 
-      paymentStatus: "unpaid",
+      clearCart();
 
-      createdAt: new Date().toISOString(),
-    };
+      navigate(`/buyer/payments/${orderId}`, {
+        state: {
+          name,
+          phone,
+          location,
+          deliveryMethod: deliverMethod,
+          orderNote,
+        },
+      });
+    } catch (requestError) {
+      setError(
+        requestError.message ||
+          "Unable to place your order."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-    const existingOrders = JSON.parse(
-      localStorage.getItem("orders") || "[]"
+  if (cart.length === 0) {
+    return (
+      <div className="p-4 mt-3 border border-[var(--farm-green-border)] rounded-[17px] max-w-3xl mx-auto shadow-2xl m-3 items-center justify-center flex flex-col gap-4">
+        <h1 className="font-bold text-2xl text-center tracking-wide text-[var(--farm-green-dark)]">
+          Checkout
+        </h1>
+
+        <CheckoutSteps currentStep={1} />
+
+        <div className="flex flex-col items-center justify-center text-center py-10">
+          <h2 className="font-bold text-xl text-gray-700">
+            Your cart is empty
+          </h2>
+
+          <p className="text-gray-400 mt-2">
+            Add livestock or farm products before checking out.
+          </p>
+
+          <Link
+            to="/buyer/marketplace"
+            className="mt-5 px-5 py-3 rounded-xl bg-[var(--farm-green)] text-white font-semibold hover:bg-[var(--farm-green-dark)] transition"
+          >
+            Back to Marketplace
+          </Link>
+        </div>
+      </div>
     );
-
-    const updateOrders = [...existingOrders, order];
-
-    localStorage.setItem(
-      "orders",
-      JSON.stringify(updateOrders)
-    );
-
-    setSuccess("order saved successfully.");
-
-    clearCart();
-
-    console.log("Order saved:", order);
-
-        navigate(`/buyer/payments/${order.id}`);
-    };    
+  }
 
   return (
     <div className="p-4 mt-3 border border-[var(--farm-green-border)] rounded-[17px] max-w-3xl mx-auto shadow-2xl m-3 items-center justify-center flex flex-col gap-4">
@@ -111,67 +203,99 @@ function Checkout() {
         <CheckoutSteps currentStep={currentStep} />
       </div>
 
-      <div className="flex flex-col justify-center items-center mt-5">
+      <div className="flex flex-col justify-center items-center mt-5 w-full">
 
-        {/* STEP 1 - ORDER SUMMARY */}
         {currentStep === 1 && (
-          <div>
+          <div className="w-full max-w-2xl">
+
             <h2 className="font-bold mb-5 tracking-wide text-xl text-gray-700 text-center p-2">
               Order Summary
             </h2>
 
-            <OrderConfirmation />
+            <div className="border rounded-2xl p-5 space-y-4">
 
-            {cart.map((animal) => (
-              <div
-                key={animal.id}
-                className="flex flex-col gap-1"
-              >
-                <div className="flex gap-3">
+              {cart.map((item) => {
+                const quantity =
+                  Number(item.quantityInCart || 1);
 
-                  <img
-                    src={animal.image}
-                    alt={animal.type}
-                    className="w-35 h-35 object-cover mb-4 rounded-2xl"
-                  />
+                const isProduct =
+                  item.category === "product" ||
+                  item.product_id;
 
-                  <div className="flex flex-col gap-1">
+                return (
+                  <div
+                    key={
+                      item.cartKey ||
+                      `${item.category}-${item.id}`
+                    }
+                    className="flex gap-3 border-b pb-4 last:border-b-0 last:pb-0"
+                  >
+                    {item.image ? (
+                      <img
+                        src={item.image}
+                        alt={item.name || item.type}
+                        className="w-28 h-28 object-cover rounded-2xl"
+                      />
+                    ) : (
+                      <div className="w-28 h-28 rounded-2xl bg-gray-100 flex items-center justify-center text-xs text-gray-400">
+                        No image
+                      </div>
+                    )}
 
-                    <p className="font-bold text-xl">
-                      {animal.breed} {animal.type}
-                    </p>
+                    <div className="flex flex-col gap-1">
+                      <p className="font-bold text-xl">
+                        {item.name || item.type}
+                      </p>
 
-                    <p className="text-gray-400">
-                      {animal.age} years - {animal.weight} kg
-                    </p>
+                      <p className="text-gray-400">
+                        {isProduct
+                          ? `${item.type} · ${item.unit || "unit"}`
+                          : `${item.breed || item.type} · ${item.age} years`}
+                      </p>
 
-                    <p className="text-gray-400">
-                      {animal.location}
-                    </p>
+                      {!isProduct && item.weight && (
+                        <p className="text-gray-400">
+                          {item.weight} {item.weight_unit || "kg"}
+                        </p>
+                      )}
 
-                    <p className="font-semibold">
-                      Price: Ksh{" "}
-                      {Number(animal.price).toLocaleString()}
-                    </p>
+                      <p className="text-gray-400">
+                        {item.location}
+                      </p>
 
+                      <p className="text-gray-500">
+                        Quantity: {quantity}
+                      </p>
+
+                      <p className="font-semibold">
+                        Price: KSh{" "}
+                        {(
+                          Number(item.price || 0) *
+                          quantity
+                        ).toLocaleString()}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                );
+              })}
+
+              <div className="pt-3">
+                <h2 className="font-bold text-xl text-green-700">
+                  Total: KSh {total.toLocaleString()}
+                </h2>
               </div>
-            ))}
+            </div>
 
-            <h2 className="font-bold text-xl mt-3 text-green-700">
-              Total: ksh {total.toLocaleString()}
-            </h2>
-
-            <div className="mt-3 mb-7">
+            <div className="mt-6 mb-7">
               <button
-                onClick={() => setCurrentStep(2)}
-                className="w-full mt-3.75 p-3 border border-[var(--farm-green)] rounded-[11px] bg-[var(--farm-green)]
-                  text-white font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer
-                  transition-[background,transform] duration-[160ms] ease-[ease]
-                  hover:bg-[var(--farm-green-dark)] hover:translate-y-[-1px]"
+                type="button"
+                onClick={() => {
+                  setError("");
+                  setCurrentStep(2);
+                }}
+                className="w-full p-3 border border-[var(--farm-green)] rounded-[11px] bg-[var(--farm-green)] text-white font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer transition-[background,transform] duration-[160ms] ease-[ease] hover:bg-[var(--farm-green-dark)] hover:translate-y-[-1px]"
               >
-                Continue to payment
+                Continue to delivery
               </button>
             </div>
 
@@ -182,53 +306,38 @@ function Checkout() {
               >
                 Back to Marketplace
 
-                <span
-                  className="absolute -bottom-1 left-1/2 h-[2px] w-6
-                    -translate-x-1/2 scale-x-0 rounded-full
-                    bg-[var(--farm-green-dark)]
-                    transition-transform duration-300
-                    group-hover:scale-x-100"
-                />
+                <span className="absolute -bottom-1 left-1/2 h-[2px] w-6 -translate-x-1/2 scale-x-0 rounded-full bg-[var(--farm-green-dark)] transition-transform duration-300 group-hover:scale-x-100" />
               </Link>
             </div>
+
           </div>
         )}
 
-        {/* STEP 2 - DELIVERY */}
         {currentStep === 2 && (
           <Delivery
             name={name}
             setName={setName}
-
             phone={phone}
             setPhone={setPhone}
-
             location={location}
             setLocation={setLocation}
-
             orderNote={orderNote}
             setOrderNote={setOrderNote}
-
+            deliverMethod={deliverMethod}
+            setDeliveryMethod={setDeliveryMethod}
             error={error}
-
             submitting={submitting}
-
             onContinue={handlePlaceOrder}
+            onBack={() => {
+              setError("");
+              setCurrentStep(1);
+            }}
           />
         )}
 
-        {/* STEP 3 - PAYMENT */}
-        {currentStep === 3 && (
-          <Payments
-            total={total}
-            onBack={() => setCurrentStep(2)}
-            onPlaceOrder={handlePlaceOrder}
-          />
-        )}
       </div>
     </div>
   );
 }
 
 export default Checkout;
-

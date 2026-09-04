@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   FaHeart,
@@ -7,66 +7,182 @@ import {
   FaArrowLeft,
   FaTag,
 } from 'react-icons/fa'
-import farmartImages from '../../data/farmartImages'
+
+const API_BASE = 'http://localhost:5000'
 
 function Wishlist() {
   const navigate = useNavigate()
 
-  const [wishlist, setWishlist] = useState([
-    {
-      id: 1,
-      name: 'Friesian Cow',
-      category: 'Livestock',
-      type: 'Cow',
-      breed: 'Friesian',
-      price: 85000,
-      unit: 'per animal',
-      image: farmartImages.livestock.cows[0],
-      farmer: 'Jomo Farm',
-    },
-    {
-      id: 2,
-      name: 'Boer Goat',
-      category: 'Livestock',
-      type: 'Goat',
-      breed: 'Boer',
-      price: 18000,
-      unit: 'per animal',
-      image: farmartImages.livestock.goats[0],
-      farmer: 'Green Valley Farm',
-    },
-    {
-      id: 3,
-      name: 'Fresh Eggs',
-      category: 'Farm Produce',
-      type: 'Eggs',
-      quantity: '30 eggs',
-      price: 450,
-      unit: 'per tray',
-      image: farmartImages.products.eggs[0],
-      farmer: 'Sunrise Farm',
-    },
-    {
-      id: 4,
-      name: 'Fresh Milk',
-      category: 'Farm Produce',
-      type: 'Milk',
-      quantity: '1 litre',
-      price: 120,
-      unit: 'per litre',
-      image: farmartImages.products.milk[0],
-      farmer: 'Highland Dairy Farm',
-    },
-  ])
+  const [wishlist, setWishlist] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [removingId, setRemovingId] = useState(null)
 
-  const removeFromWishlist = (id) => {
-    setWishlist((currentWishlist) =>
-      currentWishlist.filter((item) => item.id !== id),
-    )
+  useEffect(() => {
+    const loadWishlist = async () => {
+      try {
+        setIsLoading(true)
+        setError('')
+
+        const response = await fetch(`${API_BASE}/wishlist`, {
+          credentials: 'include',
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(
+            data.message ||
+            data.error ||
+            'Unable to load wishlist.'
+          )
+        }
+
+        const items = Array.isArray(data)
+          ? data
+          : Array.isArray(data.wishlist)
+            ? data.wishlist
+            : []
+
+        const normalizedItems = items.map((item) => {
+          const livestock =
+            item.livestock ||
+            item.livestock_listing ||
+            null
+
+          const product =
+            item.product ||
+            item.product_listing ||
+            null
+
+          const isProduct =
+            Boolean(item.product_id || product)
+
+          const listing = isProduct
+            ? product
+            : livestock
+
+          return {
+            id: item.id,
+            livestockId:
+              item.livestock_id ||
+              livestock?.id ||
+              null,
+            productId:
+              item.product_id ||
+              product?.id ||
+              null,
+            listingType: isProduct
+              ? 'product'
+              : 'livestock',
+            name:
+              listing?.name ||
+              item.name ||
+              'Farm Item',
+            type:
+              listing?.type ||
+              item.type ||
+              '',
+            breed:
+              listing?.breed ||
+              item.breed ||
+              '',
+            quantity:
+              listing?.quantity ??
+              item.quantity ??
+              '',
+            price:
+              listing?.price ??
+              item.price ??
+              0,
+            unit:
+              listing?.unit ||
+              item.unit ||
+              '',
+            image:
+              listing?.image ||
+              item.image ||
+              '',
+            location:
+              listing?.location ||
+              item.location ||
+              '',
+            farmer:
+              listing?.farmer?.farm_name ||
+              listing?.farmer?.farmName ||
+              listing?.farmer?.name ||
+              item.farmer?.farm_name ||
+              item.farmer?.farmName ||
+              item.farmer?.name ||
+              item.farmer_name ||
+              'Farm',
+          }
+        })
+
+        setWishlist(normalizedItems)
+      } catch (requestError) {
+        setError(
+          requestError.message ||
+          'Unable to load wishlist.'
+        )
+        setWishlist([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadWishlist()
+  }, [])
+
+  const removeFromWishlist = async (wishlistId) => {
+    try {
+      setRemovingId(wishlistId)
+      setError('')
+
+      const response = await fetch(
+        `${API_BASE}/wishlist/${wishlistId}`,
+        {
+          method: 'DELETE',
+          credentials: 'include',
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+          data.error ||
+          'Unable to remove wishlist item.'
+        )
+      }
+
+      setWishlist((currentWishlist) =>
+        currentWishlist.filter(
+          (item) => item.id !== wishlistId
+        )
+      )
+    } catch (requestError) {
+      setError(
+        requestError.message ||
+        'Unable to remove wishlist item.'
+      )
+    } finally {
+      setRemovingId(null)
+    }
+  }
+
+  const viewListing = (item) => {
+    if (item.listingType === 'product') {
+      navigate(`/buyer/products/${item.productId}`)
+      return
+    }
+
+    navigate(`/buyer/livestock/${item.livestockId}`)
   }
 
   const formatPrice = (price) => {
-    return `KES ${price.toLocaleString()}`
+    return `KES ${Number(price || 0).toLocaleString()}`
   }
 
   return (
@@ -98,7 +214,7 @@ function Wishlist() {
           font-family: "Modern Antiqua", serif;
           font-size: 13px;
           font-weight: 600;
-          text-decoration: none;
+          cursor: pointer;
           transition:
             border-color 180ms ease,
             background 180ms ease,
@@ -154,6 +270,20 @@ function Wishlist() {
           color: #b64444;
         }
 
+        .buyer-wishlist-message {
+          margin-bottom: 18px;
+          padding: 13px 16px;
+          border-radius: 12px;
+          font-family: "Modern Antiqua", serif;
+          font-size: 14px;
+        }
+
+        .buyer-wishlist-error {
+          border: 1px solid #dfbbb5;
+          background: #faece9;
+          color: #a3483b;
+        }
+
         .buyer-wishlist-grid {
           display: grid;
           grid-template-columns: repeat(
@@ -192,6 +322,17 @@ function Wishlist() {
           transform: scale(1.04);
         }
 
+        .buyer-wishlist-no-image {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #748078;
+          font-family: "Modern Antiqua", serif;
+          font-size: 13px;
+        }
+
         .buyer-wishlist-category {
           position: absolute;
           top: 13px;
@@ -225,10 +366,15 @@ function Wishlist() {
             border-color 180ms ease;
         }
 
-        .buyer-wishlist-remove:hover {
+        .buyer-wishlist-remove:hover:not(:disabled) {
           border-color: #b64444;
           background: #b64444;
           color: #ffffff;
+        }
+
+        .buyer-wishlist-remove:disabled {
+          opacity: 0.55;
+          cursor: not-allowed;
         }
 
         .buyer-wishlist-content {
@@ -257,6 +403,9 @@ function Wishlist() {
         }
 
         .buyer-wishlist-detail {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
           padding: 5px 9px;
           border-radius: 7px;
           background: #eef6ef;
@@ -363,6 +512,17 @@ function Wishlist() {
           cursor: pointer;
         }
 
+        .buyer-wishlist-loading {
+          padding: 75px 30px;
+          border: 1px dashed #b9ccbd;
+          border-radius: 20px;
+          background: rgba(255, 255, 255, 0.55);
+          color: #748078;
+          font-family: "Modern Antiqua", serif;
+          font-size: 14px;
+          text-align: center;
+        }
+
         @media (max-width: 650px) {
           .buyer-wishlist-page {
             padding: 30px 18px 55px;
@@ -385,7 +545,9 @@ function Wishlist() {
           <button
             type="button"
             className="buyer-wishlist-back"
-            onClick={() => navigate('/buyer/marketplace')}
+            onClick={() =>
+              navigate('/buyer/marketplace')
+            }
           >
             <FaArrowLeft size={12} />
             Back to Marketplace
@@ -412,7 +574,17 @@ function Wishlist() {
             </span>
           </header>
 
-          {wishlist.length === 0 ? (
+          {error && (
+            <div className="buyer-wishlist-message buyer-wishlist-error">
+              {error}
+            </div>
+          )}
+
+          {isLoading ? (
+            <section className="buyer-wishlist-loading">
+              Loading wishlist...
+            </section>
+          ) : wishlist.length === 0 ? (
             <section className="buyer-wishlist-empty">
               <div className="buyer-wishlist-empty-icon">
                 <FaHeart size={23} />
@@ -431,7 +603,9 @@ function Wishlist() {
               <button
                 type="button"
                 className="buyer-wishlist-empty-button"
-                onClick={() => navigate('/buyer/marketplace')}
+                onClick={() =>
+                  navigate('/buyer/marketplace')
+                }
               >
                 Browse Marketplace
                 <FaArrowRight size={12} />
@@ -445,14 +619,22 @@ function Wishlist() {
                   key={item.id}
                 >
                   <div className="buyer-wishlist-image-wrap">
-                    <img
-                      className="buyer-wishlist-image"
-                      src={item.image}
-                      alt={item.name}
-                    />
+                    {item.image ? (
+                      <img
+                        className="buyer-wishlist-image"
+                        src={item.image}
+                        alt={item.name}
+                      />
+                    ) : (
+                      <div className="buyer-wishlist-no-image">
+                        No image available
+                      </div>
+                    )}
 
                     <span className="buyer-wishlist-category">
-                      {item.category}
+                      {item.listingType === 'product'
+                        ? 'Farm Produce'
+                        : 'Livestock'}
                     </span>
 
                     <button
@@ -461,6 +643,7 @@ function Wishlist() {
                       onClick={() =>
                         removeFromWishlist(item.id)
                       }
+                      disabled={removingId === item.id}
                       aria-label={`Remove ${item.name} from wishlist`}
                       title="Remove from wishlist"
                     >
@@ -478,9 +661,12 @@ function Wishlist() {
                     </p>
 
                     <div className="buyer-wishlist-details">
-                      <span className="buyer-wishlist-detail">
-                        <FaTag size={9} /> {item.type}
-                      </span>
+                      {item.type && (
+                        <span className="buyer-wishlist-detail">
+                          <FaTag size={9} />
+                          {item.type}
+                        </span>
+                      )}
 
                       {item.breed && (
                         <span className="buyer-wishlist-detail">
@@ -488,9 +674,21 @@ function Wishlist() {
                         </span>
                       )}
 
-                      {item.quantity && (
+                      {item.quantity !== '' &&
+                        item.quantity !== null &&
+                        item.quantity !== undefined && (
+                          <span className="buyer-wishlist-detail">
+                            {item.quantity}
+                            {item.listingType === 'product' &&
+                              item.unit
+                              ? ` ${item.unit}`
+                              : ''}
+                          </span>
+                        )}
+
+                      {item.location && (
                         <span className="buyer-wishlist-detail">
-                          {item.quantity}
+                          {item.location}
                         </span>
                       )}
                     </div>
@@ -500,16 +698,20 @@ function Wishlist() {
                         {formatPrice(item.price)}
                       </strong>
 
-                      <span>{item.unit}</span>
+                      {item.unit && (
+                        <span>
+                          {item.listingType === 'livestock'
+                            ? item.unit
+                            : `per ${item.unit}`}
+                        </span>
+                      )}
                     </div>
 
                     <button
                       type="button"
                       className="buyer-wishlist-view"
                       onClick={() =>
-                        navigate(
-                          `/buyer/livestock/${item.id}`,
-                        )
+                        viewListing(item)
                       }
                     >
                       View Listing

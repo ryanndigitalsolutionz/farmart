@@ -21,7 +21,7 @@ function BuyerRoute() {
       <Route path="cart" element={<Cart />} />
       <Route path="checkout" element={<Checkout />} />
       <Route path="livestock/:id" element={<LivestockDetails />} />
-      <Route path="payments" element={<BuyerPayments />} />
+      <Route path="payments/:id" element={<BuyerPayments />} />
       <Route path="orders" element={<BuyerOrders />} />
       <Route path="orders/:orderId" element={<OrderDetails />} />
       <Route

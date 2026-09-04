@@ -1,23 +1,22 @@
 import { useMemo, useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  FaSearch,
   FaShoppingCart,
   FaHeart,
   FaUser,
   FaClipboardList,
   FaStar,
-  FaFlag,
   FaSlidersH,
 } from 'react-icons/fa'
-
-import farmartImages from '../../data/farmartImages'
-import useLivestock from '../../hooks/useLivestock'
 
 import SearchBar from '../../components/marketplace/SearchBar'
 import FilterPanel from '../../components/marketplace/FilterPanel'
 import SortDropdown from '../../components/marketplace/SortDropdown'
 import ProductFilterPanel from '../../components/products/filters/ProductFilterPanel'
+import useLivestock from '../../hooks/useLivestock'
+import { useCart } from '../../context/CartContext'
+
+const API_BASE = 'http://localhost:5000'
 
 function Marketplace() {
   const [category, setCategory] = useState('livestock')
@@ -38,49 +37,74 @@ function Marketplace() {
   const [minQuantity, setMinQuantity] = useState('')
   const [maxQuantity, setMaxQuantity] = useState('')
 
-  const { livestock, loading } = useLivestock()
+  const { livestock, loading: livestockLoading } = useLivestock()
+  const { addToCart } = useCart()
 
+  const [products, setProducts] = useState([])
+  const [productsLoading, setProductsLoading] = useState(true)
+  const [productsError, setProductsError] = useState('')
 
-  const products = useMemo(
-    () => [
-      {
-        id: 1,
-        name: 'Fresh Eggs',
-        type: 'Eggs',
-        dateProduced: '2026-08-10',
-        expiryDate: '2026-08-24',
-        quantity: 30,
-        price: 20,
-        image: farmartImages.products.eggs[0],
-      },
-      {
-        id: 2,
-        name: 'Fresh Milk',
-        type: 'Milk',
-        dateProduced: '2026-08-25',
-        expiryDate: '2026-08-30',
-        quantity: 1000,
-        price: 70,
-        image: farmartImages.products.milk[0],
-      },
-      {
-        id: 3,
-        name: 'Farm Butter',
-        type: 'Butter',
-        dateProduced: '2026-08-18',
-        expiryDate: '2026-09-18',
-        quantity: 500,
-        price: 100,
-        image: farmartImages.products.butter[0],
-      },
-    ],
-    [],
-  )
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setProductsLoading(true)
+        setProductsError('')
+
+        const response = await fetch(`${API_BASE}/products`, {
+          credentials: 'include',
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(
+            data.message ||
+              data.error ||
+              'Unable to load farm products.'
+          )
+        }
+
+        const normalizedProducts = Array.isArray(data)
+          ? data.map((product) => ({
+              id: product.id,
+              product_id: product.id,
+              name: product.name || '',
+              type: product.type || '',
+              description: product.description || '',
+              dateProduced: product.date_produced || '',
+              expiryDate: product.expiry_date || '',
+              quantity: Number(product.quantity || 0),
+              price: Number(product.price || 0),
+              unit: product.unit || '',
+              location: product.location || '',
+              image: product.image || '',
+              availability: product.availability || 'available',
+              farmerId: product.farmer_id,
+              category: 'product',
+            }))
+          : []
+
+        setProducts(normalizedProducts)
+      } catch (requestError) {
+        setProductsError(
+          requestError.message ||
+            'Unable to load farm products.'
+        )
+        setProducts([])
+      } finally {
+        setProductsLoading(false)
+      }
+    }
+
+    loadProducts()
+  }, [])
 
   const filteredLivestock = useMemo(() => {
     let results = livestock.filter((item) => {
       const matchesSearch =
-        `${item.name} ${item.type} ${item.breed} ${item.location}`
+        `${item.name} ${item.type} ${item.breed || ''} ${
+          item.location || ''
+        }`
           .toLowerCase()
           .includes(search.toLowerCase())
 
@@ -91,16 +115,16 @@ function Marketplace() {
         !breed || item.breed === breed
 
       const matchesAge =
-        !age || item.age <= Number(age)
+        !age || Number(item.age) <= Number(age)
 
       const matchesSex =
         !sex || item.sex === sex
 
       const matchesMinPrice =
-        !minPrice || item.price >= Number(minPrice)
+        !minPrice || Number(item.price) >= Number(minPrice)
 
       const matchesMaxPrice =
-        !maxPrice || item.price <= Number(maxPrice)
+        !maxPrice || Number(item.price) <= Number(maxPrice)
 
       return (
         matchesSearch &&
@@ -114,19 +138,31 @@ function Marketplace() {
     })
 
     if (sort === 'price-low') {
-      results.sort((a, b) => a.price - b.price)
+      results.sort(
+        (a, b) =>
+          Number(a.price) - Number(b.price)
+      )
     }
 
     if (sort === 'price-high') {
-      results.sort((a, b) => b.price - a.price)
+      results.sort(
+        (a, b) =>
+          Number(b.price) - Number(a.price)
+      )
     }
 
     if (sort === 'age-young') {
-      results.sort((a, b) => a.age - b.age)
+      results.sort(
+        (a, b) =>
+          Number(a.age) - Number(b.age)
+      )
     }
 
     if (sort === 'age-old') {
-      results.sort((a, b) => b.age - a.age)
+      results.sort(
+        (a, b) =>
+          Number(b.age) - Number(a.age)
+      )
     }
 
     return results
@@ -143,9 +179,9 @@ function Marketplace() {
   ])
 
   const filteredProducts = useMemo(() => {
-    return products.filter((item) => {
+    let results = products.filter((item) => {
       const matchesSearch =
-        `${item.name} ${item.type}`
+        `${item.name} ${item.type} ${item.location}`
           .toLowerCase()
           .includes(search.toLowerCase())
 
@@ -159,11 +195,11 @@ function Marketplace() {
 
       const matchesMinQuantity =
         !minQuantity ||
-        item.quantity >= Number(minQuantity)
+        Number(item.quantity) >= Number(minQuantity)
 
       const matchesMaxQuantity =
         !maxQuantity ||
-        item.quantity <= Number(maxQuantity)
+        Number(item.quantity) <= Number(maxQuantity)
 
       return (
         matchesSearch &&
@@ -173,6 +209,36 @@ function Marketplace() {
         matchesMaxQuantity
       )
     })
+
+    if (sort === 'price-low') {
+      results.sort(
+        (a, b) =>
+          Number(a.price) - Number(b.price)
+      )
+    }
+
+    if (sort === 'price-high') {
+      results.sort(
+        (a, b) =>
+          Number(b.price) - Number(a.price)
+      )
+    }
+
+    if (sort === 'quantity-low') {
+      results.sort(
+        (a, b) =>
+          Number(a.quantity) - Number(b.quantity)
+      )
+    }
+
+    if (sort === 'quantity-high') {
+      results.sort(
+        (a, b) =>
+          Number(b.quantity) - Number(a.quantity)
+      )
+    }
+
+    return results
   }, [
     products,
     search,
@@ -180,12 +246,18 @@ function Marketplace() {
     expiryDate,
     minQuantity,
     maxQuantity,
+    sort,
   ])
 
   const visibleItems =
     category === 'livestock'
       ? filteredLivestock
       : filteredProducts
+
+  const isLoading =
+    category === 'livestock'
+      ? livestockLoading
+      : productsLoading
 
   const clearFilters = () => {
     setType('')
@@ -203,23 +275,37 @@ function Marketplace() {
     setSort('')
   }
 
+  const addLivestockToCart = (item) => {
+    addToCart({
+      ...item,
+      livestock_id: item.id,
+      category: 'livestock',
+    })
+  }
+
+  const addProductToCart = (item) => {
+    addToCart({
+      ...item,
+      product_id: item.id,
+      category: 'product',
+    })
+  }
+
   return (
     <>
-<style>{`
+      <style>{`
+        .marketplace-page {
+          background:
+            radial-gradient(
+              circle at 50% 0%,
+              var(--farm-green-glow),
+              transparent 34%
+            ),
+            var(--farm-background);
+        }
+      `}</style>
 
-  .marketplace-page {
-  background:
-    radial-gradient(
-      circle at 50% 0%,
-      var(--farm-green-glow),
-      transparent 34%
-    ),
-    var(--farm-background);
-}
-`}</style>
-
-      <main className="marketplace-page min-h-screen text-[var(--farm-text)] 
-      transition-[background_color, color] duration-180 ease-[ease]">
+      <main className="marketplace-page min-h-screen text-[var(--farm-text)] transition-[background_color,color] duration-180 ease-[ease]">
         <div className="marketplace-container w-[min(1200px,calc(100%-40px))] mx-auto pt-[34px] pb-[70px] max-[620px]:w-[min(100%-28px,560px)] max-[620px]:pt-[24px]">
 
           <header className="marketplace-top flex flex-col items-center text-center">
@@ -232,16 +318,12 @@ function Marketplace() {
               />
             </div>
 
-            {/*TODO: heading fix to align */}
             <div className="marketplace-heading">
-              <h1 className=' m-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] 
-              text-[clamp(36px,6vw,50px)] font-bold leading-[1.1] tracking-[-1px]'
-              >
+              <h1 className="m-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[clamp(36px,6vw,50px)] font-bold leading-[1.1] tracking-[-1px]">
                 Find what your farm has to offer.
               </h1>
 
-              <p className='max-w-[700px] mx-auto mt-[16px] text-[var(--farm-muted)] 
-              font-[var(--farm-body-font)] text-[15px] leading-[1.8] text-center px-15'>
+              <p className="max-w-[700px] mx-auto mt-[16px] text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[15px] leading-[1.8] text-center px-15">
                 Discover livestock and farm products directly
                 from farmers, with transparent prices and
                 trustworthy listings.
@@ -254,74 +336,62 @@ function Marketplace() {
                 setSearch={setSearch}
               />
             </div>
-            {/* livestock toggle */}
 
-            <div
-          className="
-            category-switch flex justify-center gap-[5px] mx-auto mt-[30px] p-[5px]
-            border border-[var(--farm-green-border)]
-            rounded-[15px] bg-[var(--farm-green-soft)]
-            max-[620px]:w-full
-          "
-        >
-          {/* Livestock */}
-          <button
-            type="button"
-            onClick={() => setCategory("livestock")}
-            className={`
-              category-button
-              min-w-[150px] py-[12px] px-[20px]
-              border-0 rounded-[11px]
-              font-[var(--farm-body-font)]
-              text-[14px] font-semibold
-              cursor-pointer
-              transition-all duration-[160ms] ease-[ease]
-              max-[620px]:min-w-0 max-[620px]:w-1/2
-              max-[620px]:px-[8px] max-[620px]:py-[11px]
+            <div className="category-switch flex justify-center gap-[5px] mx-auto mt-[30px] p-[5px] border border-[var(--farm-green-border)] rounded-[15px] bg-[var(--farm-green-soft)] max-[620px]:w-full">
 
-              ${
-                category === "livestock"
-                  ? "bg-[var(--farm-green)] text-white shadow-md"
-                  : "bg-transparent text-[var(--farm-muted)] hover:bg-white"
-              }
-            `}
-          >
-            Livestock
-          </button>
+              <button
+                type="button"
+                onClick={() => setCategory('livestock')}
+                className={`
+                  category-button
+                  min-w-[150px] py-[12px] px-[20px]
+                  border-0 rounded-[11px]
+                  font-[var(--farm-body-font)]
+                  text-[14px] font-semibold
+                  cursor-pointer
+                  transition-all duration-[160ms] ease-[ease]
+                  max-[620px]:min-w-0 max-[620px]:w-1/2
+                  max-[620px]:px-[8px] max-[620px]:py-[11px]
+                  ${
+                    category === 'livestock'
+                      ? 'bg-[var(--farm-green)] text-white shadow-md'
+                      : 'bg-transparent text-[var(--farm-muted)] hover:bg-white'
+                  }
+                `}
+              >
+                Livestock
+              </button>
 
-          {/* Farm Products */}
-          <button
-            type="button"
-            onClick={() => setCategory("products")}
-            className={`
-              category-button
-              min-w-[150px] py-[12px] px-[20px]
-              border-0 rounded-[11px]
-              font-[var(--farm-body-font)]
-              text-[14px] font-semibold
-              cursor-pointer
-              transition-all duration-[160ms] ease-[ease]
-              max-[620px]:min-w-0 max-[620px]:w-1/2
-              max-[620px]:px-[8px] max-[620px]:py-[11px]
+              <button
+                type="button"
+                onClick={() => setCategory('products')}
+                className={`
+                  category-button
+                  min-w-[150px] py-[12px] px-[20px]
+                  border-0 rounded-[11px]
+                  font-[var(--farm-body-font)]
+                  text-[14px] font-semibold
+                  cursor-pointer
+                  transition-all duration-[160ms] ease-[ease]
+                  max-[620px]:min-w-0 max-[620px]:w-1/2
+                  max-[620px]:px-[8px] max-[620px]:py-[11px]
+                  ${
+                    category === 'products'
+                      ? 'bg-[var(--farm-green)] text-white shadow-md'
+                      : 'bg-transparent text-[var(--farm-muted)] hover:bg-white'
+                  }
+                `}
+              >
+                Farm Products
+              </button>
 
-              ${
-                category === "products"
-                  ? "bg-[var(--farm-green)] text-white shadow-md"
-                  : "bg-transparent text-[var(--farm-muted)] hover:bg-white"
-              }
-            `}
-          >
-            Farm Products
-          </button>
-          </div>
-
+            </div>
 
           </header>
 
           <section className="marketplace-layout mt-[42px]">
 
-            <div className="marketplace-toolbar flex items-center justify-between gap-[20px] mb-[18px]
-              max-[620px]:items-start max-[620px]:flex-col">
+            <div className="marketplace-toolbar flex items-center justify-between gap-[20px] mb-[18px] max-[620px]:items-start max-[620px]:flex-col">
 
               <div className="marketplace-results">
                 <h2 className="m-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[27px]">
@@ -343,11 +413,7 @@ function Marketplace() {
 
                 <button
                   type="button"
-                  className="toolbar-button inline-flex items-center gap-[8px] py-[10px] px-[14px]
-                    border border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] 
-                    text-[var(--farm-text)] font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer 
-                    transition-[border-color,background,color] duration-[160ms] ease-[ease] 
-                    hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)]"
+                  className="toolbar-button inline-flex items-center gap-[8px] py-[10px] px-[14px] border border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-text)] font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)]"
                   onClick={() =>
                     setShowFilters(!showFilters)
                   }
@@ -364,15 +430,10 @@ function Marketplace() {
                 />
 
               </div>
-
             </div>
 
             {showFilters && (
-              <div 
-                className="filter-wrapper mb-[28px] p-[18px] border 
-                border-[var(--farm-green-border)] rounded-[17px] 
-                bg-[var(--farm-green-soft)]"
-              >
+              <div className="filter-wrapper mb-[28px] p-[18px] border border-[var(--farm-green-border)] rounded-[17px] bg-[var(--farm-green-soft)]">
 
                 <div className="filter-heading flex items-center justify-between mb-[15px]">
                   <h3 className="m-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[18px]">
@@ -383,8 +444,7 @@ function Marketplace() {
 
                   <button
                     type="button"
-                    className="clear-filters border-0 bg-transparent text-[var(--farm-green)] 
-                      font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer hover:text-[var(--farm-green-dark)]"
+                    className="clear-filters border-0 bg-transparent text-[var(--farm-green)] font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer hover:text-[var(--farm-green-dark)]"
                     onClick={clearFilters}
                   >
                     Clear filters
@@ -422,37 +482,54 @@ function Marketplace() {
               </div>
             )}
 
-            {visibleItems.length > 0 ? (
-              <div className="marketplace-grid grid grid-cols-[repeat(3,1fr)] 
-              max-[900px]:grid-cols-[repeat(2,1fr)] max-[620px]:grid-cols-[1fr] gap-[20px]">
+            {isLoading ? (
+              <div className="empty-state py-[70px] px-[24px] border border-[var(--farm-green-border)] rounded-[20px] bg-[var(--farm-green-soft)] text-center">
+                <h3 className="m-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[25px]">
+                  Loading listings...
+                </h3>
+              </div>
+            ) : category === 'products' && productsError ? (
+              <div className="empty-state py-[70px] px-[24px] border border-[var(--farm-green-border)] rounded-[20px] bg-[var(--farm-green-soft)] text-center">
+
+                <h3 className="m-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[25px]">
+                  Unable to load farm products.
+                </h3>
+
+                <p className="mt-[12px] mr-auto ml-auto mb-0 text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[14px]">
+                  {productsError}
+                </p>
+
+              </div>
+            ) : visibleItems.length > 0 ? (
+              <div className="marketplace-grid grid grid-cols-[repeat(3,1fr)] max-[900px]:grid-cols-[repeat(2,1fr)] max-[620px]:grid-cols-[1fr] gap-[20px]">
 
                 {visibleItems.map((item) => (
                   <article
                     key={`${category}-${item.id}`}
-                    className="marketplace-card overflow-hidden border border-[var(--farm-green-border)]
-                     rounded-[19px] bg-[var(--farm-green-soft)] shadow-[0_8px_25px_var(--farm-green-glow)]
-                     transition-[border-color,box-shadow,background] duration-[180ms] ease-[ease]
-                     hover:border-[var(--farm-green)] hover:shadow-[0_14px_32px_var(--farm-green-glow)]"
+                    className="marketplace-card overflow-hidden border border-[var(--farm-green-border)] rounded-[19px] bg-[var(--farm-green-soft)] shadow-[0_8px_25px_var(--farm-green-glow)] transition-[border-color,box-shadow,background] duration-[180ms] ease-[ease] hover:border-[var(--farm-green)] hover:shadow-[0_14px_32px_var(--farm-green-glow)]"
                   >
 
                     <div className="marketplace-image w-full h-[220px] bg-[var(--farm-background)] max-[620px]:h-[240px]">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className='w-full h-full object-cover'
-                      />
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[13px]">
+                          No image available
+                        </div>
+                      )}
                     </div>
 
                     <div className="marketplace-card-body p-[20px]">
 
-                      <div className="marketplace-card-type text-[var(--farm-green)] 
-                      font-[var(--farm-body-font)] text-[12px] font-bold uppercase tracking-[0.7px]">
+                      <div className="marketplace-card-type text-[var(--farm-green)] font-[var(--farm-body-font)] text-[12px] font-bold uppercase tracking-[0.7px]">
                         {item.type}
                       </div>
 
-                      <h3 
-                      className="marketplace-card-title mt-[7px] mr-0 mb-0 ml-0text-[var(--farm-text)] 
-                      font-[var(--farm-heading-font)] text-[21px] font-bold">
+                      <h3 className="marketplace-card-title mt-[7px] mr-0 mb-0 ml-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[21px] font-bold">
                         {item.name}
                       </h3>
 
@@ -478,8 +555,7 @@ function Marketplace() {
 
                             <div className="marketplace-info-item text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[12px] leading-[1.5] text-[var(--farm-green-dark)] font-bold">
                               Availability: {item.availability}
-                            </div>                           
-
+                            </div>
                           </>
                         ) : (
                           <>
@@ -492,58 +568,76 @@ function Marketplace() {
                             </div>
 
                             <div className="marketplace-info-item text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[12px] leading-[1.5]">
-                              Quantity: {item.quantity} g
+                              Quantity: {item.quantity} {item.unit}
+                            </div>
+
+                            <div className="marketplace-info-item text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[12px] leading-[1.5]">
+                              Location: {item.location}
+                            </div>
+
+                            <div className="marketplace-info-item text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[12px] leading-[1.5] text-[var(--farm-green-dark)] font-bold">
+                              Availability: {item.availability}
                             </div>
                           </>
                         )}
 
                       </div>
 
-                      <div className="marketplace-price mt-[18px] text-[var(--farm-text)] 
-                      font-[var(--farm-heading-font)] text-[21px] font-bold">
-                        KSh {item.price.toLocaleString()}
+                      <div className="marketplace-price mt-[18px] text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[21px] font-bold">
+                        KSh {Number(item.price).toLocaleString()}
                       </div>
 
                       {category === 'livestock' ? (
-                        <Link to={`/buyer/livestock/${item.id}`} className="block w-full">
+                        <div className="flex gap-2 mt-[15px]">
+
+                          <Link
+                            to={`/buyer/livestock/${item.id}`}
+                            className="block flex-1"
+                          >
+                            <button
+                              type="button"
+                              className="marketplace-card-button w-full p-[12px] border border-[var(--farm-green)] rounded-[11px] bg-[var(--farm-green)] text-white font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer transition-[background,transform] duration-[160ms] ease-[ease] hover:bg-[var(--farm-green-dark)] hover:translate-y-[-1px]"
+                            >
+                              View livestock
+                            </button>
+                          </Link>
+
                           <button
                             type="button"
-                            className="marketplace-card-button w-full mt-[15px] p-[12px]
-                              border border-[var(--farm-green)] rounded-[11px] bg-[var(--farm-green)]
-                              text-white font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer
-                              transition-[background,transform] duration-[160ms] ease-[ease]
-                              hover:bg-[var(--farm-green-dark)] hover:translate-y-[-1px]"
+                            onClick={() =>
+                              addLivestockToCart(item)
+                            }
+                            className="marketplace-card-button px-[14px] p-[12px] border border-[var(--farm-green)] rounded-[11px] bg-transparent text-[var(--farm-green-dark)] font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer transition-[background,transform] duration-[160ms] ease-[ease] hover:bg-[var(--farm-green-soft)] hover:translate-y-[-1px]"
+                            aria-label={`Add ${item.name} to cart`}
+                            title="Add to cart"
                           >
-                            View livestock
+                            <FaShoppingCart size={13} />
                           </button>
-                        </Link>
+
+                        </div>
                       ) : (
                         <button
                           type="button"
-                          className="marketplace-card-button w-full mt-[15px] p-[12px]
-                            border border-[var(--farm-green)] rounded-[11px] bg-[var(--farm-green)]
-                            text-white font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer
-                            transition-[background,transform] duration-[160ms] ease-[ease]
-                            hover:bg-[var(--farm-green-dark)] hover:translate-y-[-1px]"
-                          onClick={() => {
-                            // add product to cart
-                          }}
+                          onClick={() =>
+                            addProductToCart(item)
+                          }
+                          className="marketplace-card-button w-full mt-[15px] p-[12px] border border-[var(--farm-green)] rounded-[11px] bg-[var(--farm-green)] text-white font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer transition-[background,transform] duration-[160ms] ease-[ease] hover:bg-[var(--farm-green-dark)] hover:translate-y-[-1px]"
                         >
-                          <FaShoppingCart size={13} className="inline mr-2" />
+                          <FaShoppingCart
+                            size={13}
+                            className="inline mr-2"
+                          />
                           Add to Cart
                         </button>
                       )}
 
                     </div>
-
                   </article>
                 ))}
 
               </div>
             ) : (
-              <div 
-              className="empty-state py-[70px] px-[24px] border border-[var(--farm-green-border)]
-               rounded-[20px] bg-[var(--farm-green-soft)] text-center">
+              <div className="empty-state py-[70px] px-[24px] border border-[var(--farm-green-border)] rounded-[20px] bg-[var(--farm-green-soft)] text-center">
 
                 <h3 className="m-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[25px]">
                   {category === 'products'
@@ -562,16 +656,11 @@ function Marketplace() {
 
           </section>
 
-          <nav 
-            className="buyer-actions flex justify-center flex-wrap gap-[10px] mt-[52px] 
-            pt-[24px] border-t border-[var(--farm-green-border)] max-[620px]:flex-col ">
+          <nav className="buyer-actions flex justify-center flex-wrap gap-[10px] mt-[52px] pt-[24px] border-t border-[var(--farm-green-border)] max-[620px]:flex-col">
 
             <Link
               to="/buyer/checkout"
-              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border 
-              border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] 
-              font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] 
-              hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
+              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
             >
               <FaShoppingCart size={13} />
               Checkout
@@ -579,10 +668,7 @@ function Marketplace() {
 
             <Link
               to="/buyer/orders"
-              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border 
-              border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] 
-              font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] 
-              hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
+              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
             >
               <FaClipboardList size={13} />
               Orders
@@ -590,10 +676,7 @@ function Marketplace() {
 
             <Link
               to="/buyer/wishlist"
-              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border 
-              border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] 
-              font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] 
-              hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
+              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
             >
               <FaHeart size={13} />
               Wishlist
@@ -601,10 +684,7 @@ function Marketplace() {
 
             <Link
               to="/buyer/reviews"
-              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border 
-              border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] 
-              font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] 
-              hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
+              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
             >
               <FaStar size={13} />
               Reviews
@@ -612,10 +692,7 @@ function Marketplace() {
 
             <Link
               to="/buyer/profile"
-              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border 
-              border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] 
-              font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] 
-              hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
+              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
             >
               <FaUser size={13} />
               Profile
