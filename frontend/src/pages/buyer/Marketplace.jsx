@@ -254,42 +254,67 @@ function Marketplace() {
                 setSearch={setSearch}
               />
             </div>
+            {/* livestock toggle */}
 
-            <div 
-              className="category-switch flex justify-center gap-[5px] mx-auto mt-[30px] p-[5px] border 
-              border-[var(--farm-green-border)] rounded-[15px] bg-[var(--farm-green-soft)] max-[620px]:w-full">
-              <button
-                type="button"
-                className={`category-button min-w-[150px] py-[12px] px-[20px] border-0 
-                  rounded-[11px] bg-transparent text-[var(--farm-muted)] font-[var(--farm-body-font)] 
-                  text-[14px] font-semibold cursor-pointer transition-[background,color] 
-                  duration-[160ms] ease-[ease] 
-                  ${
-                    category === 'livestock' 
-                    ? 'bg-[var(--farm-green)] text-[#ffffff]' 
-                    : ''
-                }`}
-                onClick={() => setCategory('livestock')}
-              >
-                Livestock
-              </button>
+            <div
+          className="
+            category-switch flex justify-center gap-[5px] mx-auto mt-[30px] p-[5px]
+            border border-[var(--farm-green-border)]
+            rounded-[15px] bg-[var(--farm-green-soft)]
+            max-[620px]:w-full
+          "
+        >
+          {/* Livestock */}
+          <button
+            type="button"
+            onClick={() => setCategory("livestock")}
+            className={`
+              category-button
+              min-w-[150px] py-[12px] px-[20px]
+              border-0 rounded-[11px]
+              font-[var(--farm-body-font)]
+              text-[14px] font-semibold
+              cursor-pointer
+              transition-all duration-[160ms] ease-[ease]
+              max-[620px]:min-w-0 max-[620px]:w-1/2
+              max-[620px]:px-[8px] max-[620px]:py-[11px]
 
-              <button
-                type="button"
-                className={`category-button min-w-[150px] py-[12px] px-[20px] border-0 
-                  rounded-[11px] bg-transparent text-[var(--farm-muted)] font-[var(--farm-body-font)] 
-                  text-[14px] font-semibold cursor-pointer transition-[background,color] duration-[160ms] ease-[ease] 
-                  max-[620px]:min-w-0 max-[620px]:w-1/2 max-[620px]:px-[8px] max-[620px]:py-[11px]
-                ${
-                  category === 'products' 
-                  ? 'bg-[var(--farm-green)] text-[#ffffff]' 
-                  : ''
-                }`}
-                onClick={() => setCategory('products')}
-              >
-                Farm Products
-              </button>
-            </div>
+              ${
+                category === "livestock"
+                  ? "bg-[var(--farm-green)] text-white shadow-md"
+                  : "bg-transparent text-[var(--farm-muted)] hover:bg-white"
+              }
+            `}
+          >
+            Livestock
+          </button>
+
+          {/* Farm Products */}
+          <button
+            type="button"
+            onClick={() => setCategory("products")}
+            className={`
+              category-button
+              min-w-[150px] py-[12px] px-[20px]
+              border-0 rounded-[11px]
+              font-[var(--farm-body-font)]
+              text-[14px] font-semibold
+              cursor-pointer
+              transition-all duration-[160ms] ease-[ease]
+              max-[620px]:min-w-0 max-[620px]:w-1/2
+              max-[620px]:px-[8px] max-[620px]:py-[11px]
+
+              ${
+                category === "products"
+                  ? "bg-[var(--farm-green)] text-white shadow-md"
+                  : "bg-transparent text-[var(--farm-muted)] hover:bg-white"
+              }
+            `}
+          >
+            Farm Products
+          </button>
+          </div>
+
 
           </header>
 
@@ -479,18 +504,35 @@ function Marketplace() {
                         KSh {item.price.toLocaleString()}
                       </div>
 
-                      <Link to={`/buyer/livestock/${item.id}`} className="block w-full">
-                        <button
+                      {category === 'livestock' ? (
+                        <Link to={`/buyer/livestock/${item.id}`} className="block w-full">
+                          <button
                             type="button"
                             className="marketplace-card-button w-full mt-[15px] p-[12px]
+                              border border-[var(--farm-green)] rounded-[11px] bg-[var(--farm-green)]
+                              text-white font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer
+                              transition-[background,transform] duration-[160ms] ease-[ease]
+                              hover:bg-[var(--farm-green-dark)] hover:translate-y-[-1px]"
+                          >
+                            View livestock
+                          </button>
+                        </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          className="marketplace-card-button w-full mt-[15px] p-[12px]
                             border border-[var(--farm-green)] rounded-[11px] bg-[var(--farm-green)]
                             text-white font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer
                             transition-[background,transform] duration-[160ms] ease-[ease]
                             hover:bg-[var(--farm-green-dark)] hover:translate-y-[-1px]"
+                          onClick={() => {
+                            // add product to cart
+                          }}
                         >
-                            View livestock
+                          <FaShoppingCart size={13} className="inline mr-2" />
+                          Add to Cart
                         </button>
-                      </Link>
+                      )}
 
                     </div>
 
@@ -577,17 +619,6 @@ function Marketplace() {
             >
               <FaUser size={13} />
               Profile
-            </Link>
-
-            <Link
-              to="/buyer/reports"
-              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border 
-              border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] 
-              font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] 
-              hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
-            >
-              <FaFlag size={13} />
-              Report
             </Link>
 
           </nav>

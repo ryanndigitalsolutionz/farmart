@@ -13,8 +13,18 @@ function ProductFilterPanel({
   setMaxQuantity,
 }) {
   return (
-    <div className="product-filter-panel">
+    <div
+      className="
+        grid
+        grid-cols-3
+        gap-4
+        items-end
 
+        max-[900px]:grid-cols-2
+
+        max-[620px]:grid-cols-1
+      "
+    >
       <DateProducedFilter
         dateProduced={dateProduced}
         setDateProduced={setDateProduced}
@@ -31,7 +41,6 @@ function ProductFilterPanel({
         maxQuantity={maxQuantity}
         setMaxQuantity={setMaxQuantity}
       />
-
     </div>
   )
 }
