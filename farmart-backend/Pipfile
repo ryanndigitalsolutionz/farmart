@@ -1,0 +1,23 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+flask = "*"
+flask-bcrypt = "*"
+flask-cors = "*"
+flask-marshmallow = "*"
+flask-restful = "*"
+flask-sqlalchemy = "*"
+flask-migrate = "*"
+marshmallow = "*"
+marshmallow-sqlalchemy = "*"
+python-dotenv = "*"
+requests = "*"
+gunicorn = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.14.5"

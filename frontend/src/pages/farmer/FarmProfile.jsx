@@ -1,15 +1,74 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FaCheck } from 'react-icons/fa'
+
+const API_BASE = 'http://localhost:5000'
 
 function FarmProfile() {
   const [farm, setFarm] = useState({
-    farmName: 'Kiambu Green Pastures',
-    location: 'Kiambu, Kenya',
-    contact: '+254 712 345 678',
-    description: 'Healthy grass-fed cattle and goats.',
+    farmName: '',
+    location: '',
+    contact: '',
+    description: '',
+    verificationStatus: 'pending',
+  })
+
+  const [originalFarm, setOriginalFarm] = useState({
+    farmName: '',
+    location: '',
+    contact: '',
+    description: '',
+    verificationStatus: 'pending',
   })
 
   const [isEditing, setIsEditing] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+
+  useEffect(() => {
+    const loadFarmProfile = async () => {
+      try {
+        setError('')
+
+        const response = await fetch(
+          `${API_BASE}/api/profile/me`,
+          {
+            credentials: 'include',
+          }
+        )
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(
+            data.error || 'Unable to load farm profile.'
+          )
+        }
+
+        const nextFarm = {
+          farmName: data.profile?.farm_name || '',
+          location: data.profile?.location || '',
+          contact: data.profile?.phone || '',
+          description: data.profile?.description || '',
+          verificationStatus:
+            data.profile?.verification_status || 'pending',
+        }
+
+        setFarm(nextFarm)
+        setOriginalFarm(nextFarm)
+      } catch (requestError) {
+        setError(
+          requestError.message ||
+          'Unable to load farm profile.'
+        )
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadFarmProfile()
+  }, [])
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -18,13 +77,86 @@ function FarmProfile() {
       ...current,
       [name]: value,
     }))
+
+    setError('')
+    setSuccess('')
   }
 
-  const handleSubmit = (event) => {
-    event.preventDefault()
-    setIsEditing(false)
+  const handleEdit = () => {
+    setError('')
+    setSuccess('')
+    setIsEditing(true)
+  }
 
-    // Backend update will be connected here later.
+  const handleCancel = () => {
+    setFarm(originalFarm)
+    setIsEditing(false)
+    setError('')
+    setSuccess('')
+  }
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true)
+      setError('')
+      setSuccess('')
+
+      const response = await fetch(
+        `${API_BASE}/api/profile/me`,
+        {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            farm_name: farm.farmName,
+            location: farm.location,
+            phone: farm.contact,
+            description: farm.description,
+          }),
+        }
+      )
+
+      const text = await response.text()
+
+      let data
+
+      try {
+        data = JSON.parse(text)
+      } catch {
+        throw new Error(
+          `Server returned ${response.status} instead of JSON.`
+        )
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || 'Unable to save farm profile.'
+        )
+      }
+
+      const savedFarm = {
+        farmName: data.profile?.farm_name || '',
+        location: data.profile?.location || '',
+        contact: data.profile?.phone || '',
+        description: data.profile?.description || '',
+        verificationStatus:
+          data.profile?.verification_status || 'pending',
+      }
+
+      setFarm(savedFarm)
+      setOriginalFarm(savedFarm)
+      setIsEditing(false)
+      setSuccess('Farm profile saved successfully.')
+    } catch (requestError) {
+      setError(
+        requestError.message ||
+        'Unable to save farm profile.'
+      )
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
@@ -33,8 +165,8 @@ function FarmProfile() {
         .farm-profile-page {
           min-height: 100vh;
           padding: 42px 36px 70px;
-          background: #0d130f;
-          color: #edf4ee;
+          background: var(--page-bg, #0d130f);
+          color: var(--text-main, #edf4ee);
           box-sizing: border-box;
         }
 
@@ -49,14 +181,14 @@ function FarmProfile() {
 
         .farm-profile-title {
           margin: 0;
-          color: #edf4ee;
+          color: var(--text-main, #edf4ee);
           font-family: "IBM Plex Serif", serif;
           font-size: 34px;
         }
 
         .farm-profile-subtitle {
           margin: 9px 0 0;
-          color: #91a198;
+          color: var(--text-muted, #91a198);
           font-family: "Modern Antiqua", serif;
           font-size: 16px;
         }
@@ -66,7 +198,7 @@ function FarmProfile() {
           display: flex;
           align-items: center;
           gap: 10px;
-          margin-bottom: 30px;
+          margin-bottom: 18px;
           padding: 11px 21px;
           border-radius: 999px;
           background: #e8f1e5;
@@ -87,16 +219,36 @@ function FarmProfile() {
           color: #ffffff;
         }
 
+        .farm-profile-message {
+          margin-bottom: 18px;
+          padding: 13px 16px;
+          border-radius: 12px;
+          font-family: "Modern Antiqua", serif;
+          font-size: 14px;
+        }
+
+        .farm-profile-error {
+          background: rgba(180, 50, 50, 0.14);
+          border: 1px solid rgba(200, 80, 80, 0.35);
+          color: #f0aaaa;
+        }
+
+        .farm-profile-success {
+          background: rgba(39, 122, 68, 0.14);
+          border: 1px solid rgba(39, 145, 81, 0.35);
+          color: #8fdaa8;
+        }
+
         .farm-profile-card {
           width: min(100%, 900px);
           padding: 34px 36px;
-          border: 1px solid #718078;
+          border: 1px solid var(--border-color, #718078);
           border-radius: 20px;
-          background: #172019;
+          background: var(--card-bg, #172019);
           box-sizing: border-box;
         }
 
-        .farm-profile-form {
+        .farm-profile-fields {
           display: flex;
           flex-direction: column;
           gap: 24px;
@@ -109,7 +261,7 @@ function FarmProfile() {
         }
 
         .farm-profile-field label {
-          color: #edf4ee;
+          color: var(--text-main, #edf4ee);
           font-family: "IBM Plex Serif", serif;
           font-size: 16px;
         }
@@ -148,7 +300,7 @@ function FarmProfile() {
           display: flex;
           justify-content: flex-end;
           gap: 10px;
-          margin-top: 3px;
+          margin-top: 28px;
         }
 
         .farm-profile-button {
@@ -168,20 +320,31 @@ function FarmProfile() {
             box-shadow 180ms ease;
         }
 
-        .farm-profile-button:hover {
+        .farm-profile-button:hover:not(:disabled) {
           background: #216b3b;
           box-shadow: 0 8px 20px rgba(39, 122, 68, 0.16);
         }
 
-        .farm-profile-button.cancel {
-          border-color: #718078;
-          background: transparent;
-          color: #edf4ee;
+        .farm-profile-button:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
         }
 
-        .farm-profile-button.cancel:hover {
-          background: #202b24;
+        .farm-profile-button.cancel {
+          border-color: var(--border-color, #718078);
+          background: transparent;
+          color: var(--text-main, #edf4ee);
+        }
+
+        .farm-profile-button.cancel:hover:not(:disabled) {
+          background: rgba(255, 255, 255, 0.05);
           box-shadow: none;
+        }
+
+        .farm-profile-loading {
+          color: var(--text-muted, #91a198);
+          font-family: "Modern Antiqua", serif;
+          font-size: 15px;
         }
 
         @media (max-width: 750px) {
@@ -195,10 +358,6 @@ function FarmProfile() {
         }
 
         @media (max-width: 500px) {
-          .farm-verification {
-            width: auto;
-          }
-
           .farm-profile-actions {
             flex-direction: column-reverse;
           }
@@ -211,7 +370,6 @@ function FarmProfile() {
 
       <main className="farm-profile-page">
         <div className="farm-profile-container">
-
           <header className="farm-profile-header">
             <h1 className="farm-profile-title">
               Farm Profile
@@ -227,110 +385,125 @@ function FarmProfile() {
               <FaCheck size={7} />
             </span>
 
-            Verified Farm
+            {farm.verificationStatus === 'approved'
+              ? 'Verified Farm'
+              : 'Verification Pending'}
           </div>
 
+          {error && (
+            <div className="farm-profile-message farm-profile-error">
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="farm-profile-message farm-profile-success">
+              {success}
+            </div>
+          )}
+
           <section className="farm-profile-card">
-
-            <form
-              className="farm-profile-form"
-              onSubmit={handleSubmit}
-            >
-
-              <div className="farm-profile-field">
-                <label htmlFor="farmName">
-                  Farm Name
-                </label>
-
-                <input
-                  id="farmName"
-                  name="farmName"
-                  type="text"
-                  value={farm.farmName}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
+            {isLoading ? (
+              <div className="farm-profile-loading">
+                Loading farm profile...
               </div>
+            ) : (
+              <div className="farm-profile-fields">
+                <div className="farm-profile-field">
+                  <label htmlFor="farmName">
+                    Farm Name
+                  </label>
 
-              <div className="farm-profile-field">
-                <label htmlFor="location">
-                  Location
-                </label>
+                  <input
+                    id="farmName"
+                    name="farmName"
+                    type="text"
+                    value={farm.farmName}
+                    onChange={handleChange}
+                    disabled={!isEditing || isSaving}
+                  />
+                </div>
 
-                <input
-                  id="location"
-                  name="location"
-                  type="text"
-                  value={farm.location}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
+                <div className="farm-profile-field">
+                  <label htmlFor="location">
+                    Location
+                  </label>
+
+                  <input
+                    id="location"
+                    name="location"
+                    type="text"
+                    value={farm.location}
+                    onChange={handleChange}
+                    disabled={!isEditing || isSaving}
+                  />
+                </div>
+
+                <div className="farm-profile-field">
+                  <label htmlFor="contact">
+                    Contact
+                  </label>
+
+                  <input
+                    id="contact"
+                    name="contact"
+                    type="tel"
+                    value={farm.contact}
+                    onChange={handleChange}
+                    disabled={!isEditing || isSaving}
+                  />
+                </div>
+
+                <div className="farm-profile-field">
+                  <label htmlFor="description">
+                    Description
+                  </label>
+
+                  <textarea
+                    id="description"
+                    name="description"
+                    value={farm.description}
+                    onChange={handleChange}
+                    disabled={!isEditing || isSaving}
+                  />
+                </div>
+
+                <div className="farm-profile-actions">
+                  {isEditing && (
+                    <button
+                      type="button"
+                      className="farm-profile-button cancel"
+                      onClick={handleCancel}
+                      disabled={isSaving}
+                    >
+                      Cancel
+                    </button>
+                  )}
+
+                  {!isEditing ? (
+                    <button
+                      type="button"
+                      className="farm-profile-button"
+                      onClick={handleEdit}
+                    >
+                      Edit Farm Profile
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="farm-profile-button"
+                      onClick={handleSave}
+                      disabled={isSaving}
+                    >
+                      {isSaving
+                        ? 'Saving...'
+                        : 'Save Farm Profile'}
+                    </button>
+                  )}
+                </div>
               </div>
-
-              <div className="farm-profile-field">
-                <label htmlFor="contact">
-                  Contact
-                </label>
-
-                <input
-                  id="contact"
-                  name="contact"
-                  type="tel"
-                  value={farm.contact}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
-              </div>
-
-              <div className="farm-profile-field">
-                <label htmlFor="description">
-                  Description
-                </label>
-
-                <textarea
-                  id="description"
-                  name="description"
-                  value={farm.description}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
-              </div>
-
-              <div className="farm-profile-actions">
-
-                {isEditing && (
-                  <button
-                    type="button"
-                    className="farm-profile-button cancel"
-                    onClick={() => setIsEditing(false)}
-                  >
-                    Cancel
-                  </button>
-                )}
-
-                {!isEditing ? (
-                  <button
-                    type="button"
-                    className="farm-profile-button"
-                    onClick={() => setIsEditing(true)}
-                  >
-                    Edit Farm Profile
-                  </button>
-                ) : (
-                  <button
-                    type="submit"
-                    className="farm-profile-button"
-                  >
-                    Save Farm Profile
-                  </button>
-                )}
-
-              </div>
-
-            </form>
-
+            )}
           </section>
-
         </div>
       </main>
     </>
@@ -338,4 +511,3 @@ function FarmProfile() {
 }
 
 export default FarmProfile
-// commit 22

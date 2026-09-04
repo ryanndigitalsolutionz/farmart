@@ -1,1 +1,37 @@
 @import "tailwindcss";
+
+@theme {
+  --font-farmart-display: "IBM Plex Serif", serif;
+  --font-farmart-body: "Modern Antiqua", serif;
+  --color-farmart-ink: #173d28;
+  --color-farmart-muted: #748078;
+  --color-farmart-primary: #2d7042;
+  --color-farmart-primary-hover: #245d36;
+  --color-farmart-border: #d1e1d3;
+  --color-farmart-surface: #f4f8f2;
+}
+
+:root {
+  --farm-green-glow: ...;
+  --farm-background: ...;
+  --farm-text: ...;
+  --farm-muted: ...;
+  --farm-green-border: ...;
+  --farm-green-soft: ...;
+  --farm-green: ...;
+  --farm-green-dark: ...;
+
+  --farm-heading-font: "IBM Plex Serif", serif;
+  --farm-body-font: "Modern Antiqua", serif;
+}
+
+.marketplace-page {
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      var(--farm-green-glow),
+      transparent 34%
+    ),
+    var(--farm-background);
+}
+

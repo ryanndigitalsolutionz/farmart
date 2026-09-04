@@ -1,22 +1,47 @@
-import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
-import AdminTopbar from "./AdminTopbar";
 
-const SIDEBAR_WIDTH = 240;
-
-export default function DashboardLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
+function DashboardLayout() {
   return (
-    <div style={{ display: "flex", background: "var(--color-background)", minHeight: "100vh" }}>
-      <Sidebar />
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, marginLeft: SIDEBAR_WIDTH }}>
-        <AdminTopbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-        <main style={{ flex: 1, padding: "24px 24px 40px", maxWidth: 1400, width: "100%", margin: "0 auto", overflowY: "auto" }}>
+    <>
+      <style>{`
+        .admin-layout {
+          min-height: 100vh;
+          display: flex;
+          background: #0d130f;
+          color: #edf4ee;
+        }
+
+        .admin-main {
+          width: 100%;
+          min-width: 0;
+          margin-left: 250px;
+          padding: 28px 32px;
+          box-sizing: border-box;
+        }
+
+        @media (max-width: 760px) {
+          .admin-main {
+            margin-left: 82px;
+            padding: 20px 16px;
+          }
+
+          .admin-main table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+          }
+        }
+      `}</style>
+
+      <div className="admin-layout">
+        <Sidebar />
+        <main className="admin-main">
           <Outlet />
         </main>
       </div>
-    </div>
+    </>
   );
 }
+
+export default DashboardLayout;

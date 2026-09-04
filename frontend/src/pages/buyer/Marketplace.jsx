@@ -1,22 +1,22 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  FaSearch,
   FaShoppingCart,
   FaHeart,
   FaUser,
   FaClipboardList,
   FaStar,
-  FaFlag,
   FaSlidersH,
 } from 'react-icons/fa'
-
-import farmartImages from '../../data/farmartImages'
 
 import SearchBar from '../../components/marketplace/SearchBar'
 import FilterPanel from '../../components/marketplace/FilterPanel'
 import SortDropdown from '../../components/marketplace/SortDropdown'
 import ProductFilterPanel from '../../components/products/filters/ProductFilterPanel'
+import useLivestock from '../../hooks/useLivestock'
+import { useCart } from '../../context/CartContext'
+
+const API_BASE = 'http://localhost:5000'
 
 function Marketplace() {
   const [category, setCategory] = useState('livestock')
@@ -37,112 +37,74 @@ function Marketplace() {
   const [minQuantity, setMinQuantity] = useState('')
   const [maxQuantity, setMaxQuantity] = useState('')
 
-  const livestock = useMemo(
-    () => [
-      {
-        id: 1,
-        name: 'Farm Cow',
-        type: 'Cow',
-        breed: 'Friesian',
-        age: 3,
-        sex: 'Female',
-        weight: 420,
-        location: 'Nairobi',
-        price: 120000,
-        image: farmartImages.livestock.cows[0],
-      },
-      {
-        id: 2,
-        name: 'Farm Goat',
-        type: 'Goat',
-        breed: 'Boer',
-        age: 2,
-        sex: 'Male',
-        weight: 65,
-        location: 'Kiambu',
-        price: 25000,
-        image: farmartImages.livestock.goats[0],
-      },
-      {
-        id: 3,
-        name: 'Farm Sheep',
-        type: 'Sheep',
-        breed: 'Dorper',
-        age: 2,
-        sex: 'Female',
-        weight: 58,
-        location: 'Nakuru',
-        price: 18000,
-        image: farmartImages.livestock.sheep[0],
-      },
-      {
-        id: 4,
-        name: 'Farm Pig',
-        type: 'Pig',
-        breed: 'Landrace',
-        age: 1,
-        sex: 'Male',
-        weight: 110,
-        location: 'Nyeri',
-        price: 35000,
-        image: farmartImages.livestock.pigs[0],
-      },
-      {
-        id: 5,
-        name: 'Farm Poultry',
-        type: 'Poultry',
-        breed: 'Kienyeji',
-        age: 1,
-        sex: 'Female',
-        weight: 2.5,
-        location: 'Machakos',
-        price: 1500,
-        image: farmartImages.livestock.poultry[0],
-      },
-    ],
-    [],
-  )
+  const { livestock, loading: livestockLoading } = useLivestock()
+  const { addToCart } = useCart()
 
-  const products = useMemo(
-    () => [
-      {
-        id: 1,
-        name: 'Fresh Eggs',
-        type: 'Eggs',
-        dateProduced: '2026-08-10',
-        expiryDate: '2026-08-24',
-        quantity: 30,
-        price: 450,
-        image: farmartImages.products.eggs[0],
-      },
-      {
-        id: 2,
-        name: 'Fresh Milk',
-        type: 'Milk',
-        dateProduced: '2026-08-25',
-        expiryDate: '2026-08-30',
-        quantity: 1000,
-        price: 180,
-        image: farmartImages.products.milk[0],
-      },
-      {
-        id: 3,
-        name: 'Farm Butter',
-        type: 'Butter',
-        dateProduced: '2026-08-18',
-        expiryDate: '2026-09-18',
-        quantity: 500,
-        price: 600,
-        image: farmartImages.products.butter[0],
-      },
-    ],
-    [],
-  )
+  const [products, setProducts] = useState([])
+  const [productsLoading, setProductsLoading] = useState(true)
+  const [productsError, setProductsError] = useState('')
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setProductsLoading(true)
+        setProductsError('')
+
+        const response = await fetch(`${API_BASE}/products`, {
+          credentials: 'include',
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(
+            data.message ||
+              data.error ||
+              'Unable to load farm products.'
+          )
+        }
+
+        const normalizedProducts = Array.isArray(data)
+          ? data.map((product) => ({
+              id: product.id,
+              product_id: product.id,
+              name: product.name || '',
+              type: product.type || '',
+              description: product.description || '',
+              dateProduced: product.date_produced || '',
+              expiryDate: product.expiry_date || '',
+              quantity: Number(product.quantity || 0),
+              price: Number(product.price || 0),
+              unit: product.unit || '',
+              location: product.location || '',
+              image: product.image || '',
+              availability: product.availability || 'available',
+              farmerId: product.farmer_id,
+              category: 'product',
+            }))
+          : []
+
+        setProducts(normalizedProducts)
+      } catch (requestError) {
+        setProductsError(
+          requestError.message ||
+            'Unable to load farm products.'
+        )
+        setProducts([])
+      } finally {
+        setProductsLoading(false)
+      }
+    }
+
+    loadProducts()
+  }, [])
 
   const filteredLivestock = useMemo(() => {
     let results = livestock.filter((item) => {
       const matchesSearch =
-        `${item.name} ${item.type} ${item.breed} ${item.location}`
+        `${item.name} ${item.type} ${item.breed || ''} ${
+          item.location || ''
+        }`
           .toLowerCase()
           .includes(search.toLowerCase())
 
@@ -153,16 +115,16 @@ function Marketplace() {
         !breed || item.breed === breed
 
       const matchesAge =
-        !age || item.age <= Number(age)
+        !age || Number(item.age) <= Number(age)
 
       const matchesSex =
         !sex || item.sex === sex
 
       const matchesMinPrice =
-        !minPrice || item.price >= Number(minPrice)
+        !minPrice || Number(item.price) >= Number(minPrice)
 
       const matchesMaxPrice =
-        !maxPrice || item.price <= Number(maxPrice)
+        !maxPrice || Number(item.price) <= Number(maxPrice)
 
       return (
         matchesSearch &&
@@ -176,19 +138,31 @@ function Marketplace() {
     })
 
     if (sort === 'price-low') {
-      results.sort((a, b) => a.price - b.price)
+      results.sort(
+        (a, b) =>
+          Number(a.price) - Number(b.price)
+      )
     }
 
     if (sort === 'price-high') {
-      results.sort((a, b) => b.price - a.price)
+      results.sort(
+        (a, b) =>
+          Number(b.price) - Number(a.price)
+      )
     }
 
     if (sort === 'age-young') {
-      results.sort((a, b) => a.age - b.age)
+      results.sort(
+        (a, b) =>
+          Number(a.age) - Number(b.age)
+      )
     }
 
     if (sort === 'age-old') {
-      results.sort((a, b) => b.age - a.age)
+      results.sort(
+        (a, b) =>
+          Number(b.age) - Number(a.age)
+      )
     }
 
     return results
@@ -205,9 +179,9 @@ function Marketplace() {
   ])
 
   const filteredProducts = useMemo(() => {
-    return products.filter((item) => {
+    let results = products.filter((item) => {
       const matchesSearch =
-        `${item.name} ${item.type}`
+        `${item.name} ${item.type} ${item.location}`
           .toLowerCase()
           .includes(search.toLowerCase())
 
@@ -221,11 +195,11 @@ function Marketplace() {
 
       const matchesMinQuantity =
         !minQuantity ||
-        item.quantity >= Number(minQuantity)
+        Number(item.quantity) >= Number(minQuantity)
 
       const matchesMaxQuantity =
         !maxQuantity ||
-        item.quantity <= Number(maxQuantity)
+        Number(item.quantity) <= Number(maxQuantity)
 
       return (
         matchesSearch &&
@@ -235,6 +209,36 @@ function Marketplace() {
         matchesMaxQuantity
       )
     })
+
+    if (sort === 'price-low') {
+      results.sort(
+        (a, b) =>
+          Number(a.price) - Number(b.price)
+      )
+    }
+
+    if (sort === 'price-high') {
+      results.sort(
+        (a, b) =>
+          Number(b.price) - Number(a.price)
+      )
+    }
+
+    if (sort === 'quantity-low') {
+      results.sort(
+        (a, b) =>
+          Number(a.quantity) - Number(b.quantity)
+      )
+    }
+
+    if (sort === 'quantity-high') {
+      results.sort(
+        (a, b) =>
+          Number(b.quantity) - Number(a.quantity)
+      )
+    }
+
+    return results
   }, [
     products,
     search,
@@ -242,12 +246,18 @@ function Marketplace() {
     expiryDate,
     minQuantity,
     maxQuantity,
+    sort,
   ])
 
   const visibleItems =
     category === 'livestock'
       ? filteredLivestock
       : filteredProducts
+
+  const isLoading =
+    category === 'livestock'
+      ? livestockLoading
+      : productsLoading
 
   const clearFilters = () => {
     setType('')
@@ -265,470 +275,132 @@ function Marketplace() {
     setSort('')
   }
 
+  const addLivestockToCart = (item) => {
+    addToCart({
+      ...item,
+      livestock_id: item.id,
+      category: 'livestock',
+    })
+  }
+
+  const addProductToCart = (item) => {
+    addToCart({
+      ...item,
+      product_id: item.id,
+      category: 'product',
+    })
+  }
+
   return (
     <>
-<style>{`
-  .marketplace-page {
-    min-height: 100vh;
-    background:
-      radial-gradient(
-        circle at 50% 0%,
-        var(--farm-green-glow),
-        transparent 34%
-      ),
-      var(--farm-background);
-    color: var(--farm-text);
-    transition:
-      background 180ms ease,
-      color 180ms ease;
-  }
+      <style>{`
+        .marketplace-page {
+          background:
+            radial-gradient(
+              circle at 50% 0%,
+              var(--farm-green-glow),
+              transparent 34%
+            ),
+            var(--farm-background);
+        }
+      `}</style>
 
-  .marketplace-container {
-    width: min(1200px, calc(100% - 40px));
-    margin: 0 auto;
-    padding: 34px 0 70px;
-  }
+      <main className="marketplace-page min-h-screen text-[var(--farm-text)] transition-[background_color,color] duration-180 ease-[ease]">
+        <div className="marketplace-container w-[min(1200px,calc(100%-40px))] mx-auto pt-[34px] pb-[70px] max-[620px]:w-[min(100%-28px,560px)] max-[620px]:pt-[24px]">
 
-  .marketplace-top {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
+          <header className="marketplace-top flex flex-col items-center text-center">
 
-  .marketplace-logo {
-    width: 190px;
-    height: 68px;
-    margin-bottom: 22px;
-  }
-
-  .marketplace-logo img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-
-  .marketplace-heading h1 {
-    margin: 0;
-    color: var(--farm-text);
-    font-family: "IBM Plex Serif", serif;
-    font-size: clamp(36px, 6vw, 50px);
-    font-weight: 700;
-    line-height: 1.1;
-    letter-spacing: -1px;
-  }
-
-  .marketplace-heading p {
-    max-width: 620px;
-    margin: 14px auto 0;
-    color: var(--farm-muted);
-    font-family: "Modern Antiqua", serif;
-    font-size: 15px;
-    line-height: 1.8;
-  }
-
-  .marketplace-search-wrapper {
-    width: min(680px, 100%);
-    margin: 30px auto 0;
-  }
-
-  .category-switch {
-    display: flex;
-    justify-content: center;
-    gap: 5px;
-    margin: 30px auto 0;
-    padding: 5px;
-    border: 1px solid var(--farm-green-border);
-    border-radius: 15px;
-    background: var(--farm-green-soft);
-  }
-
-  .category-button {
-    min-width: 150px;
-    padding: 12px 20px;
-    border: 0;
-    border-radius: 11px;
-    background: transparent;
-    color: var(--farm-muted);
-    font-family: "Modern Antiqua", serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition:
-      background 160ms ease,
-      color 160ms ease;
-  }
-
-  .category-button.active {
-    background: var(--farm-green);
-    color: #ffffff;
-  }
-
-  .marketplace-layout {
-    margin-top: 42px;
-  }
-
-  .marketplace-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    margin-bottom: 18px;
-  }
-
-  .marketplace-results h2 {
-    margin: 0;
-    color: var(--farm-text);
-    font-family: "IBM Plex Serif", serif;
-    font-size: 27px;
-  }
-
-  .marketplace-results p {
-    margin: 7px 0 0;
-    color: var(--farm-muted);
-    font-family: "Modern Antiqua", serif;
-    font-size: 13px;
-  }
-
-  .toolbar-actions {
-    display: flex;
-    gap: 10px;
-  }
-
-  .toolbar-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-    border: 1px solid var(--farm-green-border);
-    border-radius: 11px;
-    background: var(--farm-green-soft);
-    color: var(--farm-text);
-    font-family: "Modern Antiqua", serif;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition:
-      border-color 160ms ease,
-      background 160ms ease,
-      color 160ms ease;
-  }
-
-  .toolbar-button:hover {
-    border-color: var(--farm-green);
-    background: var(--farm-green-soft);
-  }
-
-  .filter-wrapper {
-    margin-bottom: 28px;
-    padding: 18px;
-    border: 1px solid var(--farm-green-border);
-    border-radius: 17px;
-    background: var(--farm-green-soft);
-  }
-
-  .filter-heading {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 15px;
-  }
-
-  .filter-heading h3 {
-    margin: 0;
-    color: var(--farm-text);
-    font-family: "IBM Plex Serif", serif;
-    font-size: 18px;
-  }
-
-  .clear-filters {
-    border: 0;
-    background: transparent;
-    color: var(--farm-green);
-    font-family: "Modern Antiqua", serif;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-
-  .clear-filters:hover {
-    color: var(--farm-green-dark);
-  }
-
-  .marketplace-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-
-  .marketplace-card {
-    overflow: hidden;
-    border: 1px solid var(--farm-green-border);
-    border-radius: 19px;
-    background: var(--farm-green-soft);
-    box-shadow:
-      0 8px 25px var(--farm-green-glow);
-    transition:
-      border-color 180ms ease,
-      box-shadow 180ms ease,
-      background 180ms ease;
-  }
-
-  .marketplace-card:hover {
-    border-color: var(--farm-green);
-    box-shadow:
-      0 14px 32px var(--farm-green-glow);
-  }
-
-  .marketplace-image {
-    width: 100%;
-    height: 220px;
-    background: var(--farm-background);
-  }
-
-  .marketplace-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .marketplace-card-body {
-    padding: 20px;
-  }
-
-  .marketplace-card-type {
-    color: var(--farm-green);
-    font-family: "Modern Antiqua", serif;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.7px;
-  }
-
-  .marketplace-card-title {
-    margin: 7px 0 0;
-    color: var(--farm-text);
-    font-family: "IBM Plex Serif", serif;
-    font-size: 21px;
-    font-weight: 700;
-  }
-
-  .marketplace-card-info {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: 15px;
-  }
-
-  .marketplace-info-item {
-    color: var(--farm-muted);
-    font-family: "Modern Antiqua", serif;
-    font-size: 12px;
-    line-height: 1.5;
-  }
-
-  .marketplace-price {
-    margin-top: 18px;
-    color: var(--farm-text);
-    font-family: "IBM Plex Serif", serif;
-    font-size: 21px;
-    font-weight: 700;
-  }
-
-  .marketplace-card-button {
-    width: 100%;
-    margin-top: 15px;
-    padding: 12px;
-    border: 1px solid var(--farm-green);
-    border-radius: 11px;
-    background: var(--farm-green);
-    color: #ffffff;
-    font-family: "Modern Antiqua", serif;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition:
-      background 160ms ease,
-      transform 160ms ease;
-  }
-
-  .marketplace-card-button:hover {
-    background: var(--farm-green-dark);
-    transform: translateY(-1px);
-  }
-
-  .empty-state {
-    padding: 70px 24px;
-    border: 1px solid var(--farm-green-border);
-    border-radius: 20px;
-    background: var(--farm-green-soft);
-    text-align: center;
-  }
-
-  .empty-state h3 {
-    margin: 0;
-    color: var(--farm-text);
-    font-family: "IBM Plex Serif", serif;
-    font-size: 25px;
-  }
-
-  .empty-state p {
-    margin: 12px auto 0;
-    color: var(--farm-muted);
-    font-family: "Modern Antiqua", serif;
-    font-size: 14px;
-  }
-
-  .buyer-actions {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 52px;
-    padding-top: 24px;
-    border-top: 1px solid var(--farm-green-border);
-  }
-
-  .buyer-action {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 11px 15px;
-    border: 1px solid var(--farm-green-border);
-    border-radius: 11px;
-    background: var(--farm-green-soft);
-    color: var(--farm-muted);
-    font-family: "Modern Antiqua", serif;
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: none;
-    transition:
-      border-color 160ms ease,
-      color 160ms ease,
-      background 160ms ease;
-  }
-
-  .buyer-action:hover {
-    border-color: var(--farm-green);
-    color: var(--farm-green);
-    background: var(--farm-green-soft);
-  }
-
-  @media (max-width: 900px) {
-    .marketplace-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (max-width: 620px) {
-    .marketplace-container {
-      width: min(100% - 28px, 560px);
-      padding-top: 24px;
-    }
-
-    .marketplace-logo {
-      width: 160px;
-      height: 58px;
-    }
-
-    .category-switch {
-      width: 100%;
-    }
-
-    .category-button {
-      min-width: 0;
-      width: 50%;
-      padding: 11px 8px;
-    }
-
-    .marketplace-toolbar {
-      align-items: flex-start;
-      flex-direction: column;
-    }
-
-    .marketplace-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .marketplace-image {
-      height: 240px;
-    }
-
-    .buyer-actions {
-      flex-direction: column;
-    }
-
-    .buyer-action {
-      justify-content: center;
-    }
-  }
-`}</style>
-
-      <main className="marketplace-page">
-        <div className="marketplace-container">
-
-          <header className="marketplace-top">
-
-            <div className="marketplace-logo">
+            <div className="marketplace-logo w-[190px] h-[68px] mb-[22px] max-[620px]:w-[160px] max-[620px]:h-[58px]">
               <img
                 src="/logo/farmart_full_logo_testing.png"
                 alt="Farmart"
+                className="w-full h-full object-contain"
               />
             </div>
 
             <div className="marketplace-heading">
-              <h1>Find what your farm has to offer.</h1>
+              <h1 className="m-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[clamp(36px,6vw,50px)] font-bold leading-[1.1] tracking-[-1px]">
+                Find what your farm has to offer.
+              </h1>
 
-              <p>
+              <p className="max-w-[700px] mx-auto mt-[16px] text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[15px] leading-[1.8] text-center px-15">
                 Discover livestock and farm products directly
                 from farmers, with transparent prices and
                 trustworthy listings.
               </p>
             </div>
 
-            <div className="marketplace-search-wrapper">
+            <div className="marketplace-search-wrapper w-min[680px,100%] mt-[30px] mx-auto">
               <SearchBar
                 search={search}
                 setSearch={setSearch}
               />
             </div>
 
-            <div className="category-switch">
+            <div className="category-switch flex justify-center gap-[5px] mx-auto mt-[30px] p-[5px] border border-[var(--farm-green-border)] rounded-[15px] bg-[var(--farm-green-soft)] max-[620px]:w-full">
+
               <button
                 type="button"
-                className={`category-button ${
-                  category === 'livestock' ? 'active' : ''
-                }`}
                 onClick={() => setCategory('livestock')}
+                className={`
+                  category-button
+                  min-w-[150px] py-[12px] px-[20px]
+                  border-0 rounded-[11px]
+                  font-[var(--farm-body-font)]
+                  text-[14px] font-semibold
+                  cursor-pointer
+                  transition-all duration-[160ms] ease-[ease]
+                  max-[620px]:min-w-0 max-[620px]:w-1/2
+                  max-[620px]:px-[8px] max-[620px]:py-[11px]
+                  ${
+                    category === 'livestock'
+                      ? 'bg-[var(--farm-green)] text-white shadow-md'
+                      : 'bg-transparent text-[var(--farm-muted)] hover:bg-white'
+                  }
+                `}
               >
                 Livestock
               </button>
 
               <button
                 type="button"
-                className={`category-button ${
-                  category === 'products' ? 'active' : ''
-                }`}
                 onClick={() => setCategory('products')}
+                className={`
+                  category-button
+                  min-w-[150px] py-[12px] px-[20px]
+                  border-0 rounded-[11px]
+                  font-[var(--farm-body-font)]
+                  text-[14px] font-semibold
+                  cursor-pointer
+                  transition-all duration-[160ms] ease-[ease]
+                  max-[620px]:min-w-0 max-[620px]:w-1/2
+                  max-[620px]:px-[8px] max-[620px]:py-[11px]
+                  ${
+                    category === 'products'
+                      ? 'bg-[var(--farm-green)] text-white shadow-md'
+                      : 'bg-transparent text-[var(--farm-muted)] hover:bg-white'
+                  }
+                `}
               >
                 Farm Products
               </button>
+
             </div>
 
           </header>
 
-          <section className="marketplace-layout">
+          <section className="marketplace-layout mt-[42px]">
 
-            <div className="marketplace-toolbar">
+            <div className="marketplace-toolbar flex items-center justify-between gap-[20px] mb-[18px] max-[620px]:items-start max-[620px]:flex-col">
 
               <div className="marketplace-results">
-                <h2>
+                <h2 className="m-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[27px]">
                   {category === 'livestock'
                     ? 'Available Livestock'
                     : 'Farm Products'}
                 </h2>
 
-                <p>
+                <p className="m-0 mt-[7px] text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[13px]">
                   {visibleItems.length}{' '}
                   {visibleItems.length === 1
                     ? 'listing'
@@ -737,11 +409,11 @@ function Marketplace() {
                 </p>
               </div>
 
-              <div className="toolbar-actions">
+              <div className="toolbar-actions flex gap-[10px]">
 
                 <button
                   type="button"
-                  className="toolbar-button"
+                  className="toolbar-button inline-flex items-center gap-[8px] py-[10px] px-[14px] border border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-text)] font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)]"
                   onClick={() =>
                     setShowFilters(!showFilters)
                   }
@@ -758,14 +430,13 @@ function Marketplace() {
                 />
 
               </div>
-
             </div>
 
             {showFilters && (
-              <div className="filter-wrapper">
+              <div className="filter-wrapper mb-[28px] p-[18px] border border-[var(--farm-green-border)] rounded-[17px] bg-[var(--farm-green-soft)]">
 
-                <div className="filter-heading">
-                  <h3>
+                <div className="filter-heading flex items-center justify-between mb-[15px]">
+                  <h3 className="m-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[18px]">
                     {category === 'livestock'
                       ? 'Filter Livestock'
                       : 'Filter Farm Products'}
@@ -773,7 +444,7 @@ function Marketplace() {
 
                   <button
                     type="button"
-                    className="clear-filters"
+                    className="clear-filters border-0 bg-transparent text-[var(--farm-green)] font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer hover:text-[var(--farm-green-dark)]"
                     onClick={clearFilters}
                   >
                     Clear filters
@@ -811,97 +482,170 @@ function Marketplace() {
               </div>
             )}
 
-            {visibleItems.length > 0 ? (
-              <div className="marketplace-grid">
+            {isLoading ? (
+              <div className="empty-state py-[70px] px-[24px] border border-[var(--farm-green-border)] rounded-[20px] bg-[var(--farm-green-soft)] text-center">
+                <h3 className="m-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[25px]">
+                  Loading listings...
+                </h3>
+              </div>
+            ) : category === 'products' && productsError ? (
+              <div className="empty-state py-[70px] px-[24px] border border-[var(--farm-green-border)] rounded-[20px] bg-[var(--farm-green-soft)] text-center">
+
+                <h3 className="m-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[25px]">
+                  Unable to load farm products.
+                </h3>
+
+                <p className="mt-[12px] mr-auto ml-auto mb-0 text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[14px]">
+                  {productsError}
+                </p>
+
+              </div>
+            ) : visibleItems.length > 0 ? (
+              <div className="marketplace-grid grid grid-cols-[repeat(3,1fr)] max-[900px]:grid-cols-[repeat(2,1fr)] max-[620px]:grid-cols-[1fr] gap-[20px]">
 
                 {visibleItems.map((item) => (
                   <article
                     key={`${category}-${item.id}`}
-                    className="marketplace-card"
+                    className="marketplace-card overflow-hidden border border-[var(--farm-green-border)] rounded-[19px] bg-[var(--farm-green-soft)] shadow-[0_8px_25px_var(--farm-green-glow)] transition-[border-color,box-shadow,background] duration-[180ms] ease-[ease] hover:border-[var(--farm-green)] hover:shadow-[0_14px_32px_var(--farm-green-glow)]"
                   >
 
-                    <div className="marketplace-image">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                      />
+                    <div className="marketplace-image w-full h-[220px] bg-[var(--farm-background)] max-[620px]:h-[240px]">
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[13px]">
+                          No image available
+                        </div>
+                      )}
                     </div>
 
-                    <div className="marketplace-card-body">
+                    <div className="marketplace-card-body p-[20px]">
 
-                      <div className="marketplace-card-type">
+                      <div className="marketplace-card-type text-[var(--farm-green)] font-[var(--farm-body-font)] text-[12px] font-bold uppercase tracking-[0.7px]">
                         {item.type}
                       </div>
 
-                      <h3 className="marketplace-card-title">
+                      <h3 className="marketplace-card-title mt-[7px] mr-0 mb-0 ml-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[21px] font-bold">
                         {item.name}
                       </h3>
 
-                      <div className="marketplace-card-info">
+                      <div className="marketplace-card-info grid grid-cols-[repeat(2,1fr)] gap-[8px] mt-[15px]">
 
                         {category === 'livestock' ? (
                           <>
-                            <div className="marketplace-info-item">
+                            <div className="marketplace-info-item text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[12px] leading-[1.5]">
                               Breed: {item.breed}
                             </div>
 
-                            <div className="marketplace-info-item">
+                            <div className="marketplace-info-item text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[12px] leading-[1.5]">
                               Age: {item.age} years
                             </div>
 
-                            <div className="marketplace-info-item">
+                            <div className="marketplace-info-item text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[12px] leading-[1.5]">
                               Sex: {item.sex}
                             </div>
 
-                            <div className="marketplace-info-item">
+                            <div className="marketplace-info-item text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[12px] leading-[1.5]">
                               Location: {item.location}
+                            </div>
+
+                            <div className="marketplace-info-item text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[12px] leading-[1.5] text-[var(--farm-green-dark)] font-bold">
+                              Availability: {item.availability}
                             </div>
                           </>
                         ) : (
                           <>
-                            <div className="marketplace-info-item">
+                            <div className="marketplace-info-item text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[12px] leading-[1.5]">
                               Produced: {item.dateProduced}
                             </div>
 
-                            <div className="marketplace-info-item">
+                            <div className="marketplace-info-item text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[12px] leading-[1.5]">
                               Expires: {item.expiryDate}
                             </div>
 
-                            <div className="marketplace-info-item">
-                              Quantity: {item.quantity} g
+                            <div className="marketplace-info-item text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[12px] leading-[1.5]">
+                              Quantity: {item.quantity} {item.unit}
+                            </div>
+
+                            <div className="marketplace-info-item text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[12px] leading-[1.5]">
+                              Location: {item.location}
+                            </div>
+
+                            <div className="marketplace-info-item text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[12px] leading-[1.5] text-[var(--farm-green-dark)] font-bold">
+                              Availability: {item.availability}
                             </div>
                           </>
                         )}
 
                       </div>
 
-                      <div className="marketplace-price">
-                        KSh {item.price.toLocaleString()}
+                      <div className="marketplace-price mt-[18px] text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[21px] font-bold">
+                        KSh {Number(item.price).toLocaleString()}
                       </div>
 
-                      <button
-                        type="button"
-                        className="marketplace-card-button"
-                      >
-                        View listing
-                      </button>
+                      {category === 'livestock' ? (
+                        <div className="flex gap-2 mt-[15px]">
+
+                          <Link
+                            to={`/buyer/livestock/${item.id}`}
+                            className="block flex-1"
+                          >
+                            <button
+                              type="button"
+                              className="marketplace-card-button w-full p-[12px] border border-[var(--farm-green)] rounded-[11px] bg-[var(--farm-green)] text-white font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer transition-[background,transform] duration-[160ms] ease-[ease] hover:bg-[var(--farm-green-dark)] hover:translate-y-[-1px]"
+                            >
+                              View livestock
+                            </button>
+                          </Link>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              addLivestockToCart(item)
+                            }
+                            className="marketplace-card-button px-[14px] p-[12px] border border-[var(--farm-green)] rounded-[11px] bg-transparent text-[var(--farm-green-dark)] font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer transition-[background,transform] duration-[160ms] ease-[ease] hover:bg-[var(--farm-green-soft)] hover:translate-y-[-1px]"
+                            aria-label={`Add ${item.name} to cart`}
+                            title="Add to cart"
+                          >
+                            <FaShoppingCart size={13} />
+                          </button>
+
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            addProductToCart(item)
+                          }
+                          className="marketplace-card-button w-full mt-[15px] p-[12px] border border-[var(--farm-green)] rounded-[11px] bg-[var(--farm-green)] text-white font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer transition-[background,transform] duration-[160ms] ease-[ease] hover:bg-[var(--farm-green-dark)] hover:translate-y-[-1px]"
+                        >
+                          <FaShoppingCart
+                            size={13}
+                            className="inline mr-2"
+                          />
+                          Add to Cart
+                        </button>
+                      )}
 
                     </div>
-
                   </article>
                 ))}
 
               </div>
             ) : (
-              <div className="empty-state">
+              <div className="empty-state py-[70px] px-[24px] border border-[var(--farm-green-border)] rounded-[20px] bg-[var(--farm-green-soft)] text-center">
 
-                <h3>
+                <h3 className="m-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[25px]">
                   {category === 'products'
                     ? "Sorry, but there's no produce recorded this month."
                     : 'No livestock matches your filters.'}
                 </h3>
 
-                <p>
+                <p className="mt-[12px] mr-auto ml-auto mb-0 text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[14px]">
                   {category === 'products'
                     ? 'Check back later for new farm products.'
                     : 'Try changing or clearing your filters.'}
@@ -912,11 +656,11 @@ function Marketplace() {
 
           </section>
 
-          <nav className="buyer-actions">
+          <nav className="buyer-actions flex justify-center flex-wrap gap-[10px] mt-[52px] pt-[24px] border-t border-[var(--farm-green-border)] max-[620px]:flex-col">
 
             <Link
               to="/buyer/checkout"
-              className="buyer-action"
+              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
             >
               <FaShoppingCart size={13} />
               Checkout
@@ -924,7 +668,7 @@ function Marketplace() {
 
             <Link
               to="/buyer/orders"
-              className="buyer-action"
+              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
             >
               <FaClipboardList size={13} />
               Orders
@@ -932,7 +676,7 @@ function Marketplace() {
 
             <Link
               to="/buyer/wishlist"
-              className="buyer-action"
+              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
             >
               <FaHeart size={13} />
               Wishlist
@@ -940,7 +684,7 @@ function Marketplace() {
 
             <Link
               to="/buyer/reviews"
-              className="buyer-action"
+              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
             >
               <FaStar size={13} />
               Reviews
@@ -948,18 +692,10 @@ function Marketplace() {
 
             <Link
               to="/buyer/profile"
-              className="buyer-action"
+              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
             >
               <FaUser size={13} />
               Profile
-            </Link>
-
-            <Link
-              to="/buyer/reports"
-              className="buyer-action"
-            >
-              <FaFlag size={13} />
-              Report
             </Link>
 
           </nav>
@@ -971,4 +707,3 @@ function Marketplace() {
 }
 
 export default Marketplace
-// commit 11

@@ -1,3 +1,4 @@
+import PageHeader from "../../components/layout/PageHeader";
 import { useState } from "react";
 
 export default function Announcements() {

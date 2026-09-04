@@ -1,34 +1,29 @@
-/* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useCallback, useEffect } from "react";
-import { storage } from "../hooks/useLocalStorage";
+import { createContext, useContext, useEffect, useState } from "react";
+import { getLivestock } from "../api/livestockApi";
 
-const LivestockContext = createContext(null);
+const Livestockcontext = createContext();
 
-export function LivestockProvider({ children }) {
-  const [listings, setListings] = useState(() => storage.get("listings", []));
-  const [loading, setLoading] = useState(false);
+export const LivestockProvider = ({ children }) => {
+    const [livestock, setLivestock] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => { storage.set("listings", listings); }, [listings]);
+    useEffect(() => {
+        const loadLivestock = async () => {
+            const data = await getLivestock(); 
+            setLivestock(data);
+            setLoading(false);
+        };
 
-  const fetchListings = useCallback(async (filters = {}) => {
-    setLoading(true);
-    try {
-      const { api } = await import("../api");
-      const data = await api.getListings(filters);
-      setListings(data);
-      return data;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        loadLivestock();
+    }, []);
 
-  const value = { listings, loading, fetchListings };
-  return <LivestockContext.Provider value={value}>{children}</LivestockContext.Provider>;
-}
+    return (
+        <Livestockcontext.Provider value={{ livestock, loading }}>
+            {children}
+        </Livestockcontext.Provider>
+    );
+};
 
-export function useLivestock() {
-  const ctx = useContext(LivestockContext);
-  if (!ctx) throw new Error("useLivestock must be used within LivestockProvider");
-  return ctx;
-}
-/* eslint-enable react-refresh/only-export-components */
+export const useLivestockContext = () => {
+    return useContext(Livestockcontext)
+};

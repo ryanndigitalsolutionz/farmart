@@ -1,40 +1,76 @@
-/* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useCallback, useEffect } from "react";
-import { storage } from "../hooks/useLocalStorage";
+import { createContext, useContext, useState, useEffect} from 'react'
 
-const WishlistContext = createContext(null);
+const WishlistContext = createContext();
 
 export function WishlistProvider({ children }) {
-  const [items, setItems] = useState(() => storage.get("wishlist", []));
+    // TODO(backend): replace this intitializer with a GET/api/wishlist call
 
-  useEffect(() => { storage.set("wishlist", items); }, [items]);
+    const [wishlist, setWishList] = useState(() => {
+        const savedWishlist = localStorage.getItem("wishlist");
 
-  const addItem = useCallback(async (item) => {
-    const { api } = await import("../api");
-    const updated = await api.addToWishlist(item);
-    setItems(updated);
-    return updated;
-  }, []);
+        return savedWishlist ? JSON.parse(savedWishlist) : [];
+    });
 
-  const removeItem = useCallback(async (listingId) => {
-    const { api } = await import("../api");
-    const updated = await api.removeFromWishlist(listingId);
-    setItems(updated);
-    return updated;
-  }, []);
+    const addToWishlist = (animal) => {
+        // TODO(backend): POST/api/wishlist { animalId: animal.id }
+        setWishList((currentWishlist) => {
+            const alreadyInWishlist = currentWishlist.some(
+                (item) => item.id === animal.id
+            );
+            if (alreadyInWishlist) {
+                return currentWishlist;
+            }
+            return [...currentWishlist, animal];
+        });
 
-  const isInWishlist = useCallback(async (listingId) => {
-    const { api } = await import("../api");
-    return api.isInWishlist(listingId);
-  }, []);
+    };
+    const removeFromWishlist = (animalId) => {
+        // TODO(backend): DELETE /api/wishlist/:animalId
+        setWishList((currentWishlist) => 
+            currentWishlist.filter((item) => item.id !== animalId)
+        );
+    };
+    const isInWishlist = (animalId) => {
+        return wishlist.some((item) =>item.id === animalId )
+    };
+    const toggleWishlist = (animal) => {
+        if (isInWishlist(animal.id)) {
+            removeFromWishlist(animal.id);
+        } else {
+            addToWishlist(animal);
+        }
+    };
+    const clearWishlist = () => {
+        setWishList([]);
+    };
+    useEffect(() => {
+        localStorage.setItem("wishlist", JSON.stringify(wishlist));
+    }, [wishlist]);
 
-  const value = { items, addItem, removeItem, isInWishlist, count: items.length };
-  return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;
+  return (
+    <WishlistContext.Provider
+        value={{
+            wishlist,
+            addToWishlist,
+            removeFromWishlist,
+            isInWishlist,
+            toggleWishlist,
+            clearWishlist,
+        }}
+    >
+        {children}
+    </WishlistContext.Provider>
+  )
 }
 
 export function useWishlist() {
-  const ctx = useContext(WishlistContext);
-  if (!ctx) throw new Error("useWishlist must be used within WishlistProvider");
-  return ctx;
+    const context = useContext(WishlistContext)
+
+    if (!context) {
+        throw new Error(
+            "useWishlist must be used inside a WishlistProvider"
+        )
+    }
+
+    return context
 }
-/* eslint-enable react-refresh/only-export-components */

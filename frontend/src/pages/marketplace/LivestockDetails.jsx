@@ -1,115 +1,354 @@
-import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { api } from "../../api";
+
+import { Link, useParams } from "react-router-dom";
+import { useState } from "react";
+import useLivestock from "../../hooks/useLivestock";
 import { useCart } from "../../context/CartContext";
+import { LuWeight, LuMapPinned, LuShoppingCart } from "react-icons/lu";
+import { GrStatusInfo } from "react-icons/gr";
+import {
+  GiFarmTractor,
+  GiDna2,
+  GiHealthNormal,
+} from "react-icons/gi";
+import {
+  FaCalendarAlt,
+  FaStar,
+  FaHeart,
+  FaRegHeart,
+} from "react-icons/fa";
 import { useWishlist } from "../../context/WishlistContext";
+import ReviewList from "../../components/reviews/ReviewList";
 
-export default function LivestockDetails() {
+function LivestockDetails() {
   const { id } = useParams();
-  const [listing, setListing] = useState(null);
-  const [related, setRelated] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [qty, setQty] = useState(1);
-  const { addItem } = useCart();
-  const { items: wishlistItems, addItem: addWishlist, removeItem: removeWishlist } = useWishlist();
-  const navigate = useNavigate();
+  const { livestock, loading } = useLivestock();
 
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      const data = await api.getListing(id);
-      setListing(data);
-      if (data) {
-        const all = await api.getListings({ status: "active" });
-        setRelated(all.filter((l) => l.type === data.type && l.id !== data.id).slice(0, 4));
-      }
-      setLoading(false);
-    })();
-  }, [id]);
+  const { cart, addToCart } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
 
-  const wishlisted = listing ? wishlistItems.some((w) => w.listingId === listing.id) : false;
+  const [added, setAdded] = useState(false);
 
-  const toggleWishlist = async () => {
-    if (!listing) return;
-    if (wishlisted) await removeWishlist(listing.id);
-    else await addWishlist({ listingId: listing.id, title: listing.title, price: listing.price, breed: listing.breed, type: listing.type, location: listing.location, farmerName: listing.farmerName, image: listing.images?.[0] || null });
-  };
+  // Number of items currently in the cart
+  const cartCount = cart?.length || 0;
 
-  const handleAddToCart = async () => {
-    if (!listing) return;
-    await addItem({ listingId: listing.id, title: listing.title, price: listing.price, quantity: qty, breed: listing.breed, type: listing.type, location: listing.location, farmerName: listing.farmerName, image: listing.images?.[0] || null });
-    navigate("/buyer/cart");
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading livestock...</p>
+      </div>
+    );
+  }
 
-  const fmt = (n) => "KES " + Number(n).toLocaleString();
-
-  if (loading) return <div style={{ padding: 40, textAlign: "center", color: "var(--text-muted, #66766A)" }}>Loading...</div>;
-  if (!listing) return (
-    <div style={{ maxWidth: 800, margin: "0 auto", padding: 40, textAlign: "center" }}>
-      <div style={{ fontSize: 48, marginBottom: 12 }}>😕</div>
-      <h2 style={{ fontFamily: "'IBM Plex Serif', serif", color: "var(--text-dark, #1E2A1F)" }}>Listing not found</h2>
-      <p style={{ color: "var(--text-muted, #66766A)" }}>This listing may be unavailable or removed.</p>
-      <Link to="/buyer/marketplace" style={{ color: "var(--green-700, #2F6D3F)", fontWeight: 600 }}>Back to marketplace</Link>
-    </div>
+  const animal = livestock.find(
+    (livestockAnimal) => livestockAnimal.id === Number(id)
   );
 
+  if (!animal) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Livestock not found.</p>
+      </div>
+    );
+  }
+
+  const handleAddToCart = () => {
+    addToCart(animal);
+
+    setAdded(true);
+
+    setTimeout(() => {
+      setAdded(false);
+    }, 2000);
+  };
+
   return (
-    <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 20px" }}>
-      <button onClick={() => navigate(-1)} style={{ background: "none", border: "none", color: "var(--green-700, #2F6D3F)", fontWeight: 600, cursor: "pointer", marginBottom: 16, padding: 0 }}>← Back</button>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 24, alignItems: "start" }}>
-        <div style={{ background: "#EAF3E6", borderRadius: 12, minHeight: 260, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted, #66766A)" }}>
-          {listing.images?.[0] ? <img src={listing.images[0]} alt={listing.title} style={{ width: "100%", height: "auto", aspectRatio: "4/3", objectFit: "cover", borderRadius: 12 }} /> : "No image available"}
+    <div className="p-5 max-w-2xl mx-auto shadow-2xl m-1">
+
+      {/* Top bar */}
+      <div className="flex items-center justify-between mb-5">
+
+        {/* Back */}
+        <Link
+          to="/buyer/marketplace"
+          className="
+            text-gray-500
+            font-semibold
+            hover:text-[var(--farm-green-dark)]
+            transition
+          "
+        >
+          ← Marketplace
+        </Link>
+
+        {/* Cart */}
+        <Link
+          to="/buyer/cart"
+          className="
+            flex items-center gap-2
+            px-4 py-2.5
+            rounded-xl
+            bg-[var(--farm-green)]
+            text-white
+            font-semibold
+            shadow-md
+            hover:bg-[var(--farm-green-dark)]
+            transition
+          "
+        >
+          <LuShoppingCart size={22} />
+
+          <span>Cart</span>
+
+          <span
+            className="
+              min-w-[26px]
+              h-[26px]
+              px-2
+              flex
+              items-center
+              justify-center
+              rounded-full
+              bg-white
+              text-[var(--farm-green-dark)]
+              text-xs
+              font-bold
+            "
+          >
+            {cartCount}
+          </span>
+        </Link>
+      </div>
+
+      {/* Animal image */}
+      <img
+        src={animal.image}
+        alt={animal.type}
+        className="
+          w-full
+          h-77
+          rounded-lg
+          mb-4
+          object-cover
+          object-[center_40%]
+        "
+      />
+
+      {/* Wishlist */}
+      <div className="flex justify-end">
+        <button
+          onClick={() => toggleWishlist(animal)}
+          aria-label={
+            isInWishlist(animal.id)
+              ? "Remove from wishlist"
+              : "Add to wishlist"
+          }
+          className="
+            cursor-pointer
+            transition-transform
+            duration-200
+            hover:scale-110
+          "
+        >
+          {isInWishlist(animal.id) ? (
+            <FaHeart
+              size={20}
+              className="text-red-500"
+            />
+          ) : (
+            <FaRegHeart
+              size={20}
+              className="text-gray-400"
+            />
+          )}
+        </button>
+      </div>
+
+      {/* Animal heading */}
+      <div className="mb-2 mt-2">
+        <div className="flex justify-between items-center gap-4">
+          <h1 className="flex items-center gap-2 font-bold text-2xl">
+            {animal.breed} {animal.type}
+          </h1>
+
+          <p className="text-green-700 font-bold whitespace-nowrap">
+            Ksh {Number(animal.price).toLocaleString()}
+          </p>
         </div>
-        <div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", gap: 10 }}>
-              <h1 style={{ fontFamily: "'IBM Plex Serif', serif", fontSize: 24, color: "var(--text-dark, #1E2A1F)", margin: 0, flex: 1 }}>{listing.title}</h1>
-              <button onClick={toggleWishlist} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: wishlisted ? "#DC2626" : "var(--text-muted, #66766A)", flexShrink: 0 }}>{wishlisted ? "♥" : "♡"}</button>
-            </div>
-            <div style={{ color: "var(--text-muted, #66766A)", fontSize: 14 }}>{listing.farmerName} • {listing.location}</div>
+      </div>
+
+      {/* Animal details */}
+      <div className="flex items-center justify-between py-2">
+        <span className="flex items-center gap-5 font-bold">
+          <GiDna2 />
+          Breed
+        </span>
+
+        <span>{animal.breed}</span>
+      </div>
+
+      <div className="flex items-center justify-between py-2">
+        <span className="flex items-center gap-5 font-bold">
+          <FaCalendarAlt />
+          Age
+        </span>
+
+        <span>{animal.age} years</span>
+      </div>
+
+      <div className="flex items-center justify-between py-2">
+        <span className="flex items-center gap-5 font-bold">
+          <LuWeight />
+          Weight
+        </span>
+
+        <span>{animal.weight} kg</span>
+      </div>
+
+      <div className="flex items-center justify-between py-2">
+        <span className="flex items-center gap-5 font-bold">
+          <LuMapPinned />
+          Location
+        </span>
+
+        <span>{animal.location}</span>
+      </div>
+
+      {/* Status */}
+      <div className="flex items-center justify-between py-2">
+        <span className="flex items-center gap-5 font-bold">
+          <GrStatusInfo size={20} />
+          Status
+        </span>
+
+        <span
+          className={`
+            p-1 px-2
+            rounded-lg
+            text-white
+            font-semibold
+            ${
+              animal.availability?.toLowerCase() === "available"
+                ? "bg-green-600"
+                : "bg-red-600"
+            }
+          `}
+        >
+          {animal.availability}
+        </span>
+      </div>
+
+      {/* Health */}
+      <div className="flex items-center justify-between py-2">
+        <span className="flex items-center gap-5 font-bold">
+          <GiHealthNormal size={20} />
+          Health Info
+        </span>
+
+        <span>
+          {animal.health?.vaccinated
+            ? "Vaccinated, Healthy"
+            : "Not Vaccinated"}
+        </span>
+      </div>
+
+      {/* Farm information */}
+      <div className="flex items-center justify-between mt-2">
+        <span className="flex items-center gap-5 font-bold">
+          <GiFarmTractor size={20} />
+          Farm
+        </span>
+
+        <div className="flex flex-col">
+          <span className="font-bold text-end">
+            {animal.seller?.name}
+          </span>
+
+          <div className="flex gap-2 text-sm items-center">
+            <FaStar
+              size={20}
+              color="gold"
+            />
+
+            <span>
+              {animal.seller?.rating}
+            </span>
+
+            <ReviewList livestockId={animal.id} />
           </div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: "var(--green-700, #2F6D3F)", marginBottom: 14 }}>{fmt(listing.price)}</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 120px), 1fr))", gap: 10, marginBottom: 18 }}>
-            {[["Breed", listing.breed], ["Type", listing.type], ["Age", listing.age], ["Gender", listing.gender], ["Weight", `${listing.weight} ${listing.weightUnit}`], ["Available", listing.quantity > 0 ? `${listing.quantity} unit(s)` : "Unavailable"]].map(([k, v]) => (
-              <div key={k} style={{ background: "#f7faf7", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border, #DCE6D8)" }}>
-                <div style={{ fontSize: 11, color: "var(--text-muted, #66766A)" }}>{k}</div>
-                <div style={{ fontWeight: 600, color: "var(--text-dark, #1E2A1F)", fontSize: 14, textTransform: "capitalize" }}>{v}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ fontSize: 13, color: "var(--text-muted, #66766A)" }}>Quantity</label>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 6 }}>
-              <button onClick={() => setQty((q) => Math.max(1, q - 1))} style={{ width: 40, height: 40, borderRadius: 8, border: "1px solid var(--border, #DCE6D8)", background: "#fff", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>-</button>
-              <span style={{ fontWeight: 700, minWidth: 28, textAlign: "center" }}>{qty}</span>
-              <button onClick={() => setQty((q) => Math.min(listing.quantity, q + 1))} style={{ width: 40, height: 40, borderRadius: 8, border: "1px solid var(--border, #DCE6D8)", background: "#fff", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>+</button>
-            </div>
-          </div>
-          <button onClick={handleAddToCart} disabled={listing.quantity <= 0} style={{ width: "100%", padding: "14px 16px", background: "var(--green-700, #2F6D3F)", color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer", minHeight: 44, opacity: listing.quantity <= 0 ? 0.5 : 1 }}>
-            {listing.quantity > 0 ? "Add to Cart" : "Unavailable"}
+        </div>
+      </div>
+
+      {/* Description */}
+      <div className="flex flex-col gap-2 mt-3">
+        <span className="font-bold text-2xl">
+          About this animal
+        </span>
+
+        <p>{animal.description}</p>
+      </div>
+
+      {/* Add to Cart */}
+      {animal.availability?.toLowerCase() === "available" ? (
+        <div className="mt-5">
+
+          <button
+            onClick={handleAddToCart}
+            className={`
+              w-full
+              p-3
+              border
+              rounded-[11px]
+              text-white
+              font-semibold
+              cursor-pointer
+              transition
+              duration-200
+              ${
+                added
+                  ? "bg-green-600 border-green-600"
+                  : "bg-[var(--farm-green)] border-[var(--farm-green)] hover:bg-[var(--farm-green-dark)]"
+              }
+            `}
+          >
+            {added ? (
+              <span className="flex items-center justify-center gap-2">
+                ✓ Added to Cart
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-2">
+                <LuShoppingCart size={20} />
+                Add to Cart
+              </span>
+            )}
           </button>
-        </div>
-      </div>
 
-      <div style={{ marginTop: 28 }}>
-        <h2 style={{ fontFamily: "'IBM Plex Serif', serif", fontSize: 18, color: "var(--text-dark, #1E2A1F)", marginBottom: 14 }}>Description</h2>
-        <p style={{ color: "var(--text-muted, #66766A)", lineHeight: 1.6 }}>{listing.description}</p>
-      </div>
-
-      {related.length > 0 && (
-        <div style={{ marginTop: 28 }}>
-          <h2 style={{ fontFamily: "'IBM Plex Serif', serif", fontSize: 18, color: "var(--text-dark, #1E2A1F)", marginBottom: 14 }}>Related Listings</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 14 }}>
-            {related.map((r) => (
-              <Link key={r.id} to={`/livestock/${r.id}`} style={{ textDecoration: "none", color: "inherit", background: "var(--white, #fff)", border: "1px solid var(--border, #DCE6D8)", borderRadius: 10, padding: 14, display: "block" }}>
-                <div style={{ fontWeight: 700, color: "var(--text-dark, #1E2A1F)" }}>{r.title}</div>
-                <div style={{ color: "var(--text-muted, #66766A)", fontSize: 13 }}>{r.breed}</div>
-                <div style={{ fontWeight: 700, color: "var(--green-700, #2F6D3F)", marginTop: 6 }}>{fmt(r.price)}</div>
-              </Link>
-            ))}
-          </div>
+          {/* Cart shortcut after adding */}
+          {added && (
+            <Link
+              to="/buyer/cart"
+              className="
+                block
+                text-center
+                mt-3
+                text-[var(--farm-green-dark)]
+                font-semibold
+                hover:underline
+              "
+            >
+              Go to Cart →
+            </Link>
+          )}
         </div>
+      ) : (
+        <p className="text-red-500 mb-3 font-semibold mt-4 text-center">
+          This Animal is currently unavailable
+        </p>
       )}
+
+
     </div>
   );
 }
+
+export default LivestockDetails;
+

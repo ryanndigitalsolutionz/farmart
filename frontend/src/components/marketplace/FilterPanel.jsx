@@ -19,8 +19,19 @@ function FilterPanel({
   setMaxPrice,
 }) {
   return (
-    <div className="filter-panel">
+    <div
+      className="
+        grid
+        grid-cols-4
+        gap-4
+        items-end
+        w-full
 
+        max-[900px]:grid-cols-2
+
+        max-[620px]:grid-cols-1
+      "
+    >
       <LivestockTypeFilter
         type={type}
         setType={setType}
@@ -41,15 +52,17 @@ function FilterPanel({
         setSex={setSex}
       />
 
-      <PriceFilter
-        minPrice={minPrice}
-        setMinPrice={setMinPrice}
-        maxPrice={maxPrice}
-        setMaxPrice={setMaxPrice}
-      />
-
+      <div className="max-[900px]:col-span-2 max-[620px]:col-span-1">
+        <PriceFilter
+          minPrice={minPrice}
+          setMinPrice={setMinPrice}
+          maxPrice={maxPrice}
+          setMaxPrice={setMaxPrice}
+        />
+      </div>
     </div>
   )
 }
 
-export default FilterPanel// commit 48
+export default FilterPanel
+

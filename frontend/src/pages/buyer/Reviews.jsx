@@ -1,60 +1,231 @@
-import { useState } from 'react'
-import { FaStar, FaEdit, FaTrash, FaPen } from 'react-icons/fa'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import {
+  FaStar,
+  FaEdit,
+  FaTrash,
+  FaPen,
+  FaArrowLeft,
+} from 'react-icons/fa'
+
+const API_BASE = 'http://localhost:5000'
 
 function Reviews() {
-  const [reviews, setReviews] = useState([
-    {
-      id: 1,
-      farmer: 'Jomo Farm',
-      item: 'Friesian Cow',
-      rating: 5,
-      comment:
-        'The cow was healthy and exactly as described. The farmer was also very helpful throughout the purchase.',
-      date: '8/24/2026',
-    },
-    {
-      id: 2,
-      farmer: 'Green Valley Farm',
-      item: 'Fresh Eggs',
-      rating: 4,
-      comment:
-        'Good quality eggs and they arrived fresh. I would definitely order from this farm again.',
-      date: '8/18/2026',
-    },
-  ])
-
+  const [reviews, setReviews] = useState([])
   const [editingId, setEditingId] = useState(null)
   const [editText, setEditText] = useState('')
+  const [editRating, setEditRating] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+
+  useEffect(() => {
+    const loadReviews = async () => {
+      try {
+        setIsLoading(true)
+        setError('')
+
+        const response = await fetch(`${API_BASE}/reviews`, {
+          credentials: 'include',
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(
+            data.message ||
+            data.error ||
+            'Unable to load reviews.'
+          )
+        }
+
+        const reviewList = Array.isArray(data)
+          ? data
+          : Array.isArray(data.reviews)
+            ? data.reviews
+            : []
+
+        const normalizedReviews = reviewList.map((review) => ({
+          id: review.id,
+          farmer:
+            review.farmer?.farm_name ||
+            review.farmer?.farmName ||
+            review.farmer?.name ||
+            review.farmer_name ||
+            review.farm_name ||
+            'Farm',
+          item:
+            review.livestock?.name ||
+            review.product?.name ||
+            review.item?.name ||
+            review.item_name ||
+            'Farm Item',
+          rating: Number(review.rating || 0),
+          comment: review.comment || '',
+          date: review.created_at
+            ? new Date(review.created_at).toLocaleDateString()
+            : review.date || '',
+          livestockId:
+            review.livestock_id ||
+            review.livestock?.id ||
+            null,
+          productId:
+            review.product_id ||
+            review.product?.id ||
+            null,
+        }))
+
+        setReviews(normalizedReviews)
+      } catch (requestError) {
+        setError(
+          requestError.message ||
+          'Unable to load reviews.'
+        )
+        setReviews([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadReviews()
+  }, [])
 
   const startEditing = (review) => {
     setEditingId(review.id)
     setEditText(review.comment)
+    setEditRating(review.rating)
+    setError('')
+    setSuccess('')
   }
 
-  const saveEdit = (reviewId) => {
-    if (!editText.trim()) return
-
-    setReviews((currentReviews) =>
-      currentReviews.map((review) =>
-        review.id === reviewId
-          ? {
-              ...review,
-              comment: editText.trim(),
-            }
-          : review,
-      ),
-    )
-
+  const cancelEditing = () => {
     setEditingId(null)
     setEditText('')
+    setEditRating(0)
+    setError('')
   }
 
-  const deleteReview = (reviewId) => {
-    setReviews((currentReviews) =>
-      currentReviews.filter(
-        (review) => review.id !== reviewId,
-      ),
-    )
+  const saveEdit = async (reviewId) => {
+    if (!editText.trim()) {
+      setError('Review comment cannot be empty.')
+      return
+    }
+
+    if (editRating < 1 || editRating > 5) {
+      setError('Please select a rating from 1 to 5 stars.')
+      return
+    }
+
+    try {
+      setIsSaving(true)
+      setError('')
+      setSuccess('')
+
+      const response = await fetch(
+        `${API_BASE}/reviews/${reviewId}`,
+        {
+          method: 'PUT',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            rating: editRating,
+            comment: editText.trim(),
+          }),
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+          data.error ||
+          'Unable to update review.'
+        )
+      }
+
+      const updatedReview =
+        data.review ||
+        data
+
+      setReviews((currentReviews) =>
+        currentReviews.map((review) =>
+          review.id === reviewId
+            ? {
+                ...review,
+                rating: Number(
+                  updatedReview.rating ?? editRating
+                ),
+                comment:
+                  updatedReview.comment ??
+                  editText.trim(),
+                date: updatedReview.updated_at
+                  ? new Date(
+                      updatedReview.updated_at
+                    ).toLocaleDateString()
+                  : review.date,
+              }
+            : review
+        )
+      )
+
+      setEditingId(null)
+      setEditText('')
+      setEditRating(0)
+      setSuccess('Review updated successfully.')
+    } catch (requestError) {
+      setError(
+        requestError.message ||
+        'Unable to update review.'
+      )
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const deleteReview = async (reviewId) => {
+    try {
+      setError('')
+      setSuccess('')
+
+      const response = await fetch(
+        `${API_BASE}/reviews/${reviewId}`,
+        {
+          method: 'DELETE',
+          credentials: 'include',
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+          data.error ||
+          'Unable to delete review.'
+        )
+      }
+
+      setReviews((currentReviews) =>
+        currentReviews.filter(
+          (review) => review.id !== reviewId
+        )
+      )
+
+      if (editingId === reviewId) {
+        cancelEditing()
+      }
+
+      setSuccess('Review deleted successfully.')
+    } catch (requestError) {
+      setError(
+        requestError.message ||
+        'Unable to delete review.'
+      )
+    }
   }
 
   return (
@@ -73,12 +244,40 @@ function Reviews() {
           margin: 0 auto;
         }
 
+        .buyer-reviews-back {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 25px;
+          padding: 10px 15px;
+          border: 1px solid #d1e1d3;
+          border-radius: 10px;
+          background: #ffffff;
+          color: #53645a;
+          font-family: "Modern Antiqua", serif;
+          font-size: 13px;
+          font-weight: 600;
+          text-decoration: none;
+          transition:
+            border-color 180ms ease,
+            background 180ms ease,
+            color 180ms ease,
+            transform 180ms ease;
+        }
+
+        .buyer-reviews-back:hover {
+          border-color: #2d7042;
+          background: #eef6ef;
+          color: #2d7042;
+          transform: translateX(-2px);
+        }
+
         .buyer-reviews-header {
           display: flex;
           align-items: flex-end;
           justify-content: space-between;
           gap: 25px;
-          margin-bottom: 32px;
+          margin-bottom: 24px;
         }
 
         .buyer-reviews-title {
@@ -105,6 +304,26 @@ function Reviews() {
           font-size: 13px;
           font-weight: 600;
           white-space: nowrap;
+        }
+
+        .buyer-reviews-message {
+          margin-bottom: 18px;
+          padding: 13px 16px;
+          border-radius: 12px;
+          font-family: "Modern Antiqua", serif;
+          font-size: 14px;
+        }
+
+        .buyer-reviews-error {
+          border: 1px solid #dfbbb5;
+          background: #faece9;
+          color: #a3483b;
+        }
+
+        .buyer-reviews-success {
+          border: 1px solid #c4ddc9;
+          background: #eef7ef;
+          color: #2d7042;
         }
 
         .buyer-reviews-list {
@@ -158,6 +377,27 @@ function Reviews() {
           color: #d7ddd8;
         }
 
+        .buyer-review-edit-rating {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-top: 20px;
+        }
+
+        .buyer-review-rating-button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 3px;
+          border: 0;
+          background: transparent;
+          cursor: pointer;
+        }
+
+        .buyer-review-rating-button:disabled {
+          cursor: not-allowed;
+        }
+
         .buyer-review-comment {
           margin: 22px 0 0;
           color: #425248;
@@ -174,7 +414,7 @@ function Reviews() {
           width: 100%;
           min-height: 120px;
           padding: 14px 16px;
-          border: 1px solid #b9ccbD;
+          border: 1px solid #b9ccbd;
           border-radius: 12px;
           outline: none;
           resize: vertical;
@@ -233,10 +473,15 @@ function Reviews() {
             color 180ms ease;
         }
 
-        .buyer-review-button:hover {
+        .buyer-review-button:hover:not(:disabled) {
           border-color: #2d7042;
           background: #eef6ef;
           color: #2d7042;
+        }
+
+        .buyer-review-button:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
         }
 
         .buyer-review-delete {
@@ -244,7 +489,7 @@ function Reviews() {
           color: #a3483b;
         }
 
-        .buyer-review-delete:hover {
+        .buyer-review-delete:hover:not(:disabled) {
           border-color: #b85a4c;
           background: #f8e9e6;
           color: #9c3f32;
@@ -256,7 +501,7 @@ function Reviews() {
           color: #ffffff;
         }
 
-        .buyer-review-save:hover {
+        .buyer-review-save:hover:not(:disabled) {
           background: #245d36;
           color: #ffffff;
         }
@@ -267,7 +512,7 @@ function Reviews() {
 
         .buyer-reviews-empty {
           padding: 70px 30px;
-          border: 1px dashed #b9ccbD;
+          border: 1px dashed #b9ccbd;
           border-radius: 20px;
           background: rgba(255, 255, 255, 0.55);
           text-align: center;
@@ -299,6 +544,17 @@ function Reviews() {
           font-family: "Modern Antiqua", serif;
           font-size: 14px;
           line-height: 1.6;
+        }
+
+        .buyer-reviews-loading {
+          padding: 70px 30px;
+          border: 1px dashed #b9ccbd;
+          border-radius: 20px;
+          background: rgba(255, 255, 255, 0.55);
+          color: #748078;
+          font-family: "Modern Antiqua", serif;
+          font-size: 14px;
+          text-align: center;
         }
 
         @media (max-width: 650px) {
@@ -341,6 +597,14 @@ function Reviews() {
       <main className="buyer-reviews-page">
         <div className="buyer-reviews-container">
 
+          <Link
+            to="/buyer/marketplace"
+            className="buyer-reviews-back"
+          >
+            <FaArrowLeft size={12} />
+            Back to Marketplace
+          </Link>
+
           <header className="buyer-reviews-header">
             <div>
               <h1 className="buyer-reviews-title">
@@ -355,11 +619,29 @@ function Reviews() {
 
             <span className="buyer-reviews-count">
               {reviews.length}{' '}
-              {reviews.length === 1 ? 'Review' : 'Reviews'}
+              {reviews.length === 1
+                ? 'Review'
+                : 'Reviews'}
             </span>
           </header>
 
-          {reviews.length === 0 ? (
+          {error && (
+            <div className="buyer-reviews-message buyer-reviews-error">
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="buyer-reviews-message buyer-reviews-success">
+              {success}
+            </div>
+          )}
+
+          {isLoading ? (
+            <section className="buyer-reviews-loading">
+              Loading reviews...
+            </section>
+          ) : reviews.length === 0 ? (
             <section className="buyer-reviews-empty">
               <div className="buyer-reviews-empty-icon">
                 <FaPen size={21} />
@@ -392,22 +674,48 @@ function Reviews() {
                       </p>
                     </div>
 
-                    <div
-                      className="buyer-review-rating"
-                      aria-label={`${review.rating} out of 5 stars`}
-                    >
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <FaStar
-                          key={star}
-                          size={17}
-                          className={
-                            star <= review.rating
-                              ? 'buyer-review-star'
-                              : 'buyer-review-star empty'
-                          }
-                        />
-                      ))}
-                    </div>
+                    {editingId === review.id ? (
+                      <div className="buyer-review-edit-rating">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            className="buyer-review-rating-button"
+                            onClick={() =>
+                              setEditRating(star)
+                            }
+                            disabled={isSaving}
+                            aria-label={`Give ${star} out of 5 stars`}
+                          >
+                            <FaStar
+                              size={22}
+                              className={
+                                star <= editRating
+                                  ? 'buyer-review-star'
+                                  : 'buyer-review-star empty'
+                              }
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div
+                        className="buyer-review-rating"
+                        aria-label={`${review.rating} out of 5 stars`}
+                      >
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <FaStar
+                            key={star}
+                            size={17}
+                            className={
+                              star <= review.rating
+                                ? 'buyer-review-star'
+                                : 'buyer-review-star empty'
+                            }
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {editingId === review.id ? (
@@ -419,6 +727,7 @@ function Reviews() {
                           setEditText(event.target.value)
                         }
                         aria-label="Edit review"
+                        disabled={isSaving}
                       />
 
                       <div className="buyer-review-actions">
@@ -430,10 +739,8 @@ function Reviews() {
                           <button
                             type="button"
                             className="buyer-review-button buyer-review-cancel"
-                            onClick={() => {
-                              setEditingId(null)
-                              setEditText('')
-                            }}
+                            onClick={cancelEditing}
+                            disabled={isSaving}
                           >
                             Cancel
                           </button>
@@ -444,8 +751,9 @@ function Reviews() {
                             onClick={() =>
                               saveEdit(review.id)
                             }
+                            disabled={isSaving}
                           >
-                            Save
+                            {isSaving ? 'Saving...' : 'Save'}
                           </button>
                         </div>
                       </div>
@@ -498,4 +806,4 @@ function Reviews() {
   )
 }
 
-export default Reviews// commit 17
+export default Reviews

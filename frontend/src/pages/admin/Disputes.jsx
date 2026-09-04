@@ -1,4 +1,7 @@
+import PageHeader from "../../components/layout/PageHeader";
 import { useEffect, useState } from "react";
+import { useAdmin } from "../../hooks/useAdmin";
+import { getDisputes, resolveDispute } from "../../services/adminApi";
 
 export default function Disputes() {
   const { refreshOverview } = useAdmin();
@@ -28,7 +31,7 @@ export default function Disputes() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32, maxWidth: 480 }}>
         {disputes.length === 0 && (
-          <p style={{ color: "var(--text-muted, #66766A)", fontSize: 13 }}>No open disputes 🎉</p>
+          <p style={{ color: "var(--text-muted, #66766A)", fontSize: 13 }}>No open disputes</p>
         )}
         {disputes.map((dispute) => (
           <div
@@ -112,4 +115,3 @@ export default function Disputes() {
     </div>
   );
 }
-// commit 28

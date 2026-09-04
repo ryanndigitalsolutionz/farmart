@@ -1,88 +1,307 @@
 import { Link } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
+import { FaTrash, FaShoppingCart, FaArrowLeft } from "react-icons/fa";
 
 function Cart() {
-    const { cart, removeFromCart} = useCart();
-    const itemCount = cart.length;
+    const {
+        cart,
+        removeFromCart,
+        updateCartQuantity,
+    } = useCart();
+
+    const itemCount = cart.reduce(
+        (sum, item) =>
+            sum + Number(item.quantityInCart || 1),
+        0
+    );
 
     const total = cart.reduce(
-        (sum, animal) => sum + Number(animal.price),
+        (sum, item) =>
+            sum +
+            Number(item.price || 0) *
+                Number(item.quantityInCart || 1),
         0
-    )
+    );
 
-  return (
-    <div className="p-4 ">
-        <div className="text-center">
-            <h1 className="text-2xl font-bold">Shopping Cart ({cart.length})</h1>
-            <p className="font-medium">{itemCount} item{itemCount !== 1 ? "s" : ""}</p>
+    return (
+        <main className="min-h-screen bg-[var(--farm-background)] text-[var(--farm-text)] px-4 py-8">
+            <div className="max-w-4xl mx-auto">
 
-        </div>
-        
-
-        {cart.length === 0 ? (
-            <div>
-                <p>Your cart is empty</p>
-
-                <p className="mb-3">Add livestock to your cart before checking out</p>
-                <Link 
-                    to="/marketplace"
-                    className="bg-green-500 p-2 rounded-lg "
-                >
-                    Continue Shopping
-                </Link>
-
-            </div>
-            
-        ): (
-            <div>
-                {cart.map((animal) => (
-                    <div 
-                    key={animal.id}
-                    className="flex gap-2 mb-2 p-3 border-black"
-                    >
-                        <img 
-                            src={animal.images?.[0]} 
-                            alt={animal.name} 
-                            className="w-30 h-30 object-cover"
-                        />
-                        <div className="">
-                            <h2>{animal.name}</h2>
-
-                            <p>Type: {animal.type}</p>
-                            <p>Breed: {animal.breed}</p>
-                            <p>Price: Ksh {Number(animal.price).toLocaleString()}</p>
-
-                            <button 
-                                onClick={() => removeFromCart(animal.id)} 
-                                className="border bg-green-100 p-1 rounded-lg mt-1">
-                                Remove
-                            </button>
-                            </div>
+                <div className="mb-8 text-center">
+                    <div className="flex justify-center mb-3">
+                        <div className="w-14 h-14 rounded-full flex items-center justify-center bg-[var(--farm-green-soft)] text-[var(--farm-green)]">
+                            <FaShoppingCart size={22} />
+                        </div>
                     </div>
-                ))}
 
-                <h2 className="font-bold">Total: Ksh {total.toLocaleString()}</h2>
+                    <h1 className="text-3xl font-bold font-[var(--farm-heading-font)]">
+                        Shopping Cart
+                    </h1>
 
-                <div className="flex gap-3">
-
-                
-                <Link 
-                    to="/marketplace"
-                    className="bg-green-600 p-2 text-white rounded-lg cursor-pointer"
-                >
-                    Continue Shopping
-                </Link>
-                <Link 
-                    to="/checkout" 
-                    className="bg-yellow-500 p-2 rounded-lg font-semibold cursor-pointer text-green-600"
-                >
-                    <button >Checkout</button>
-                </Link>
+                    <p className="mt-2 text-sm text-[var(--farm-muted)]">
+                        {itemCount} item{itemCount !== 1 ? "s" : ""} in your cart
+                    </p>
                 </div>
-            </div>
-        )}
 
-    </div>
-  );
+                {cart.length === 0 ? (
+                    <div className="bg-[var(--farm-green-soft)] border border-[var(--farm-green-border)] rounded-2xl p-10 text-center shadow-sm">
+
+                        <div className="flex justify-center mb-4">
+                            <div className="w-16 h-16 rounded-full bg-[var(--farm-background)] flex items-center justify-center text-[var(--farm-muted)]">
+                                <FaShoppingCart size={24} />
+                            </div>
+                        </div>
+
+                        <h2 className="text-xl font-bold font-[var(--farm-heading-font)]">
+                            Your cart is empty
+                        </h2>
+
+                        <p className="mt-2 text-sm text-[var(--farm-muted)] max-w-md mx-auto">
+                            You haven't added any livestock or farm products yet.
+                            Browse the marketplace and add something you like.
+                        </p>
+
+                        <Link
+                            to="/buyer/marketplace"
+                            className="inline-flex items-center justify-center gap-2 mt-6 px-5 py-3 rounded-xl bg-[var(--farm-green)] text-white text-sm font-semibold no-underline transition-all duration-200 hover:bg-[var(--farm-green-dark)] hover:-translate-y-0.5"
+                        >
+                            <FaArrowLeft size={12} />
+                            Continue Shopping
+                        </Link>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+
+                        <section className="space-y-4">
+
+                            <div className="flex items-center justify-between mb-2">
+                                <h2 className="text-lg font-bold font-[var(--farm-heading-font)]">
+                                    Your Items
+                                </h2>
+
+                                <span className="text-xs text-[var(--farm-muted)]">
+                                    {itemCount} item{itemCount !== 1 ? "s" : ""}
+                                </span>
+                            </div>
+
+                            {cart.map((item) => {
+                                const quantity =
+                                    Number(item.quantityInCart || 1);
+
+                                const isProduct =
+                                    item.category === "product" ||
+                                    item.product_id;
+
+                                const maxQuantity = isProduct
+                                    ? Math.max(
+                                          1,
+                                          Math.floor(
+                                              Number(
+                                                  item.quantity || 1
+                                              )
+                                          )
+                                      )
+                                    : Math.max(
+                                          1,
+                                          Number(
+                                              item.quantity || 1
+                                          )
+                                      );
+
+                                return (
+                                    <article
+                                        key={item.cartKey || `${item.category}-${item.id}`}
+                                        className="flex gap-4 p-4 bg-[var(--farm-green-soft)] border border-[var(--farm-green-border)] rounded-2xl shadow-sm transition-all duration-200 hover:border-[var(--farm-green)] hover:shadow-md"
+                                    >
+                                        <div className="shrink-0">
+                                            {item.image ? (
+                                                <img
+                                                    src={item.image}
+                                                    alt={item.name || item.type}
+                                                    className="w-24 h-24 sm:w-28 sm:h-28 object-cover rounded-xl"
+                                                />
+                                            ) : (
+                                                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-[var(--farm-background)] flex items-center justify-center text-xs text-[var(--farm-muted)]">
+                                                    No image
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="flex-1 min-w-0">
+
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div>
+                                                    <p className="text-xs uppercase tracking-wide font-bold text-[var(--farm-green)]">
+                                                        {isProduct
+                                                            ? "Farm Product"
+                                                            : "Livestock"}
+                                                    </p>
+
+                                                    <h3 className="mt-1 text-base sm:text-lg font-bold font-[var(--farm-heading-font)]">
+                                                        {item.name || item.type}
+                                                    </h3>
+                                                </div>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        removeFromCart(item)
+                                                    }
+                                                    aria-label={`Remove ${item.name || item.type} from cart`}
+                                                    className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border border-transparent text-red-500 bg-transparent cursor-pointer transition-all duration-200 hover:bg-red-50 hover:border-red-100"
+                                                >
+                                                    <FaTrash size={14} />
+                                                </button>
+                                            </div>
+
+                                            {!isProduct && item.breed && (
+                                                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--farm-muted)]">
+                                                    <span>
+                                                        <strong>Type:</strong>{" "}
+                                                        {item.type}
+                                                    </span>
+
+                                                    <span>
+                                                        <strong>Breed:</strong>{" "}
+                                                        {item.breed}
+                                                    </span>
+                                                </div>
+                                            )}
+
+                                            {isProduct && item.type && (
+                                                <div className="mt-2 text-xs text-[var(--farm-muted)]">
+                                                    <strong>Type:</strong>{" "}
+                                                    {item.type}
+                                                </div>
+                                            )}
+
+                                            {isProduct && item.unit && (
+                                                <div className="mt-1 text-xs text-[var(--farm-muted)]">
+                                                    <strong>Unit:</strong>{" "}
+                                                    {item.unit}
+                                                </div>
+                                            )}
+
+                                            <div className="mt-3 flex flex-wrap items-center gap-4">
+
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs text-[var(--farm-muted)]">
+                                                        Quantity
+                                                    </span>
+
+                                                    <select
+                                                        value={quantity}
+                                                        onChange={(event) =>
+                                                            updateCartQuantity(
+                                                                item,
+                                                                Math.min(
+                                                                    maxQuantity,
+                                                                    Number(
+                                                                        event
+                                                                            .target
+                                                                            .value
+                                                                    )
+                                                                )
+                                                            )
+                                                        }
+                                                        className="border border-[var(--farm-green-border)] rounded-lg bg-white px-2 py-1 text-sm"
+                                                    >
+                                                        {Array.from(
+                                                            {
+                                                                length: maxQuantity,
+                                                            },
+                                                            (_, index) =>
+                                                                index + 1
+                                                        ).map(
+                                                            (value) => (
+                                                                <option
+                                                                    key={value}
+                                                                    value={
+                                                                        value
+                                                                    }
+                                                                >
+                                                                    {value}
+                                                                </option>
+                                                            )
+                                                        )}
+                                                    </select>
+                                                </div>
+
+                                                <span className="text-lg font-bold text-[var(--farm-text)]">
+                                                    KSh{" "}
+                                                    {(
+                                                        Number(
+                                                            item.price || 0
+                                                        ) *
+                                                        quantity
+                                                    ).toLocaleString()}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </article>
+                                );
+                            })}
+                        </section>
+
+                        <aside className="lg:sticky lg:top-6 h-fit">
+                            <div className="bg-[var(--farm-green-soft)] border border-[var(--farm-green-border)] rounded-2xl p-5 shadow-sm">
+
+                                <h2 className="text-lg font-bold font-[var(--farm-heading-font)]">
+                                    Order Summary
+                                </h2>
+
+                                <div className="mt-5 space-y-3">
+
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-[var(--farm-muted)]">
+                                            Items
+                                        </span>
+
+                                        <span className="font-medium">
+                                            {itemCount}
+                                        </span>
+                                    </div>
+
+                                    <div className="border-t border-[var(--farm-green-border)] pt-4 flex justify-between items-center">
+                                        <span className="font-semibold">
+                                            Total
+                                        </span>
+
+                                        <span className="text-xl font-bold text-[var(--farm-green)]">
+                                            KSh{" "}
+                                            {total.toLocaleString()}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <Link
+                                    to="/buyer/checkout"
+                                    className="block w-full mt-6 no-underline"
+                                >
+                                    <button
+                                        type="button"
+                                        className="w-full py-3 px-4 rounded-xl border border-[var(--farm-green)] bg-[var(--farm-green)] text-white font-semibold text-sm cursor-pointer transition-all duration-200 hover:bg-[var(--farm-green-dark)] hover:-translate-y-0.5 hover:shadow-md"
+                                    >
+                                        Proceed to Checkout
+                                    </button>
+                                </Link>
+
+                                <Link
+                                    to="/buyer/marketplace"
+                                    className="flex items-center justify-center gap-2 mt-4 text-sm text-[var(--farm-muted)] no-underline hover:text-[var(--farm-green-dark)]"
+                                >
+                                    <FaArrowLeft size={11} />
+                                    Continue Shopping
+                                </Link>
+
+                            </div>
+                        </aside>
+
+                    </div>
+                )}
+            </div>
+        </main>
+    );
 }
 
-export default Cart;// commit 9
+export default Cart;
