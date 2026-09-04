@@ -15,8 +15,7 @@ import SortDropdown from '../../components/marketplace/SortDropdown'
 import ProductFilterPanel from '../../components/products/filters/ProductFilterPanel'
 import useLivestock from '../../hooks/useLivestock'
 import { useCart } from '../../context/CartContext'
-
-const API_BASE = 'http://localhost:5000'
+import API_BASE_URL from '../../api/api'
 
 function Marketplace() {
   const [category, setCategory] = useState('livestock')

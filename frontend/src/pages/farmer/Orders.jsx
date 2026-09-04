@@ -5,7 +5,7 @@ import {
 } from 'react-icons/fa'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 
-const API_BASE_URL = 'http://localhost:5000'
+import API_BASE_URL from '../../api/api'
 
 function Orders() {
   const [activeFilter, setActiveFilter] = useState('All')
