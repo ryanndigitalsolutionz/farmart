@@ -97,8 +97,8 @@ function Checkout() {
 
     console.log("Order saved:", order);
 
-    navigate(`/buyer/payments/${order.id}`);
-  };
+        navigate(`/buyer/payments/${order.id}`);
+    };    
 
   return (
     <div className="p-4 mt-3 border border-[var(--farm-green-border)] rounded-[17px] max-w-3xl mx-auto shadow-2xl m-3 items-center justify-center flex flex-col gap-4">

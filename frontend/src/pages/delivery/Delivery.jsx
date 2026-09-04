@@ -195,7 +195,40 @@ function Delivery({
         </div>
       )}
 
-      {/* Continue to Payment */}
+        {/* Delivery summary */}
+        {showSummary && (
+            <div className='w-full border-gray-200 rounded-xl p-5 shadow-sm'>
+                <div className='flex  flex-col justify-between items-start'>
+                    <div>
+                    <h3 className='font-bold text-xl'>Delivery Details</h3>
+                        <p className='text-gray-700 mt-2'>{name}</p>
+                        <p className='text-gray-500'>{phone}</p>
+                        <p className='text-gray-500 mb-1'>{location}</p>
+                        
+
+                        {orderNote && (
+                            <p>Note: {orderNote}</p>
+                        )}
+                    </div>
+
+                    <div >
+                        <button
+                            type='button'
+                            onClick={() => {
+                                setShowSummary(false);
+                                setEditing(true);
+                            }}
+                            className='text-green-600 font-semibold hover:underline flex gap-1 mt-2'
+                        >
+                            <CiEdit size={22}/>
+                            Change
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* Continue to Payment */}
       <button
         type="button"
         onClick={onContinue}
@@ -207,9 +240,10 @@ function Delivery({
       >
         {submitting ? "Saving..." : "Continue to payment"}
       </button>
+    
+
     </div>
   );
 }
 
 export default Delivery;
-

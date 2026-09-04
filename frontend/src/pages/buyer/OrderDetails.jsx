@@ -27,7 +27,7 @@ function OrderDetails() {
                 <Link
                     to="/buyer/marketplace"
                     className="mt-3 px-5 py-3 rounded-lg
-                    bg-[var(--farm-green)] text-white font-semibold
+                    bg-[var(--farm-green-soft)] text-white font-semibold
                     hover:bg-[var(--farm-green-dark)]
                     transition"
                 >
@@ -270,4 +270,3 @@ function OrderDetails() {
 }
 
 export default OrderDetails;
-

@@ -24,19 +24,11 @@ function Orders() {
                 <p className='text-red-700 text-lg  mb-3'>You have no orders yet.</p>
 
                 <Link 
-                    to="/buyer/marketplace" 
-                    className="block w-full"
+                    to="/buyer/marketplace"
+                    className="text-green-100  font-semibold bg-green-600 border p-2 px-2  rounded-lg 
+                transition-all duration-200 hover:-translate-y-1 hover:scale-105 hover:shadow-lg "
                 >
-                    <button 
-                        type="button"
-                        className="marketplace-card-button w-50 mt-[15px] p-[12px]
-                        border border-[var(--farm-green)] rounded-[11px] bg-[var(--farm-green)]
-                        text-white font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer
-                        transition-[background,transform] duration-[160ms] ease-[ease]
-                        hover:bg-[var(--farm-green-dark)] hover:translate-y-[-1px]"
-                    >
-                        Start shopping
-                    </button>
+                    Start Shopping
                 </Link>
             </div>
 
