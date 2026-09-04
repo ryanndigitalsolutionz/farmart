@@ -1,80 +1,3 @@
-# from app import create_app
-# from extensions import db, bcrypt
-# from models import User, Profile
-
-
-# app = create_app()
-
-
-# with app.app_context():
-
-#     farmer_email = "daliongamer002@gmail.com"
-#     admin_email = "ryanndigitalsolutionz@gmail.com"
-
-#     existing_farmer = User.query.filter_by(
-#         email=farmer_email
-#     ).first()
-
-#     if existing_farmer:
-#         print("Farmer already exists. Nothing to seed.")
-
-#     else:
-#         farmer = User(
-#             first_name="Dalion",
-#             last_name="Gamer",
-#             email=farmer_email,
-#             password_hash=bcrypt.generate_password_hash(
-#                 "2026NmO."
-#             ).decode("utf-8"),
-#             google_id=None,
-#             role="farmer",
-#             is_verified=True,
-#         )
-
-#         db.session.add(farmer)
-#         db.session.flush()
-
-#         profile = Profile(
-#             user_id=farmer.id,
-#             phone=None,
-#             location=None,
-#             profile_picture=None,
-#         )
-
-#         db.session.add(profile)
-#         db.session.commit()
-
-#         print("Farmer seeded successfully.")
-#         print(f"Email: {farmer_email}")
-#         print("Password: 2026NmO.")
-
-#     existing_admin = User.query.filter_by(
-#         email=admin_email
-#     ).first()
-
-#     if existing_admin:
-#         print("Admin already exists. Nothing to seed.")
-
-#     else:
-#         admin = User(
-#             first_name="Ryan",
-#             last_name="Dalion",
-#             email=admin_email,
-#             password_hash=bcrypt.generate_password_hash(
-#                 "Ms3rv!ce"
-#             ).decode("utf-8"),
-#             google_id=None,
-#             role="admin",
-#             is_verified=True,
-#         )
-
-#         db.session.add(admin)
-#         db.session.commit()
-
-#         print("Admin seeded successfully.")
-#         print(f"Email: {admin_email}")
-#         print("Password: Ms3rv!ce")
-
 from datetime import date
 from decimal import Decimal
 
@@ -85,10 +8,6 @@ from models import User, Profile, Livestock, Product
 
 app = create_app()
 
-
-# -------------------------------------------------------------------
-# Development users
-# -------------------------------------------------------------------
 
 FARMERS = [
     {
@@ -157,10 +76,6 @@ FARMERS = [
 ]
 
 
-# -------------------------------------------------------------------
-# Admin
-# -------------------------------------------------------------------
-
 ADMIN = {
     "first_name": "Ryan",
     "last_name": "Dalion",
@@ -168,10 +83,6 @@ ADMIN = {
     "password": "Ms3rv!ce",
 }
 
-
-# -------------------------------------------------------------------
-# Livestock
-# -------------------------------------------------------------------
 
 LIVESTOCK = [
     {
@@ -287,10 +198,6 @@ LIVESTOCK = [
 ]
 
 
-# -------------------------------------------------------------------
-# Products
-# -------------------------------------------------------------------
-
 PRODUCTS = [
     {
         "name": "Fresh Eggs",
@@ -345,10 +252,6 @@ PRODUCTS = [
 ]
 
 
-# -------------------------------------------------------------------
-# Helper functions
-# -------------------------------------------------------------------
-
 def get_or_create_user(
     first_name,
     last_name,
@@ -359,33 +262,33 @@ def get_or_create_user(
     location=None,
     phone=None,
 ):
-    """Create a user if one does not already exist."""
-
     user = User.query.filter_by(email=email).first()
 
     if user:
-        print(f"User already exists: {email}")
+        user.role = role
+        user.is_verified = True
 
-        if user.role != role:
-            user.role = role
-            db.session.commit()
+        if role == "farmer":
+            if not user.profile:
+                profile = Profile(
+                    user_id=user.id,
+                    description=f"Development profile for {farm_name or first_name}.",
+                    phone=phone,
+                    location=location,
+                    profile_picture=None,
+                    farm_name=farm_name,
+                    verification_status="approved",
+                    rejection_reason=None,
+                )
+                db.session.add(profile)
+            else:
+                user.profile.phone = phone
+                user.profile.location = location
+                user.profile.farm_name = farm_name
+                user.profile.verification_status = "approved"
+                user.profile.rejection_reason = None
 
-        # Make sure an existing farmer has a profile.
-        if role == "farmer" and not user.profile:
-            profile = Profile(
-                user_id=user.id,
-                description=f"Development profile for {farm_name or first_name}.",
-                phone=phone,
-                location=location,
-                profile_picture=None,
-                farm_name=farm_name,
-                verification_status="approved",
-                rejection_reason=None,
-            )
-
-            db.session.add(profile)
-            db.session.commit()
-
+        db.session.commit()
         return user
 
     user = User(
@@ -412,7 +315,6 @@ def get_or_create_user(
             verification_status="approved",
             rejection_reason=None,
         )
-
         db.session.add(profile)
 
     db.session.commit()
@@ -423,8 +325,6 @@ def get_or_create_user(
 
 
 def seed_admin():
-    """Seed the development admin."""
-
     return get_or_create_user(
         first_name=ADMIN["first_name"],
         last_name=ADMIN["last_name"],
@@ -435,8 +335,6 @@ def seed_admin():
 
 
 def seed_farmers():
-    """Seed all development farmers."""
-
     farmers = {}
 
     for farmer_data in FARMERS:
@@ -457,8 +355,6 @@ def seed_farmers():
 
 
 def seed_livestock(farmers):
-    """Seed livestock listings."""
-
     for livestock_data in LIVESTOCK:
         seller_email = livestock_data["seller_email"]
         farmer = farmers.get(seller_email)
@@ -511,8 +407,6 @@ def seed_livestock(farmers):
 
 
 def seed_products(farmers):
-    """Seed marketplace products."""
-
     for product_data in PRODUCTS:
         seller_email = product_data["seller_email"]
         farmer = farmers.get(seller_email)
@@ -562,8 +456,6 @@ def seed_products(farmers):
 
 
 def print_seed_summary():
-    """Print development login and data information."""
-
     print("\n" + "=" * 65)
     print("FARMART DEVELOPMENT SEED COMPLETE")
     print("=" * 65)
@@ -602,22 +494,14 @@ def print_seed_summary():
     print("=" * 65)
 
 
-# -------------------------------------------------------------------
-# Run seed
-# -------------------------------------------------------------------
-
 if __name__ == "__main__":
     with app.app_context():
         print("\nStarting Farmart development seed...\n")
 
         seed_admin()
-
         farmers = seed_farmers()
-
         seed_livestock(farmers)
-
         seed_products(farmers)
-
         print_seed_summary()
 
         print("\nSeed finished successfully.")
