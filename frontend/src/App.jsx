@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { CartProvider } from './context/CartContext'
@@ -10,39 +10,39 @@ import Header from './components/layout/Header'
 import FarmerDashboardLayout from './components/layout/FarmerDashboardLayout'
 import DashboardLayout from './components/layout/DashboardLayout'
 
-import LandingPage from './pages/LandingPage'
-import FAQs from './pages/FAQs'
-import Welcome from './pages/auth/Welcome'
-import Login from './pages/auth/Login'
-import Register from './pages/auth/Register'
-import FarmSetup from './pages/auth/FarmSetup'
-import ForgotPassword from './pages/auth/ForgotPassword'
-import VerifyEmail from './pages/auth/VerifyEmail'
-import ResetPassword from './pages/auth/ResetPassword'
-
-import FarmerDashboard from './pages/farmer/Dashboard'
-import FarmerProfile from './pages/farmer/Profile'
-import FarmProfile from './pages/farmer/FarmProfile'
-import CreateListings from './pages/farmer/CreateListings'
-import FarmerOrders from './pages/farmer/Orders'
-import FarmerAnalytics from './pages/farmer/Analytics'
-
-import BuyerRoute from './pages/routes/BuyerRoute'
-
-import AdminDashboard from './pages/admin/Dashboard'
-import Users from './pages/admin/Users'
-import Farmers from './pages/admin/Farmers'
-import FarmerDetails from './pages/admin/FarmerDetails'
-import BuyerDetails from './pages/admin/BuyerDetails'
-import Listings from './pages/admin/Listings'
-import AdminOrders from './pages/admin/Orders'
-import Transactions from './pages/admin/Transactions'
-import Reports from './pages/admin/Reports'
-import Disputes from './pages/admin/Disputes'
-import Announcements from './pages/admin/Announcements'
-import Settings from './pages/admin/Settings'
-
 import './App.css'
+
+const LandingPage = lazy(() => import('./pages/LandingPage'))
+const FAQs = lazy(() => import('./pages/FAQs'))
+const Welcome = lazy(() => import('./pages/auth/Welcome'))
+const Login = lazy(() => import('./pages/auth/Login'))
+const Register = lazy(() => import('./pages/auth/Register'))
+const FarmSetup = lazy(() => import('./pages/auth/FarmSetup'))
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'))
+const VerifyEmail = lazy(() => import('./pages/auth/VerifyEmail'))
+const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'))
+
+const FarmerDashboard = lazy(() => import('./pages/farmer/Dashboard'))
+const FarmerProfile = lazy(() => import('./pages/farmer/Profile'))
+const FarmProfile = lazy(() => import('./pages/farmer/FarmProfile'))
+const CreateListings = lazy(() => import('./pages/farmer/CreateListings'))
+const FarmerOrders = lazy(() => import('./pages/farmer/Orders'))
+const FarmerAnalytics = lazy(() => import('./pages/farmer/Analytics'))
+
+const BuyerRoute = lazy(() => import('./pages/routes/BuyerRoute'))
+
+const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'))
+const Users = lazy(() => import('./pages/admin/Users'))
+const Farmers = lazy(() => import('./pages/admin/Farmers'))
+const FarmerDetails = lazy(() => import('./pages/admin/FarmerDetails'))
+const BuyerDetails = lazy(() => import('./pages/admin/BuyerDetails'))
+const Listings = lazy(() => import('./pages/admin/Listings'))
+const AdminOrders = lazy(() => import('./pages/admin/Orders'))
+const Transactions = lazy(() => import('./pages/admin/Transactions'))
+const Reports = lazy(() => import('./pages/admin/Reports'))
+const Disputes = lazy(() => import('./pages/admin/Disputes'))
+const Announcements = lazy(() => import('./pages/admin/Announcements'))
+const Settings = lazy(() => import('./pages/admin/Settings'))
 
 function App() {
   const [showSplash, setShowSplash] = useState(true)
@@ -66,7 +66,10 @@ function App() {
       <LivestockProvider>
         <WishlistProvider>
           <CartProvider>
-            <Routes>
+            <Suspense fallback={<div className="flex items-center justify-center min-h-screen">
+              <div className="w-8 h-8 border-4 border-farmart-primary border-t-transparent rounded-full animate-spin" />
+            </div>}>
+              <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/faqs" element={<FAQs />} />
 
@@ -121,6 +124,7 @@ function App() {
                 element={<Navigate to="/" replace />}
               />
             </Routes>
+            </Suspense>
           </CartProvider>
         </WishlistProvider>
       </LivestockProvider>

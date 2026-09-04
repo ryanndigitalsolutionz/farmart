@@ -1,3 +1,5 @@
+import { Star } from "lucide-react";
+
 function ReviewCard({
   review,
 }) {
@@ -96,8 +98,12 @@ function ReviewCard({
             className="farmart-review-rating"
             aria-label={`${rating} out of 5 stars`}
           >
-            {'★'.repeat(Math.max(0, Math.min(5, rating)))}
-            {'☆'.repeat(Math.max(0, 5 - rating))}
+            {Array.from({ length: Math.max(0, Math.min(5, rating)) }).map((_, idx) => (
+              <Star key={`filled-${idx}`} size={14} className="inline-block" />
+            ))}
+            {Array.from({ length: Math.max(0, 5 - rating) }).map((_, idx) => (
+              <Star key={`empty-${idx}`} size={14} className="inline-block opacity-20" />
+            ))}
           </div>
 
         </div>

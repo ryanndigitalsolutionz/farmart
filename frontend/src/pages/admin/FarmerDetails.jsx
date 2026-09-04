@@ -2,6 +2,7 @@ import PageHeader from "../../components/layout/PageHeader";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAdmin } from "../../hooks/useAdmin";
+import { Star, CheckCircle } from "lucide-react";
 import {
   getFarmerDetail,
   verifyFarmer,
@@ -220,7 +221,12 @@ export default function FarmerDetails() {
         <Stat label="Animals sold" value={farmer.animals_sold} />
         <Stat
           label="Rating"
-          value={farmer.rating ? `★ ${farmer.rating}` : "—"}
+           value={farmer.rating ? (
+             <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+               <Star size={14} />
+               {farmer.rating}
+             </span>
+           ) : "—"}
         />
       </div>
 
@@ -333,15 +339,19 @@ export default function FarmerDetails() {
 
       {farmer.status === "verified" && (
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span
-            style={{
-              fontSize: 12.5,
-              color: "var(--green-700, #2F6D3F)",
-              fontWeight: 700,
-            }}
-          >
-            ✓ Verified farmer
-          </span>
+            <span
+              style={{
+                fontSize: 12.5,
+                color: "var(--green-700, #2F6D3F)",
+                fontWeight: 700,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              <CheckCircle size={14} />
+              Verified farmer
+            </span>
 
           <button
             onClick={handleSuspend}

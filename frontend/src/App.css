@@ -2092,3 +2092,204 @@ select:focus-visible {
   display: flex;
   flex-direction: column;
 }
+
+/* ========================================
+   NAVBAR SEARCH
+   ======================================== */
+
+.farmart-navbar-search-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--farm-green-border);
+  background: var(--auth-input, var(--farm-green-soft));
+  flex: 1;
+  max-width: 420px;
+  min-width: 180px;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.farmart-navbar-search-inline:focus-within {
+  border-color: var(--farm-green);
+  box-shadow: 0 0 0 3px var(--farm-green-glow);
+}
+
+.farmart-navbar-search-input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--farm-text);
+  font-family: "Modern Antiqua", serif;
+  font-size: 14px;
+  min-width: 0;
+}
+
+.farmart-navbar-search-input::placeholder {
+  color: var(--farm-muted);
+}
+
+.farmart-navbar-search-close {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--farm-green-border);
+  background: var(--farm-green-soft);
+  color: var(--farm-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.farmart-navbar-search-close:hover {
+  background: var(--farm-green-border);
+  color: var(--farm-text);
+}
+
+.farmart-search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 2000;
+  background: var(--auth-card, var(--farm-white));
+  border: 1px solid var(--farm-green-border);
+  border-top: 0;
+  max-height: 65vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 50px var(--farm-green-glow);
+}
+
+.farmart-search-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 22px 18px;
+  color: var(--farm-muted);
+  font-family: "Modern Antiqua", serif;
+  font-size: 13px;
+}
+
+.farmart-search-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--farm-green-border);
+  border-top-color: var(--farm-green);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.farmart-search-error {
+  margin: 0;
+  padding: 12px 18px;
+  color: var(--farm-error);
+  font-family: "Modern Antiqua", serif;
+  font-size: 13px;
+  text-align: center;
+}
+
+.farmart-search-empty {
+  padding: 26px 18px;
+  text-align: center;
+  color: var(--farm-muted);
+  font-family: "Modern Antiqua", serif;
+  font-size: 13px;
+}
+
+.farmart-search-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 18px;
+  border: 0;
+  border-bottom: 1px solid var(--farm-green-border);
+  background: transparent;
+  color: var(--farm-text);
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: background 160ms ease;
+  font-family: "Modern Antiqua", serif;
+}
+
+.farmart-search-item:last-child {
+  border-bottom: 0;
+}
+
+.farmart-search-item:hover,
+.farmart-search-item--active {
+  background: var(--farm-green-soft);
+}
+
+.farmart-search-item-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--farm-green-soft);
+  color: var(--farm-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.farmart-search-item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.farmart-search-item-title {
+  margin: 0 0 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--farm-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.farmart-search-item-meta {
+  margin: 0;
+  font-size: 11px;
+  color: var(--farm-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.farmart-search-item-price {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--farm-green);
+  flex-shrink: 0;
+  text-align: right;
+}
+
+@media (max-width: 600px) {
+  .farmart-navbar-search-inline {
+    max-width: 100%;
+  }
+
+  .farmart-navbar-search-input {
+    font-size: 13px;
+  }
+
+  .farmart-search-dropdown {
+    max-height: 55vh;
+  }
+}
