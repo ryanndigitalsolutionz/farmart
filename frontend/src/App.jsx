@@ -23,6 +23,7 @@ import FarmProfile from './pages/farmer/FarmProfile'
 import CreateListings from './pages/farmer/CreateListings'
 import FarmerOrders from './pages/farmer/Orders'
 import FarmerAnalytics from './pages/farmer/Analytics'
+import FarmerAnnouncements from './pages/farmer/Announcements'
 
 import Marketplace from './pages/buyer/Marketplace'
 import BuyerProfile from './pages/buyer/Profile'
@@ -43,7 +44,6 @@ import BuyerDetails from './pages/admin/BuyerDetails'
 import Listings from './pages/admin/Listings'
 import AdminOrders from './pages/admin/Orders'
 import Transactions from './pages/admin/Transactions'
-import Reports from './pages/admin/Reports'
 import Disputes from './pages/admin/Disputes'
 import Announcements from './pages/admin/Announcements'
 import Settings from './pages/admin/Settings'
@@ -89,6 +89,7 @@ function App() {
           <Route path="orders" element={<FarmerOrders />} />
           <Route path="analytics" element={<FarmerAnalytics />} />
           <Route path="farm-profile" element={<FarmProfile />} />
+          <Route path="announcements" element={<FarmerAnnouncements />} />
           <Route path="profile" element={<FarmerProfile />} />
         </Route>
 
@@ -125,7 +126,6 @@ function App() {
           <Route path="listings" element={<Listings />} />
           <Route path="orders" element={<AdminOrders />} />
           <Route path="transactions" element={<Transactions />} />
-          <Route path="reports" element={<Reports />} />
           <Route path="disputes" element={<Disputes />} />
           <Route
             path="announcements"

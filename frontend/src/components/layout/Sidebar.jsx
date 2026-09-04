@@ -7,7 +7,6 @@ import {
   LuPackage,
   LuCreditCard,
   LuScale,
-  LuChartNoAxesColumn,
   LuSettings,
   LuMegaphone,
   LuLogOut,
@@ -28,7 +27,6 @@ function Sidebar() {
     { label: "Orders", path: "/admin/orders", icon: LuPackage },
     { label: "Transactions", path: "/admin/transactions", icon: LuCreditCard },
     { label: "Disputes", path: "/admin/disputes", icon: LuScale },
-    { label: "Reports", path: "/admin/reports", icon: LuChartNoAxesColumn },
     { label: "Settings", path: "/admin/settings", icon: LuSettings },
     { label: "Announcements", path: "/admin/announcements", icon: LuMegaphone },
   ];

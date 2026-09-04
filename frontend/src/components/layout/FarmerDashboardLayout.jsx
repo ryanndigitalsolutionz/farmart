@@ -6,6 +6,7 @@ import {
   LuChartNoAxesColumn,
   LuUserRound,
   LuHouse,
+  LuMegaphone,
   LuLogOut,
   LuMenu,
   LuX,
@@ -43,6 +44,11 @@ function FarmerDashboardLayout() {
       icon: LuHouse,
     },
     {
+      label: 'Announcements',
+      path: '/farmer/announcements',
+      icon: LuMegaphone,
+    },
+    {
       label: 'Profile',
       path: '/farmer/profile',
       icon: LuUserRound,
@@ -59,10 +65,8 @@ function FarmerDashboardLayout() {
         .farmer-layout {
           min-height: 100vh;
           display: flex;
-
           background: #0d130f;
           color: #edf4ee;
-
           font-family: "Modern Antiqua", serif;
         }
 
@@ -71,22 +75,14 @@ function FarmerDashboardLayout() {
           top: 0;
           left: 0;
           bottom: 0;
-
           z-index: 100;
-
           width: 250px;
-
           display: flex;
           flex-direction: column;
-
           padding: 22px 15px;
-
           border-right: 1px solid #26372c;
-
           background: #131b16;
-
           transition: width 180ms ease;
-
           box-sizing: border-box;
         }
 
@@ -99,20 +95,16 @@ function FarmerDashboardLayout() {
           align-items: center;
           justify-content: space-between;
           gap: 12px;
-
           min-height: 48px;
           margin-bottom: 25px;
         }
 
         .farmer-brand {
           min-width: 0;
-
           display: flex;
           align-items: center;
           gap: 10px;
-
           color: #4fdc82;
-
           font-family: "IBM Plex Serif", serif;
           font-size: 22px;
           font-weight: 700;
@@ -129,17 +121,13 @@ function FarmerDashboardLayout() {
         .farmer-collapse-button {
           width: 35px;
           height: 35px;
-
           display: flex;
           align-items: center;
           justify-content: center;
-
           border: 1px solid #35483a;
           border-radius: 9px;
-
           background: #19241d;
           color: #a8b8ad;
-
           cursor: pointer;
         }
 
@@ -156,22 +144,16 @@ function FarmerDashboardLayout() {
 
         .farmer-nav-link {
           min-height: 48px;
-
           display: flex;
           align-items: center;
           gap: 13px;
-
           padding: 0 14px;
-
           border: 1px solid transparent;
           border-radius: 12px;
-
           color: #91a198;
           text-decoration: none;
-
           white-space: nowrap;
           overflow: hidden;
-
           transition:
             color 180ms ease,
             background 180ms ease,
@@ -199,24 +181,17 @@ function FarmerDashboardLayout() {
 
         .farmer-logout {
           width: 100%;
-
           min-height: 47px;
-
           display: flex;
           align-items: center;
           gap: 13px;
-
           padding: 0 14px;
-
           border: 1px solid transparent;
           border-radius: 12px;
-
           background: transparent;
           color: #9b8370;
-
           font-family: "Modern Antiqua", serif;
           font-size: 14px;
-
           cursor: pointer;
           text-align: left;
         }
@@ -229,9 +204,7 @@ function FarmerDashboardLayout() {
         .farmer-main {
           width: 100%;
           min-width: 0;
-
           margin-left: 250px;
-
           transition: margin-left 180ms ease;
         }
 
@@ -272,23 +245,10 @@ function FarmerDashboardLayout() {
       `}</style>
 
       <div className="farmer-layout">
-
-        <aside
-          className={`farmer-sidebar ${
-            collapsed ? 'collapsed' : ''
-          }`}
-        >
+        <aside className={`farmer-sidebar ${collapsed ? 'collapsed' : ''}`}>
           <div className="farmer-sidebar-header">
-
-            <NavLink
-              to="/farmer/dashboard"
-              className="farmer-brand"
-            >
-              <img
-                src="/logo/farmart_full_logo_testing.png"
-                alt="Farmart"
-              />
-
+            <NavLink to="/farmer/dashboard" className="farmer-brand">
+              <img src="/logo/farmart_full_logo_testing.png" alt="Farmart" />
               {!collapsed && <span>Farmart</span>}
             </NavLink>
 
@@ -296,34 +256,20 @@ function FarmerDashboardLayout() {
               type="button"
               className="farmer-collapse-button"
               onClick={() => setCollapsed(!collapsed)}
-              aria-label={
-                collapsed
-                  ? 'Expand sidebar'
-                  : 'Collapse sidebar'
-              }
+              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
-              {collapsed ? (
-                <LuMenu size={18} />
-              ) : (
-                <LuX size={18} />
-              )}
+              {collapsed ? <LuMenu size={18} /> : <LuX size={18} />}
             </button>
-
           </div>
 
           <nav className="farmer-navigation">
             {navigation.map((item) => {
               const Icon = item.icon
-
               return (
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  className={({ isActive }) =>
-                    `farmer-nav-link ${
-                      isActive ? 'active' : ''
-                    }`
-                  }
+                  className={({ isActive }) => `farmer-nav-link ${isActive ? 'active' : ''}`}
                 >
                   <Icon size={19} />
                   {!collapsed && <span>{item.label}</span>}
@@ -333,26 +279,16 @@ function FarmerDashboardLayout() {
           </nav>
 
           <div className="farmer-sidebar-footer">
-            <button
-              type="button"
-              className="farmer-logout"
-              onClick={handleLogout}
-            >
+            <button type="button" className="farmer-logout" onClick={handleLogout}>
               <LuLogOut size={19} />
               {!collapsed && <span>Logout</span>}
             </button>
           </div>
-
         </aside>
 
-        <main
-          className={`farmer-main ${
-            collapsed ? 'collapsed' : ''
-          }`}
-        >
+        <main className={`farmer-main ${collapsed ? 'collapsed' : ''}`}>
           <Outlet />
         </main>
-
       </div>
     </>
   )

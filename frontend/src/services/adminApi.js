@@ -87,3 +87,22 @@ export async function resolveDispute(disputeId, notes) {
 export async function suspendUser(userId) {
   return { success: true };
 }
+
+export async function getAnnouncements() {
+  const response = await fetch(`${API_BASE_URL}/api/announcements`);
+  const announcements = await response.json();
+  return announcements;
+}
+
+export async function sendAnnouncement({ authorId, title, message }) {
+  const response = await fetch(`${API_BASE_URL}/api/announcements`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ author_id: authorId, title, message }),
+  });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error || "Failed to send announcement.");
+  }
+  return response.json();
+}
