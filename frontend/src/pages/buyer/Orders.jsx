@@ -23,7 +23,7 @@ function Orders() {
             <div className='mt-3'>
                 <p className='text-red-700 text-lg  mb-3'>You have no orders yet.</p>
                 <Link 
-                    to="/marketplace"
+                    to="/buyer/marketplace"
                     className="text-green-100  font-semibold bg-green-600 border p-2 px-2  rounded-lg 
                 transition-all duration-200 hover:-translate-y-1 hover:scale-105 hover:shadow-lg "
                 >
@@ -58,7 +58,7 @@ function Orders() {
 
                         <div className=''>
                             <Link 
-                                to={`/orders/${order.id}`} 
+                                to={`/buyer/orders/${order.id}`} 
                                 className='text-green-600 font-semibold px-2 py-2 hover:underline '
                             >
                                 View Details
