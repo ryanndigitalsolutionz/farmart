@@ -32,6 +32,9 @@ from resources.product_resource import ProductResource
 from resources.order_item_resource import OrderItemsResource
 from resources.review_resource import ReviewResource
 from resources.wishlist_resource import WishlistResource
+from resources.analytics_resource import AnalyticsResource
+from resources.profile_resource import ProfileResource, CurrentProfileResource
+
 
 
 def create_app():
@@ -129,6 +132,12 @@ def create_app():
         MpesaCallbackResource,
         "/payments/mpesa/callback",
     )
+    api.add_resource(
+        AnalyticsResource,
+        "/analytics",
+    )
+    api.add_resource(CurrentProfileResource, "/api/profile/me")
+    api.add_resource(ProfileResource, "/api/profile/<int:user_id>")
 
     return app
 

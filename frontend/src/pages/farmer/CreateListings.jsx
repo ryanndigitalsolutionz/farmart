@@ -1,13 +1,23 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FaArrowLeft, FaImage, FaPlus, FaCheck } from 'react-icons/fa'
+import {
+  FaArrowLeft,
+  FaImage,
+  FaPlus,
+  FaCheck,
+} from 'react-icons/fa'
 import farmartImages from '../../data/farmartImages'
+
+const API_BASE_URL = 'http://localhost:5000'
 
 function CreateListings() {
   const navigate = useNavigate()
 
   const [listingType, setListingType] = useState('livestock')
   const [selectedImage, setSelectedImage] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
   const [formData, setFormData] = useState({
     type: 'Cattle',
@@ -23,13 +33,45 @@ function CreateListings() {
     location: '',
     healthInfo: '',
     availability: 'Available',
-
     productType: 'Eggs',
     producedDate: '',
     expiryDate: '',
     productQuantity: '',
     productQuantityUnit: 'g',
   })
+
+  const livestockImages = Object.values(
+    farmartImages.livestock,
+  )
+    .flat()
+    .filter(
+      (image) =>
+        ![
+          farmartImages.livestock.cows[0],
+          farmartImages.livestock.goats[0],
+          farmartImages.livestock.sheep[0],
+          farmartImages.livestock.pigs[0],
+          farmartImages.livestock.poultry[0],
+        ].includes(image),
+    )
+
+  const productImages = Object.values(
+    farmartImages.products,
+  )
+    .flat()
+    .filter(
+      (image) =>
+        ![
+          farmartImages.products.eggs[0],
+          farmartImages.products.milk[0],
+          farmartImages.products.butter[0],
+        ].includes(image),
+    )
+
+  const availableImages =
+    listingType === 'livestock'
+      ? livestockImages
+      : productImages
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -38,59 +80,136 @@ function CreateListings() {
       ...current,
       [name]: value,
     }))
+
+    if (error) {
+      setError('')
+    }
+
+    if (success) {
+      setSuccess('')
+    }
   }
 
   const handleListingTypeChange = (type) => {
     setListingType(type)
     setSelectedImage('')
+    setError('')
+    setSuccess('')
   }
 
-  const handleSubmit = (event) => {
+  const resetForm = () => {
+    setFormData({
+      type: 'Cattle',
+      breed: '',
+      title: '',
+      description: '',
+      price: '',
+      quantity: '1',
+      age: '',
+      gender: 'Male',
+      weight: '',
+      weightUnit: 'kg',
+      location: '',
+      healthInfo: '',
+      availability: 'Available',
+      productType: 'Eggs',
+      producedDate: '',
+      expiryDate: '',
+      productQuantity: '',
+      productQuantityUnit: 'g',
+    })
+    setSelectedImage('')
+  }
+
+  const handleSubmit = async (event) => {
     event.preventDefault()
 
-    const listing = {
-      listingType,
-      ...formData,
-      image: selectedImage,
+    setError('')
+    setSuccess('')
+    setIsSubmitting(true)
+
+    try {
+      const endpoint =
+        listingType === 'livestock'
+          ? `${API_BASE_URL}/livestock`
+          : `${API_BASE_URL}/products`
+
+      const payload =
+        listingType === 'livestock'
+          ? {
+              name: formData.title.trim(),
+              type: formData.type,
+              breed: formData.breed.trim(),
+              age: Number(formData.age),
+              sex: formData.gender,
+              weight: formData.weight
+                ? Number(formData.weight)
+                : null,
+              weight_unit: formData.weightUnit,
+              location: formData.location.trim(),
+              price: Number(formData.price),
+              quantity: Number(formData.quantity),
+              image: selectedImage || null,
+              description: formData.description.trim(),
+              health_information:
+                formData.healthInfo.trim(),
+              availability:
+                formData.availability === 'Available'
+                  ? 'available'
+                  : 'unavailable',
+            }
+          : {
+              name: formData.title.trim(),
+              type: formData.productType,
+              description: formData.description.trim(),
+              price: Number(formData.price),
+              quantity: Number(formData.productQuantity),
+              unit: formData.productQuantityUnit,
+              date_produced: formData.producedDate,
+              expiry_date: formData.expiryDate,
+              location: formData.location.trim(),
+              image: selectedImage || null,
+              availability:
+                formData.availability === 'Available'
+                  ? 'available'
+                  : 'unavailable',
+            }
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      const data = await response.json().catch(() => ({}))
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+          data.message ||
+          'Unable to create this listing.',
+        )
+      }
+
+      setSuccess(
+        listingType === 'livestock'
+          ? 'Livestock listing published successfully.'
+          : 'Farm product listing published successfully.',
+      )
+
+      resetForm()
+    } catch (submitError) {
+      setError(
+        submitError.message ||
+          'Unable to connect to the Farmart server.',
+      )
+    } finally {
+      setIsSubmitting(false)
     }
-
-    console.log('Farmart listing:', listing)
-
-    // Backend integration will replace this later.
-    alert('Listing prepared successfully for testing.')
   }
-const livestockImages = Object.values(
-  farmartImages.livestock,
-)
-  .flat()
-  .filter(
-    (image) =>
-      ![
-        farmartImages.livestock.cows[0],
-        farmartImages.livestock.goats[0],
-        farmartImages.livestock.sheep[0],
-        farmartImages.livestock.pigs[0],
-        farmartImages.livestock.poultry[0],
-      ].includes(image),
-  )
-
-const productImages = Object.values(
-  farmartImages.products,
-)
-  .flat()
-  .filter(
-    (image) =>
-      ![
-        farmartImages.products.eggs[0],
-        farmartImages.products.milk[0],
-        farmartImages.products.butter[0],
-      ].includes(image),
-  )
-
-const availableImages =
-  listingType === 'livestock'
-    ? livestockImages
-    : productImages
 
   return (
     <>
@@ -98,10 +217,8 @@ const availableImages =
         .farmer-create-page {
           min-height: 100vh;
           padding: 38px 34px 70px;
-
-          background: #0d130f;
-          color: #edf4ee;
-
+          background: var(--farm-background);
+          color: var(--farm-text);
           box-sizing: border-box;
         }
 
@@ -114,23 +231,18 @@ const availableImages =
           display: inline-flex;
           align-items: center;
           gap: 8px;
-
           margin-bottom: 28px;
-
           border: none;
           background: transparent;
-
-          color: #4fdc82;
-
+          color: var(--farm-mint);
           font-family: "IBM Plex Serif", serif;
           font-size: 17px;
           font-weight: 700;
-
           cursor: pointer;
         }
 
         .farmer-create-back:hover {
-          color: #72c9a3;
+          opacity: 0.85;
         }
 
         .farmer-create-header {
@@ -139,9 +251,7 @@ const availableImages =
 
         .farmer-create-title {
           margin: 0;
-
-          color: #edf4ee;
-
+          color: var(--farm-text);
           font-family: "IBM Plex Serif", serif;
           font-size: 34px;
           line-height: 1.2;
@@ -149,25 +259,19 @@ const availableImages =
 
         .farmer-create-description {
           margin: 9px 0 0;
-
-          color: #91a198;
-
+          color: var(--farm-muted);
           font-family: "Modern Antiqua", serif;
           font-size: 15px;
         }
 
         .farmer-create-card {
           padding: 30px;
-
-          border: 1px solid #526259;
+          border: 1px solid var(--farm-green-border);
           border-radius: 20px;
-
-          background: #172019;
-
+          background: var(--farm-green-soft);
           box-shadow:
-            7px 7px 16px rgba(0, 0, 0, 0.18),
-            -5px -5px 13px rgba(39, 55, 44, 0.12);
-
+            0 16px 35px var(--farm-green-glow),
+            0 4px 16px var(--farm-green-glow);
           box-sizing: border-box;
         }
 
@@ -175,39 +279,32 @@ const availableImages =
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 10px;
-
           margin-bottom: 32px;
           padding: 5px;
-
-          border: 1px solid #304238;
+          border: 1px solid var(--farm-green-border);
           border-radius: 14px;
-
-          background: #101710;
+          background: var(--farm-background);
         }
 
         .farmer-listing-switch-button {
           min-height: 48px;
-
           border: 1px solid transparent;
           border-radius: 10px;
-
           background: transparent;
-          color: #82958a;
-
+          color: var(--farm-muted);
           font-family: "Modern Antiqua", serif;
           font-size: 14px;
           font-weight: 600;
-
           cursor: pointer;
         }
 
         .farmer-listing-switch-button:hover {
-          color: #edf4ee;
+          color: var(--farm-text);
         }
 
         .farmer-listing-switch-button.active {
-          border-color: #3b7650;
-          background: #277a44;
+          border-color: var(--green-700);
+          background: var(--green-700);
           color: #ffffff;
         }
 
@@ -225,17 +322,14 @@ const availableImages =
 
         .farmer-form-section-title {
           margin: 10px 0 4px;
-
-          color: #edf4ee;
-
+          color: var(--farm-text);
           font-family: "IBM Plex Serif", serif;
           font-size: 20px;
           font-weight: 500;
         }
 
         .farmer-form-label {
-          color: #edf4ee;
-
+          color: var(--farm-text);
           font-family: "IBM Plex Serif", serif;
           font-size: 14px;
         }
@@ -248,18 +342,13 @@ const availableImages =
         .farmer-form-select,
         .farmer-form-textarea {
           width: 100%;
-
-          border: 1px solid #526259;
+          border: 1px solid var(--farm-green-border);
           border-radius: 10px;
-
-          background: #f4f7f3;
+          background: var(--auth-logo-bg);
           color: #304b39;
-
           font-family: "Modern Antiqua", serif;
           font-size: 14px;
-
           outline: none;
-
           box-sizing: border-box;
         }
 
@@ -278,8 +367,8 @@ const availableImages =
         .farmer-form-input:focus,
         .farmer-form-select:focus,
         .farmer-form-textarea:focus {
-          border-color: #4a9f7b;
-          box-shadow: 0 0 0 3px rgba(74, 159, 123, 0.12);
+          border-color: var(--farm-mint);
+          box-shadow: 0 0 0 3px var(--farm-green-glow);
         }
 
         .farmer-form-grid {
@@ -300,19 +389,16 @@ const availableImages =
           display: flex;
           align-items: center;
           gap: 9px;
-
           margin-bottom: 6px;
         }
 
         .farmer-image-heading svg {
-          color: #e6b947;
+          color: var(--farm-gold);
         }
 
         .farmer-image-help {
           margin: 0 0 16px;
-
-          color: #82958a;
-
+          color: var(--farm-muted);
           font-family: "Modern Antiqua", serif;
           font-size: 13px;
           line-height: 1.6;
@@ -322,40 +408,32 @@ const availableImages =
           display: grid;
           grid-template-columns:
             repeat(auto-fill, minmax(125px, 1fr));
-
           gap: 12px;
         }
 
         .farmer-image-option {
           position: relative;
-
           aspect-ratio: 1;
-
           overflow: hidden;
-
           padding: 0;
-
           border: 2px solid transparent;
           border-radius: 12px;
-
-          background: #101710;
-
+          background: var(--farm-background);
           cursor: pointer;
         }
 
         .farmer-image-option:hover {
-          border-color: #72c9a3;
+          border-color: var(--farm-mint);
         }
 
         .farmer-image-option.selected {
-          border-color: #e6b947;
+          border-color: var(--farm-gold);
         }
 
         .farmer-image-option img {
           width: 100%;
           height: 100%;
           display: block;
-
           object-fit: cover;
         }
 
@@ -363,82 +441,93 @@ const availableImages =
           position: absolute;
           top: 8px;
           right: 8px;
-
           width: 25px;
           height: 25px;
-
           display: flex;
           align-items: center;
           justify-content: center;
-
           border-radius: 50%;
-
-          background: #e6b947;
-          color: #172019;
+          background: var(--farm-gold);
+          color: var(--farm-background);
         }
 
         .farmer-no-images {
           padding: 30px;
-
-          border: 1px dashed #526259;
+          border: 1px dashed var(--farm-green-border);
           border-radius: 12px;
-
-          color: #82958a;
-
+          color: var(--farm-muted);
           font-family: "Modern Antiqua", serif;
           text-align: center;
+        }
+
+        .farmer-form-message {
+          padding: 13px 15px;
+          border-radius: 10px;
+          font-family: "Modern Antiqua", serif;
+          font-size: 14px;
+          line-height: 1.5;
+        }
+
+        .farmer-form-message.error {
+          border: 1px solid rgba(223, 128, 98, 0.35);
+          background: rgba(223, 128, 98, 0.1);
+          color: #df8062;
+        }
+
+        .farmer-form-message.success {
+          border: 1px solid rgba(111, 201, 138, 0.35);
+          background: var(--farm-green-glow);
+          color: var(--farm-mint);
         }
 
         .farmer-form-actions {
           display: flex;
           justify-content: flex-end;
           gap: 13px;
-
           margin-top: 10px;
           padding-top: 25px;
-
-          border-top: 1px solid #304238;
+          border-top: 1px solid var(--farm-green-border);
         }
 
         .farmer-form-button {
           min-height: 52px;
-
           display: inline-flex;
           align-items: center;
           justify-content: center;
           gap: 8px;
-
           padding: 0 23px;
-
           border-radius: 12px;
-
           font-family: "Modern Antiqua", serif;
           font-size: 14px;
           font-weight: 600;
-
           cursor: pointer;
         }
 
-        .farmer-form-button.cancel {
-          border: 1px solid #526259;
-          background: transparent;
-          color: #a4b1a9;
+        .farmer-form-button:disabled {
+          opacity: 0.55;
+          cursor: not-allowed;
         }
 
-        .farmer-form-button.cancel:hover {
-          border-color: #82958a;
-          color: #edf4ee;
+        .farmer-form-button.cancel {
+          border: 1px solid var(--farm-green-border);
+          background: transparent;
+          color: var(--farm-muted);
+        }
+
+        .farmer-form-button.cancel:hover:not(:disabled) {
+          color: var(--farm-text);
+          border-color: var(--farm-mint);
         }
 
         .farmer-form-button.submit {
-          border: 1px solid #277a44;
-          background: #277a44;
+          border: 1px solid var(--green-700);
+          background: var(--green-700);
           color: #ffffff;
         }
 
-        .farmer-form-button.submit:hover {
-          background: #328c51;
-          box-shadow: 0 8px 20px rgba(39, 122, 68, 0.18);
+        .farmer-form-button.submit:hover:not(:disabled) {
+          filter: brightness(1.08);
+          box-shadow: 0 8px 20px var(--farm-green-glow);
         }
 
         @media (max-width: 750px) {
@@ -477,7 +566,6 @@ const availableImages =
 
       <main className="farmer-create-page">
         <div className="farmer-create-container">
-
           <button
             type="button"
             className="farmer-create-back"
@@ -493,21 +581,17 @@ const availableImages =
             </h1>
 
             <p className="farmer-create-description">
-              List livestock or farm products for buyers
-              on Farmart.
+              List livestock or farm products for buyers on Farmart.
             </p>
           </header>
 
           <section className="farmer-create-card">
-
             <div className="farmer-listing-switch">
-
               <button
                 type="button"
-                className={`
-                  farmer-listing-switch-button
-                  ${listingType === 'livestock' ? 'active' : ''}
-                `}
+                className={`farmer-listing-switch-button ${
+                  listingType === 'livestock' ? 'active' : ''
+                }`}
                 onClick={() =>
                   handleListingTypeChange('livestock')
                 }
@@ -517,24 +601,21 @@ const availableImages =
 
               <button
                 type="button"
-                className={`
-                  farmer-listing-switch-button
-                  ${listingType === 'product' ? 'active' : ''}
-                `}
+                className={`farmer-listing-switch-button ${
+                  listingType === 'product' ? 'active' : ''
+                }`}
                 onClick={() =>
                   handleListingTypeChange('product')
                 }
               >
                 Farm Products
               </button>
-
             </div>
 
             <form
               className="farmer-form"
               onSubmit={handleSubmit}
             >
-
               {listingType === 'livestock' ? (
                 <>
                   <h2 className="farmer-form-section-title">
@@ -542,11 +623,12 @@ const availableImages =
                   </h2>
 
                   <div className="farmer-form-grid">
-
                     <div className="farmer-form-section">
                       <label className="farmer-form-label">
                         Livestock Type{' '}
-                        <span className="farmer-required">*</span>
+                        <span className="farmer-required">
+                          *
+                        </span>
                       </label>
 
                       <select
@@ -556,18 +638,30 @@ const availableImages =
                         className="farmer-form-select"
                         required
                       >
-                        <option value="Cattle">Cattle</option>
-                        <option value="Goat">Goat</option>
-                        <option value="Sheep">Sheep</option>
-                        <option value="Pig">Pig</option>
-                        <option value="Poultry">Poultry</option>
+                        <option value="Cattle">
+                          Cattle
+                        </option>
+                        <option value="Goat">
+                          Goat
+                        </option>
+                        <option value="Sheep">
+                          Sheep
+                        </option>
+                        <option value="Pig">
+                          Pig
+                        </option>
+                        <option value="Poultry">
+                          Poultry
+                        </option>
                       </select>
                     </div>
 
                     <div className="farmer-form-section">
                       <label className="farmer-form-label">
                         Breed{' '}
-                        <span className="farmer-required">*</span>
+                        <span className="farmer-required">
+                          *
+                        </span>
                       </label>
 
                       <input
@@ -579,13 +673,14 @@ const availableImages =
                         required
                       />
                     </div>
-
                   </div>
 
                   <div className="farmer-form-section">
                     <label className="farmer-form-label">
                       Title{' '}
-                      <span className="farmer-required">*</span>
+                      <span className="farmer-required">
+                        *
+                      </span>
                     </label>
 
                     <input
@@ -601,7 +696,9 @@ const availableImages =
                   <div className="farmer-form-section">
                     <label className="farmer-form-label">
                       Description{' '}
-                      <span className="farmer-required">*</span>
+                      <span className="farmer-required">
+                        *
+                      </span>
                     </label>
 
                     <textarea
@@ -609,23 +706,25 @@ const availableImages =
                       value={formData.description}
                       onChange={handleChange}
                       className="farmer-form-textarea"
-                      placeholder="Describe condition, health, etc."
+                      placeholder="Describe condition, health, and the animal."
                       required
                     />
                   </div>
 
                   <div className="farmer-form-grid">
-
                     <div className="farmer-form-section">
                       <label className="farmer-form-label">
                         Price (KES){' '}
-                        <span className="farmer-required">*</span>
+                        <span className="farmer-required">
+                          *
+                        </span>
                       </label>
 
                       <input
                         type="number"
                         name="price"
                         min="0"
+                        step="0.01"
                         value={formData.price}
                         onChange={handleChange}
                         className="farmer-form-input"
@@ -637,7 +736,9 @@ const availableImages =
                     <div className="farmer-form-section">
                       <label className="farmer-form-label">
                         Quantity{' '}
-                        <span className="farmer-required">*</span>
+                        <span className="farmer-required">
+                          *
+                        </span>
                       </label>
 
                       <input
@@ -654,7 +755,9 @@ const availableImages =
                     <div className="farmer-form-section">
                       <label className="farmer-form-label">
                         Age{' '}
-                        <span className="farmer-required">*</span>
+                        <span className="farmer-required">
+                          *
+                        </span>
                       </label>
 
                       <input
@@ -664,15 +767,13 @@ const availableImages =
                         value={formData.age}
                         onChange={handleChange}
                         className="farmer-form-input"
-                        placeholder="e.g. 2 years"
+                        placeholder="Age in years"
                         required
                       />
                     </div>
-
                   </div>
 
                   <div className="farmer-form-grid">
-
                     <div className="farmer-form-section">
                       <label className="farmer-form-label">
                         Gender
@@ -684,8 +785,12 @@ const availableImages =
                         onChange={handleChange}
                         className="farmer-form-select"
                       >
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
+                        <option value="Male">
+                          Male
+                        </option>
+                        <option value="Female">
+                          Female
+                        </option>
                       </select>
                     </div>
 
@@ -698,6 +803,7 @@ const availableImages =
                         type="number"
                         name="weight"
                         min="0"
+                        step="0.01"
                         value={formData.weight}
                         onChange={handleChange}
                         className="farmer-form-input"
@@ -716,17 +822,22 @@ const availableImages =
                         onChange={handleChange}
                         className="farmer-form-select"
                       >
-                        <option value="kg">kg</option>
-                        <option value="g">g</option>
+                        <option value="kg">
+                          kg
+                        </option>
+                        <option value="g">
+                          g
+                        </option>
                       </select>
                     </div>
-
                   </div>
 
                   <div className="farmer-form-section">
                     <label className="farmer-form-label">
                       Location{' '}
-                      <span className="farmer-required">*</span>
+                      <span className="farmer-required">
+                        *
+                      </span>
                     </label>
 
                     <input
@@ -749,7 +860,7 @@ const availableImages =
                       value={formData.healthInfo}
                       onChange={handleChange}
                       className="farmer-form-textarea"
-                      placeholder="Vaccinations, vet records, etc."
+                      placeholder="Vaccinations, vet records, and other health information."
                     />
                   </div>
                 </>
@@ -760,11 +871,12 @@ const availableImages =
                   </h2>
 
                   <div className="farmer-form-grid two">
-
                     <div className="farmer-form-section">
                       <label className="farmer-form-label">
                         Product{' '}
-                        <span className="farmer-required">*</span>
+                        <span className="farmer-required">
+                          *
+                        </span>
                       </label>
 
                       <select
@@ -777,16 +889,24 @@ const availableImages =
                         className="farmer-form-select"
                         required
                       >
-                        <option value="Eggs">Eggs</option>
-                        <option value="Milk">Milk</option>
-                        <option value="Butter">Butter</option>
+                        <option value="Eggs">
+                          Eggs
+                        </option>
+                        <option value="Milk">
+                          Milk
+                        </option>
+                        <option value="Butter">
+                          Butter
+                        </option>
                       </select>
                     </div>
 
                     <div className="farmer-form-section">
                       <label className="farmer-form-label">
                         Title{' '}
-                        <span className="farmer-required">*</span>
+                        <span className="farmer-required">
+                          *
+                        </span>
                       </label>
 
                       <input
@@ -798,13 +918,14 @@ const availableImages =
                         required
                       />
                     </div>
-
                   </div>
 
                   <div className="farmer-form-section">
                     <label className="farmer-form-label">
                       Description{' '}
-                      <span className="farmer-required">*</span>
+                      <span className="farmer-required">
+                        *
+                      </span>
                     </label>
 
                     <textarea
@@ -812,23 +933,25 @@ const availableImages =
                       value={formData.description}
                       onChange={handleChange}
                       className="farmer-form-textarea"
-                      placeholder="Describe your farm product..."
+                      placeholder="Describe your farm product."
                       required
                     />
                   </div>
 
                   <div className="farmer-form-grid">
-
                     <div className="farmer-form-section">
                       <label className="farmer-form-label">
                         Price (KES){' '}
-                        <span className="farmer-required">*</span>
+                        <span className="farmer-required">
+                          *
+                        </span>
                       </label>
 
                       <input
                         type="number"
                         name="price"
                         min="0"
+                        step="0.01"
                         value={formData.price}
                         onChange={handleChange}
                         className="farmer-form-input"
@@ -839,14 +962,17 @@ const availableImages =
 
                     <div className="farmer-form-section">
                       <label className="farmer-form-label">
-                        Quantity (grams){' '}
-                        <span className="farmer-required">*</span>
+                        Quantity{' '}
+                        <span className="farmer-required">
+                          *
+                        </span>
                       </label>
 
                       <input
                         type="number"
                         name="productQuantity"
-                        min="1"
+                        min="0"
+                        step="0.01"
                         value={formData.productQuantity}
                         onChange={handleChange}
                         className="farmer-form-input"
@@ -857,29 +983,42 @@ const availableImages =
 
                     <div className="farmer-form-section">
                       <label className="farmer-form-label">
-                        Available Units{' '}
-                        <span className="farmer-required">*</span>
+                        Unit{' '}
+                        <span className="farmer-required">
+                          *
+                        </span>
                       </label>
 
-                      <input
-                        type="number"
-                        name="quantity"
-                        min="1"
-                        value={formData.quantity}
+                      <select
+                        name="productQuantityUnit"
+                        value={formData.productQuantityUnit}
                         onChange={handleChange}
-                        className="farmer-form-input"
+                        className="farmer-form-select"
                         required
-                      />
+                      >
+                        <option value="g">
+                          g
+                        </option>
+                        <option value="kg">
+                          kg
+                        </option>
+                        <option value="L">
+                          L
+                        </option>
+                        <option value="units">
+                          units
+                        </option>
+                      </select>
                     </div>
-
                   </div>
 
                   <div className="farmer-form-grid two">
-
                     <div className="farmer-form-section">
                       <label className="farmer-form-label">
                         Date Produced{' '}
-                        <span className="farmer-required">*</span>
+                        <span className="farmer-required">
+                          *
+                        </span>
                       </label>
 
                       <input
@@ -895,7 +1034,9 @@ const availableImages =
                     <div className="farmer-form-section">
                       <label className="farmer-form-label">
                         Expiry Date{' '}
-                        <span className="farmer-required">*</span>
+                        <span className="farmer-required">
+                          *
+                        </span>
                       </label>
 
                       <input
@@ -907,13 +1048,14 @@ const availableImages =
                         required
                       />
                     </div>
-
                   </div>
 
                   <div className="farmer-form-section">
                     <label className="farmer-form-label">
                       Location{' '}
-                      <span className="farmer-required">*</span>
+                      <span className="farmer-required">
+                        *
+                      </span>
                     </label>
 
                     <input
@@ -929,7 +1071,6 @@ const availableImages =
               )}
 
               <section className="farmer-image-section">
-
                 <div className="farmer-image-heading">
                   <FaImage size={19} />
 
@@ -939,8 +1080,8 @@ const availableImages =
                 </div>
 
                 <p className="farmer-image-help">
-                  Select one image for this listing.
-                  These images are provided for Farmart testing.
+                  Select one image for this listing. These images are
+                  provided for Farmart testing.
                 </p>
 
                 {availableImages.length > 0 ? (
@@ -949,14 +1090,11 @@ const availableImages =
                       <button
                         type="button"
                         key={image}
-                        className={`
-                          farmer-image-option
-                          ${
-                            selectedImage === image
-                              ? 'selected'
-                              : ''
-                          }
-                        `}
+                        className={`farmer-image-option ${
+                          selectedImage === image
+                            ? 'selected'
+                            : ''
+                        }`}
                         onClick={() =>
                           setSelectedImage(image)
                         }
@@ -983,11 +1121,9 @@ const availableImages =
                     No images are currently available.
                   </div>
                 )}
-
               </section>
 
               <div className="farmer-form-section">
-
                 <label className="farmer-form-label">
                   Availability
                 </label>
@@ -1006,17 +1142,28 @@ const availableImages =
                     Unavailable
                   </option>
                 </select>
-
               </div>
 
-              <div className="farmer-form-actions">
+              {error && (
+                <div className="farmer-form-message error">
+                  {error}
+                </div>
+              )}
 
+              {success && (
+                <div className="farmer-form-message success">
+                  {success}
+                </div>
+              )}
+
+              <div className="farmer-form-actions">
                 <button
                   type="button"
                   className="farmer-form-button cancel"
                   onClick={() =>
                     navigate('/farmer/dashboard')
                   }
+                  disabled={isSubmitting}
                 >
                   Cancel
                 </button>
@@ -1024,17 +1171,16 @@ const availableImages =
                 <button
                   type="submit"
                   className="farmer-form-button submit"
+                  disabled={isSubmitting}
                 >
                   <FaPlus size={18} />
-                  Publish Listing
+                  {isSubmitting
+                    ? 'Publishing...'
+                    : 'Publish Listing'}
                 </button>
-
               </div>
-
             </form>
-
           </section>
-
         </div>
       </main>
     </>
@@ -1042,4 +1188,3 @@ const availableImages =
 }
 
 export default CreateListings
-// commit 20

@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, session
 from flask_restful import Resource
 
 from extensions import db
@@ -25,7 +25,21 @@ class ProductResource(Resource):
         return products_schema.dump(products), 200
 
     def post(self):
+        farmer_id = session.get("user_id")
+        farmer_role = session.get("user_role")
+
+        if not farmer_id:
+            return {
+                "message": "Authentication required"
+            }, 401
+
+        if farmer_role != "farmer":
+            return {
+                "message": "Farmer access required"
+            }, 403
+
         data = request.get_json() or {}
+        data["farmer_id"] = farmer_id
 
         try:
             product_data = product_schema.load(data)
@@ -49,12 +63,31 @@ class ProductResource(Resource):
             }, 400
 
     def put(self, product_id):
+        farmer_id = session.get("user_id")
+        farmer_role = session.get("user_role")
+
+        if not farmer_id:
+            return {
+                "message": "Authentication required"
+            }, 401
+
+        if farmer_role != "farmer":
+            return {
+                "message": "Farmer access required"
+            }, 403
+
         product = db.session.get(Product, product_id)
 
         if not product:
             return {"message": "Product not found"}, 404
 
+        if product.farmer_id != farmer_id:
+            return {
+                "message": "You can only update your own listings"
+            }, 403
+
         data = request.get_json() or {}
+        data.pop("farmer_id", None)
 
         try:
             product_data = product_schema.load(
@@ -81,10 +114,28 @@ class ProductResource(Resource):
             }, 400
 
     def delete(self, product_id):
+        farmer_id = session.get("user_id")
+        farmer_role = session.get("user_role")
+
+        if not farmer_id:
+            return {
+                "message": "Authentication required"
+            }, 401
+
+        if farmer_role != "farmer":
+            return {
+                "message": "Farmer access required"
+            }, 403
+
         product = db.session.get(Product, product_id)
 
         if not product:
             return {"message": "Product not found"}, 404
+
+        if product.farmer_id != farmer_id:
+            return {
+                "message": "You can only delete your own listings"
+            }, 403
 
         db.session.delete(product)
         db.session.commit()

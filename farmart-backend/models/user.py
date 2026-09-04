@@ -47,6 +47,12 @@ class User(db.Model):
         "Wishlist",
         back_populates="buyer",
     )
+    analytics = db.relationship(
+        "Analytics",
+        back_populates="farmer",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
 
     def __repr__(self):
         return f"<User {self.email}>"

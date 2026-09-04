@@ -1,58 +1,147 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  LuClipboardList,
-  LuShoppingBag,
-  LuChartColumn,
-  LuHouse,
-  LuPlus,
-} from 'react-icons/lu'
-import { FaStar } from 'react-icons/fa'
+  FaPlus,
+  FaClipboardList,
+  FaShoppingBag,
+  FaChartLine,
+  FaHome,
+  FaStar,
+  FaSyncAlt,
+} from 'react-icons/fa'
+
+const API_BASE_URL = 'http://localhost:5000'
 
 function Dashboard() {
   const navigate = useNavigate()
 
+  const [listings, setListings] = useState([])
+  const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [error, setError] = useState('')
+
+  const loadDashboard = async (isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true)
+    } else {
+      setLoading(true)
+    }
+
+    setError('')
+
+    try {
+      const [livestockResponse, ordersResponse] = await Promise.all([
+        fetch(`${API_BASE_URL}/livestock`, {
+          credentials: 'include',
+        }),
+        fetch(`${API_BASE_URL}/orders`, {
+          credentials: 'include',
+        }),
+      ])
+
+      const livestockData = await livestockResponse.json().catch(() => [])
+      const ordersData = await ordersResponse.json().catch(() => [])
+
+      if (!livestockResponse.ok) {
+        throw new Error(
+          livestockData.message ||
+          livestockData.error ||
+          'Unable to load your listings.'
+        )
+      }
+
+      if (!ordersResponse.ok) {
+        throw new Error(
+          ordersData.message ||
+          ordersData.error ||
+          'Unable to load your orders.'
+        )
+      }
+
+      setListings(
+        Array.isArray(livestockData)
+          ? livestockData
+          : livestockData.livestock || []
+      )
+
+      setOrders(
+        Array.isArray(ordersData)
+          ? ordersData
+          : ordersData.orders || []
+      )
+    } catch (err) {
+      setError(
+        err.message ||
+        'Unable to connect to the Farmart server.'
+      )
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }
+
+  useEffect(() => {
+    loadDashboard()
+  }, [])
+
+  const activeListings = listings.filter((listing) => {
+    const availability = String(
+      listing.availability || ''
+    ).toLowerCase()
+
+    const quantity = Number(listing.quantity || 0)
+
+    return (
+      quantity > 0 &&
+      availability !== 'unavailable' &&
+      availability !== 'inactive' &&
+      availability !== 'sold out' &&
+      availability !== 'sold'
+    )
+  })
+
+  const pendingOrders = orders.filter(
+    (order) =>
+      String(order.status || '').toLowerCase() === 'pending'
+  )
+
+  const completedOrders = orders.filter(
+    (order) =>
+      String(order.status || '').toLowerCase() === 'completed'
+  )
+
+  const revenue = completedOrders.reduce(
+    (total, order) =>
+      total + Number(order.total_amount || 0),
+    0
+  )
+
   const stats = [
     {
       label: 'Total Listings',
-      value: '2',
+      value: listings.length.toLocaleString(),
     },
     {
       label: 'Active Listings',
-      value: '2',
+      value: activeListings.length.toLocaleString(),
     },
     {
       label: 'Pending Orders',
-      value: '1',
+      value: pendingOrders.length.toLocaleString(),
     },
     {
       label: 'Completed Sales',
-      value: '1',
+      value: completedOrders.length.toLocaleString(),
     },
     {
       label: 'Revenue',
-      value: 'KES 120,000',
+      value: `KES ${revenue.toLocaleString()}`,
     },
     {
       label: 'Rating',
-      value: '4.8',
+      value: '—',
       rating: true,
-    },
-  ]
-
-  const recentOrders = [
-    {
-      id: '#FM-2203',
-      buyer: 'David Ochieng',
-      items: '1 item(s)',
-      amount: 'KES 33,000',
-      status: 'Pending',
-    },
-    {
-      id: '#FM-2201',
-      buyer: 'Amina Wanjiru',
-      items: '2 item(s)',
-      amount: 'KES 87,000',
-      status: 'Completed',
     },
   ]
 
@@ -62,7 +151,8 @@ function Dashboard() {
         .farmer-dashboard {
           min-height: 100vh;
           padding: 42px 36px 70px;
-          background: #0d130f;
+          background: var(--farm-background);
+          color: var(--farm-text);
           box-sizing: border-box;
         }
 
@@ -72,12 +162,16 @@ function Dashboard() {
         }
 
         .farmer-dashboard-header {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 25px;
           margin-bottom: 30px;
         }
 
         .farmer-dashboard-title {
           margin: 0;
-          color: #edf4ee;
+          color: var(--farm-text);
           font-family: "IBM Plex Serif", serif;
           font-size: clamp(30px, 4vw, 34px);
           line-height: 1.2;
@@ -85,9 +179,58 @@ function Dashboard() {
 
         .farmer-dashboard-subtitle {
           margin: 10px 0 0;
-          color: #91a198;
+          color: var(--farm-muted);
           font-family: "Modern Antiqua", serif;
           font-size: 16px;
+        }
+
+        .farmer-refresh {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 14px;
+          border: 1px solid var(--farm-green-border);
+          border-radius: 11px;
+          background: var(--farm-green-soft);
+          color: var(--farm-text);
+          font-family: "Modern Antiqua", serif;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+        }
+
+        .farmer-refresh:disabled {
+          opacity: 0.6;
+          cursor: wait;
+        }
+
+        .farmer-refresh-icon {
+          display: inline-flex;
+        }
+
+        .farmer-refresh-icon.spinning {
+          animation: farmer-spin 0.8s linear infinite;
+        }
+
+        @keyframes farmer-spin {
+          from {
+            transform: rotate(0deg);
+          }
+
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        .farmer-error {
+          margin-bottom: 25px;
+          padding: 15px 18px;
+          border: 1px solid #d9aaa0;
+          border-radius: 13px;
+          background: rgba(178, 80, 62, 0.08);
+          color: #b2503e;
+          font-family: "Modern Antiqua", serif;
+          font-size: 14px;
         }
 
         .farmer-stats {
@@ -102,23 +245,20 @@ function Dashboard() {
           flex-direction: column;
           justify-content: space-between;
           padding: 25px 27px;
-          border: 1px solid #1e2c23;
+          border: 1px solid var(--farm-green-border);
           border-radius: 17px;
-          background: #172019;
-          box-shadow:
-            7px 7px 15px rgba(0, 0, 0, 0.18),
-            -5px -5px 12px rgba(38, 52, 43, 0.15);
+          background: var(--farm-green-soft);
           box-sizing: border-box;
         }
 
         .farmer-stat-label {
-          color: #82958a;
+          color: var(--farm-muted);
           font-family: "Modern Antiqua", serif;
           font-size: 14px;
         }
 
         .farmer-stat-value {
-          color: #edf4ee;
+          color: var(--farm-text);
           font-family: "IBM Plex Serif", serif;
           font-size: 32px;
           font-weight: 700;
@@ -128,11 +268,7 @@ function Dashboard() {
           display: inline-flex;
           align-items: center;
           gap: 7px;
-        }
-
-        .farmer-stat-rating svg {
-          color: #e6b947;
-          fill: #e6b947;
+          color: var(--farm-gold);
         }
 
         .farmer-section {
@@ -141,7 +277,7 @@ function Dashboard() {
 
         .farmer-section-title {
           margin: 0 0 22px;
-          color: #edf4ee;
+          color: var(--farm-text);
           font-family: "IBM Plex Serif", serif;
           font-size: 25px;
           font-weight: 500;
@@ -160,38 +296,31 @@ function Dashboard() {
           justify-content: center;
           gap: 9px;
           padding: 0 20px;
-          border: 1px solid #526259;
+          border: 1px solid var(--farm-green-border);
           border-radius: 14px;
-          background: #172019;
-          color: #edf4ee;
+          background: var(--farm-green-soft);
+          color: var(--farm-text);
           font-family: "Modern Antiqua", serif;
           font-size: 15px;
           font-weight: 600;
           cursor: pointer;
-          transition:
-            border-color 180ms ease,
-            background 180ms ease,
-            color 180ms ease,
-            box-shadow 180ms ease;
+          transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
         }
 
         .farmer-action:hover {
-          border-color: #72c9a3;
-          background: #1b2820;
-          color: #72c9a3;
-          box-shadow: 0 8px 20px rgba(35, 75, 50, 0.18);
+          border-color: var(--farm-green);
+          color: var(--farm-green);
         }
 
         .farmer-action-primary {
-          border-color: #277a44;
-          background: #277a44;
+          border-color: var(--farm-green);
+          background: var(--farm-green);
           color: #ffffff;
         }
 
         .farmer-action-primary:hover {
-          border-color: #4a9f7b;
-          background: #328c51;
           color: #ffffff;
+          filter: brightness(1.05);
         }
 
         .farmer-orders {
@@ -207,15 +336,15 @@ function Dashboard() {
           justify-content: space-between;
           gap: 20px;
           padding: 20px 25px;
-          border: 1px solid #718078;
+          border: 1px solid var(--farm-green-border);
           border-radius: 17px;
-          background: #172019;
+          background: var(--farm-green-soft);
           box-sizing: border-box;
         }
 
         .farmer-order-id {
           margin: 0;
-          color: #edf4ee;
+          color: var(--farm-text);
           font-family: "IBM Plex Serif", serif;
           font-size: 18px;
           font-weight: 500;
@@ -223,7 +352,7 @@ function Dashboard() {
 
         .farmer-order-meta {
           margin: 8px 0 0;
-          color: #71847a;
+          color: var(--farm-muted);
           font-family: "Modern Antiqua", serif;
           font-size: 14px;
         }
@@ -235,6 +364,7 @@ function Dashboard() {
           font-family: "Modern Antiqua", serif;
           font-size: 13px;
           font-weight: 600;
+          text-transform: capitalize;
         }
 
         .farmer-order-status-pending {
@@ -247,9 +377,51 @@ function Dashboard() {
           color: #277a44;
         }
 
+        .farmer-order-status-confirmed {
+          background: #dcecf4;
+          color: #35657a;
+        }
+
+        .farmer-order-status-cancelled {
+          background: #f4deda;
+          color: #a24637;
+        }
+
+        .farmer-empty {
+          padding: 45px 25px;
+          border: 1px solid var(--farm-green-border);
+          border-radius: 17px;
+          background: var(--farm-green-soft);
+          text-align: center;
+        }
+
+        .farmer-empty h3 {
+          margin: 0;
+          color: var(--farm-text);
+          font-family: "IBM Plex Serif", serif;
+          font-size: 21px;
+        }
+
+        .farmer-empty p {
+          margin: 10px 0 0;
+          color: var(--farm-muted);
+          font-family: "Modern Antiqua", serif;
+          font-size: 14px;
+        }
+
+        .farmer-loading {
+          color: var(--farm-muted);
+          font-family: "Modern Antiqua", serif;
+        }
+
         @media (max-width: 700px) {
           .farmer-dashboard {
             padding: 30px 18px 55px;
+          }
+
+          .farmer-dashboard-header {
+            align-items: flex-start;
+            flex-direction: column;
           }
 
           .farmer-order {
@@ -266,138 +438,196 @@ function Dashboard() {
       <div className="farmer-dashboard">
         <div className="farmer-dashboard-container">
           <header className="farmer-dashboard-header">
-            <h1 className="farmer-dashboard-title">
-              Welcome back, Jomo
-            </h1>
+            <div>
+              <h1 className="farmer-dashboard-title">
+                Your Farm Dashboard
+              </h1>
 
-            <p className="farmer-dashboard-subtitle">
-              Here's what's happening on your farm today
-            </p>
+              <p className="farmer-dashboard-subtitle">
+                Here's what's happening on your farm today
+              </p>
+            </div>
+
+            <button
+              type="button"
+              className="farmer-refresh"
+              onClick={() => loadDashboard(true)}
+              disabled={loading || refreshing}
+            >
+              <span
+                className={`farmer-refresh-icon ${
+                  refreshing ? 'spinning' : ''
+                }`}
+              >
+                <FaSyncAlt size={13} />
+              </span>
+              Refresh
+            </button>
           </header>
 
-          <section className="farmer-stats">
-            {stats.map((stat) => (
-              <article
-                key={stat.label}
-                className="farmer-stat-card"
-              >
-                <span className="farmer-stat-label">
-                  {stat.label}
-                </span>
-
-                <span className="farmer-stat-value">
-                  {stat.value}
-
-                  {stat.rating && (
-                    <span className="farmer-stat-rating">
-                      <FaStar size={20} />
-                    </span>
-                  )}
-                </span>
-              </article>
-            ))}
-          </section>
-
-          <section className="farmer-section">
-            <h2 className="farmer-section-title">
-              Quick Actions
-            </h2>
-
-            <div className="farmer-actions">
-              <button
-                type="button"
-                className="farmer-action farmer-action-primary"
-                onClick={() =>
-                  navigate('/farmer/create-listing')
-                }
-              >
-                <LuPlus size={18} />
-                Create Listing
-              </button>
-
-              <button
-                type="button"
-                className="farmer-action"
-                onClick={() =>
-                  navigate('/farmer/listings')
-                }
-              >
-                <LuClipboardList size={18} />
-                Manage Listings
-              </button>
-
-              <button
-                type="button"
-                className="farmer-action"
-                onClick={() =>
-                  navigate('/farmer/orders')
-                }
-              >
-                <LuShoppingBag size={18} />
-                View Orders
-              </button>
-
-              <button
-                type="button"
-                className="farmer-action"
-                onClick={() =>
-                  navigate('/farmer/analytics')
-                }
-              >
-                <LuChartColumn size={18} />
-                Analytics
-              </button>
-
-              <button
-                type="button"
-                className="farmer-action"
-                onClick={() =>
-                  navigate('/farmer/farm-profile')
-                }
-              >
-                <LuHouse size={18} />
-                Edit Farm Profile
-              </button>
+          {error && (
+            <div className="farmer-error">
+              {error}
             </div>
-          </section>
+          )}
 
-          <section className="farmer-section">
-            <h2 className="farmer-section-title">
-              Recent Orders
-            </h2>
+          {loading ? (
+            <p className="farmer-loading">
+              Loading your farm data...
+            </p>
+          ) : (
+            <>
+              <section className="farmer-stats">
+                {stats.map((stat) => (
+                  <article
+                    key={stat.label}
+                    className="farmer-stat-card"
+                  >
+                    <span className="farmer-stat-label">
+                      {stat.label}
+                    </span>
 
-            <div className="farmer-orders">
-              {recentOrders.map((order) => (
-                <article
-                  key={order.id}
-                  className="farmer-order"
-                >
-                  <div>
-                    <p className="farmer-order-id">
-                      {order.id} — {order.buyer}
-                    </p>
+                    <span className="farmer-stat-value">
+                      {stat.value}
 
-                    <p className="farmer-order-meta">
-                      {order.items} · {order.amount}
+                      {stat.rating && (
+                        <span className="farmer-stat-rating">
+                          <FaStar size={18} />
+                        </span>
+                      )}
+                    </span>
+                  </article>
+                ))}
+              </section>
+
+              <section className="farmer-section">
+                <h2 className="farmer-section-title">
+                  Quick Actions
+                </h2>
+
+                <div className="farmer-actions">
+                  <button
+                    type="button"
+                    className="farmer-action farmer-action-primary"
+                    onClick={() =>
+                      navigate('/farmer/create-listing')
+                    }
+                  >
+                    <FaPlus size={16} />
+                    Create Listing
+                  </button>
+
+                  <button
+                    type="button"
+                    className="farmer-action"
+                    onClick={() =>
+                      navigate('/farmer/listings')
+                    }
+                  >
+                    <FaClipboardList size={16} />
+                    Manage Listings
+                  </button>
+
+                  <button
+                    type="button"
+                    className="farmer-action"
+                    onClick={() =>
+                      navigate('/farmer/orders')
+                    }
+                  >
+                    <FaShoppingBag size={16} />
+                    View Orders
+                  </button>
+
+                  <button
+                    type="button"
+                    className="farmer-action"
+                    onClick={() =>
+                      navigate('/farmer/analytics')
+                    }
+                  >
+                    <FaChartLine size={16} />
+                    Analytics
+                  </button>
+
+                  <button
+                    type="button"
+                    className="farmer-action"
+                    onClick={() =>
+                      navigate('/farmer/farm-profile')
+                    }
+                  >
+                    <FaHome size={16} />
+                    Edit Farm Profile
+                  </button>
+                </div>
+              </section>
+
+              <section className="farmer-section">
+                <h2 className="farmer-section-title">
+                  Recent Orders
+                </h2>
+
+                {orders.length === 0 ? (
+                  <div className="farmer-empty">
+                    <h3>No orders yet</h3>
+                    <p>
+                      Orders containing your livestock will
+                      appear here.
                     </p>
                   </div>
+                ) : (
+                  <div className="farmer-orders">
+                    {orders.slice(0, 5).map((order) => {
+                      const status = String(
+                        order.status || ''
+                      ).toLowerCase()
 
-                  <span
-                    className={`
-                      farmer-order-status
-                      ${
-                        order.status === 'Pending'
+                      const statusClass =
+                        status === 'pending'
                           ? 'farmer-order-status-pending'
-                          : 'farmer-order-status-completed'
-                      }
-                    `}
-                  >
-                    {order.status}
-                  </span>
-                </article>
-              ))}
-            </div>
-          </section>
+                          : status === 'completed'
+                            ? 'farmer-order-status-completed'
+                            : status === 'confirmed'
+                              ? 'farmer-order-status-confirmed'
+                              : status === 'cancelled'
+                                ? 'farmer-order-status-cancelled'
+                                : ''
+
+                      return (
+                        <article
+                          key={order.id}
+                          className="farmer-order"
+                        >
+                          <div>
+                            <p className="farmer-order-id">
+                              #{order.id} —{' '}
+                              {order.buyer?.name ||
+                                'Farmart Buyer'}
+                            </p>
+
+                            <p className="farmer-order-meta">
+                              {order.items?.length || 0}{' '}
+                              item(s) · KES{' '}
+                              {Number(
+                                order.total_amount || 0
+                              ).toLocaleString()}
+                            </p>
+                          </div>
+
+                          <span
+                            className={`farmer-order-status ${statusClass}`}
+                          >
+                            {status || 'Unknown'}
+                          </span>
+                        </article>
+                      )
+                    })}
+                  </div>
+                )}
+              </section>
+            </>
+          )}
         </div>
       </div>
     </>
@@ -405,4 +635,3 @@ function Dashboard() {
 }
 
 export default Dashboard
-// commit 21
