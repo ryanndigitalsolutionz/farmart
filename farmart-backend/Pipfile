@@ -14,8 +14,8 @@ flask-migrate = "*"
 marshmallow = "*"
 marshmallow-sqlalchemy = "*"
 python-dotenv = "*"
-requests = "*"
 gunicorn = "*"
+requests = "*"
 
 [dev-packages]
 
