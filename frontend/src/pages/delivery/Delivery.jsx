@@ -139,15 +139,18 @@ function Delivery({
             </div>
         )}
 
-        <button 
-            type='button'
-            onClick={onContinue}
-            disabled={submitting}
-            className="text-green-600 mt-3 font-semibold border-3 p-1 px-2 py-1 rounded-lg 
-                transition-all duration-200 hover:-translate-y-1 hover:scale-105 hover:shadow-lg "
-        >
-            {submitting ? "Saving..." : "Continue to payment"}
-        </button>
+        {/* Continue to Payment */}
+      <button
+        type="button"
+        onClick={onContinue}
+        disabled={submitting || editing}
+        className="text-green-600 mt-3 font-semibold border-3 p-1 px-2 py-1 rounded-lg
+          transition-all duration-200
+          hover:-translate-y-1 hover:scale-105 hover:shadow-lg
+          disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {submitting ? "Saving..." : "Continue to payment"}
+      </button>
     
 
     </div>
