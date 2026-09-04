@@ -81,7 +81,7 @@ function Checkout() {
 
         console.log("Order saved:", order);
 
-        navigate(`/payments/${order.id}`);
+        navigate(`/buyer/payments/${order.id}`);
     };    
 
   return (
