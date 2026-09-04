@@ -8,7 +8,7 @@ import {
 } from 'react-icons/fa'
 import farmartImages from '../../data/farmartImages'
 
-const API_BASE_URL = 'http://localhost:5000'
+import API_BASE_URL from '../../api/api'
 
 function CreateListings() {
   const navigate = useNavigate()

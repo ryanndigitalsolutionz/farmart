@@ -10,7 +10,7 @@ import {
   FaSyncAlt,
 } from 'react-icons/fa'
 
-const API_BASE_URL = 'http://localhost:5000'
+import API_BASE_URL from '../../api/api'
 
 function Dashboard() {
   const navigate = useNavigate()

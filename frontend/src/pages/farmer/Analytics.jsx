@@ -15,7 +15,7 @@ import {
   Legend,
 } from 'recharts'
 
-const API_BASE_URL = 'http://localhost:5000'
+import API_BASE_URL from '../../api/api'
 
 function Analytics() {
   const [analytics, setAnalytics] = useState(null)

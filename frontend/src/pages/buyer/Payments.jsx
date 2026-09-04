@@ -9,7 +9,7 @@ import {
 import PaymentForm from "../../components/payments/PaymentForm";
 import PaymentSummary from "../../components/payments/PaymentSummary";
 
-const API_BASE = "http://localhost:5000";
+import API_BASE_URL from '../../api/api'
 
 function Payments() {
     const { id } = useParams();

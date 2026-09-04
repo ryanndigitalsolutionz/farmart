@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const API_BASE = 'http://localhost:5000'
+import API_BASE_URL from '../../api/api'
 
 function Profile() {
   const [profile, setProfile] = useState({

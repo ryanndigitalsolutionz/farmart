@@ -7,6 +7,7 @@ import {
   FaEyeSlash,
   FaGoogle,
 } from 'react-icons/fa'
+import API_BASE_URL from '../../api/api'
 
 function Login() {
   const navigate = useNavigate()
@@ -44,7 +45,7 @@ function Login() {
 
     try {
       const response = await fetch(
-        'http://localhost:5000/auth/login',
+        `${API_BASE_URL}/auth/login`,
         {
           method: 'POST',
           headers: {
@@ -619,7 +620,7 @@ function Login() {
                 className="google-button"
                 onClick={() => {
                   window.location.href =
-                  `http://localhost:5000/auth/google?role=${selectedRole}`
+                    `${API_BASE_URL}/auth/google?role=${selectedRole}`
                 }}
               >
                 <FaGoogle size={17} />

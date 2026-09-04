@@ -8,7 +8,7 @@ import {
   FaSave,
 } from 'react-icons/fa'
 
-const API_BASE = 'http://localhost:5000'
+import API_BASE_URL from '../../api/api'
 
 function Profile() {
   const [editing, setEditing] = useState(false)

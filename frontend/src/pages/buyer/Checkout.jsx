@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { useCart } from "../../context/CartContext";
 import CheckoutSteps from "./CheckoutSteps";
 import Delivery from "../delivery/Delivery";
+import API_BASE_URL from '../../api/api'
 
-const API_BASE = "http://localhost:5000";
 
 function Checkout() {
   const { cart, clearCart } = useCart();
