@@ -51,6 +51,7 @@ def create_app():
         origins=[
             "http://localhost:5173",
             "http://127.0.0.1:5173",
+            "https://farmart-inc.vercel.app",
         ],
         supports_credentials=True,
     )
@@ -136,8 +137,14 @@ def create_app():
         AnalyticsResource,
         "/analytics",
     )
-    api.add_resource(CurrentProfileResource, "/api/profile/me")
-    api.add_resource(ProfileResource, "/api/profile/<int:user_id>")
+    api.add_resource(
+        CurrentProfileResource,
+        "/api/profile/me",
+    )
+    api.add_resource(
+        ProfileResource,
+        "/api/profile/<int:user_id>",
+    )
 
     return app
 
