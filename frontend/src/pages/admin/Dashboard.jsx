@@ -1,34 +1,45 @@
-import PageHeader from "../../components/layout/PageHeader";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence, useSpring, useTransform } from "framer-motion";
-import { getPendingFarmers, approveFarmer, rejectFarmer } from "../../data/farmersStore";
+import { useAdmin } from "../../hooks/useAdmin";
+import { getBuyers, verifyFarmer, rejectFarmer } from "../../services/adminApi";
 import RejectReasonModal from "../../components/common/RejectReasonModal";
 
-const metrics = {
-  total_users: 0,
-  active_listings: 0,
-  gmv_this_month: 0,
-  open_disputes: 0,
-};
-
-const loading = false;
-
 export default function Dashboard() {
+  const { overview, loading, refreshOverview } = useAdmin();
   const [tab, setTab] = useState("farmers");
-  const [pendingFarmers, setPendingFarmers] = useState(() => getPendingFarmers());
   const [rejectTarget, setRejectTarget] = useState(null);
+  const [buyers, setBuyers] = useState([]);
+  const [buyersLoading, setBuyersLoading] = useState(true);
   const navigate = useNavigate();
 
-  const handleApprove = (farmerId) => {
-    approveFarmer(farmerId);
-    setPendingFarmers((list) => list.filter((f) => f.id !== farmerId));
+  const pendingFarmers = overview?.pending_farmers || [];
+
+  useEffect(() => {
+    if (tab !== "buyers") return;
+
+    getBuyers()
+      .then(setBuyers)
+      .catch(() => setBuyers([]))
+      .finally(() => setBuyersLoading(false));
+  }, [tab]);
+
+  const handleApprove = async (farmerId) => {
+    await verifyFarmer(farmerId);
+    refreshOverview();
   };
 
-  const handleRejectSubmit = (reason) => {
-    rejectFarmer(rejectTarget.id, reason);
-    setPendingFarmers((list) => list.filter((f) => f.id !== rejectTarget.id));
+  const handleRejectSubmit = async (reason) => {
+    await rejectFarmer(rejectTarget.id, reason);
     setRejectTarget(null);
+    refreshOverview();
+  };
+
+  const metrics = {
+    total_users: overview?.total_users ?? 0,
+    active_listings: overview?.active_listings ?? 0,
+    gmv_this_month: overview?.gmv_this_month ?? 0,
+    open_disputes: overview?.open_disputes ?? 0,
   };
 
   return (
@@ -66,12 +77,12 @@ export default function Dashboard() {
         }}
         style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 24 }}
       >
-        <MetricCard label="Total users" value={metrics?.total_users} loading={loading} />
-        <MetricCard label="Active listings" value={metrics?.active_listings} loading={loading} />
-        <MetricCard label="GMV this month" value={metrics?.gmv_this_month} prefix="KES " loading={loading} />
+        <MetricCard label="Total users" value={metrics.total_users} loading={loading} />
+        <MetricCard label="Active listings" value={metrics.active_listings} loading={loading} />
+        <MetricCard label="GMV this month" value={metrics.gmv_this_month} prefix="KES " loading={loading} />
         <MetricCard
           label="Open disputes"
-          value={metrics?.open_disputes}
+          value={metrics.open_disputes}
           loading={loading}
           highlight
         />
@@ -137,9 +148,9 @@ export default function Dashboard() {
             transition={{ duration: 0.2 }}
             style={{ display: "flex", flexDirection: "column", gap: 10 }}
           >
-            {pendingFarmers.length === 0 && (
+            {!loading && pendingFarmers.length === 0 && (
               <p style={{ color: "var(--text-muted, #66766A)", fontSize: 13 }}>
-                No farmers waiting on verification 🎉
+                No farmers waiting on verification
               </p>
             )}
             <AnimatePresence>
@@ -213,17 +224,42 @@ export default function Dashboard() {
         )}
 
         {tab === "buyers" && (
-          <motion.p
+          <motion.div
             key="buyers"
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2 }}
-            style={{ color: "var(--text-muted, #66766A)", fontSize: 13 }}
+            style={{ display: "flex", flexDirection: "column", gap: 8 }}
           >
-            TODO: reuse the getUsers({"{"} role: "buyer" {"}"}) call — same list pattern as farmers, minus
-            the verify/reject actions.
-          </motion.p>
+            {buyersLoading && (
+              <p style={{ color: "var(--text-muted, #66766A)", fontSize: 13 }}>Loading buyers…</p>
+            )}
+            {!buyersLoading && buyers.length === 0 && (
+              <p style={{ color: "var(--text-muted, #66766A)", fontSize: 13 }}>No buyers yet.</p>
+            )}
+            {buyers.map((buyer) => (
+              <Link
+                key={buyer.id}
+                to={`/admin/buyers/${buyer.id}`}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  padding: "12px 14px",
+                  border: "1px solid var(--border, #DCE6D8)",
+                  borderRadius: 10,
+                  textDecoration: "none",
+                  color: "var(--text-dark, #1E2A1F)",
+                }}
+              >
+                <span style={{ fontWeight: 600 }}>{buyer.full_name || buyer.email}</span>
+                <span style={{ fontSize: 12, color: "var(--text-muted, #66766A)" }}>
+                  {buyer.order_count} order{buyer.order_count === 1 ? "" : "s"} · KES{" "}
+                  {buyer.total_spent.toLocaleString()}
+                </span>
+              </Link>
+            ))}
+          </motion.div>
         )}
 
         {tab === "listings" && (

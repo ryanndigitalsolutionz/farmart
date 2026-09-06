@@ -403,6 +403,84 @@ Livestock and farm produce, straight from the farm.
         html_body=html_body,
     )
 
+def send_signup_verification_otp(
+    user_name,
+    user_email,
+    otp,
+):
+    """
+    Send a 6-digit OTP to verify a new account
+    right after registration.
+    """
+
+    subject = "Verify your Farmart account"
+
+    text_body = f"""
+Hello {user_name},
+
+Welcome to Farmart! Your verification code is:
+
+{otp}
+
+Enter this 6-digit code to activate your account.
+
+This code is temporary. If you did not create a
+Farmart account, you can safely ignore this email.
+
+Farmart
+Livestock and farm produce, straight from the farm.
+"""
+
+    html_body = _email_template(
+        title="Welcome to Farmart!",
+        body=f"""
+        <p>
+            Hello <strong>{user_name}</strong>,
+        </p>
+
+        <p>
+            Use the verification code below to
+            activate your Farmart account:
+        </p>
+
+        <div style="
+            margin: 28px 0;
+            padding: 20px;
+            background-color: #f4f7f5;
+            border: 1px solid #dce7df;
+            border-radius: 10px;
+            text-align: center;
+        ">
+
+            <div style="
+                font-size: 32px;
+                font-weight: 700;
+                letter-spacing: 8px;
+                color: #2f6d3f;
+            ">
+                {otp}
+            </div>
+
+        </div>
+
+        <p style="
+            color: #718078;
+            font-size: 13px;
+        ">
+            This code is temporary. If you did not
+            create a Farmart account, you can
+            safely ignore this email.
+        </p>
+        """,
+    )
+
+    return send_email(
+        to_email=user_email,
+        subject=subject,
+        text_body=text_body,
+        html_body=html_body,
+    )
+
 def send_password_reset_otp(
     user_name,
     user_email,

@@ -72,7 +72,7 @@ function Register() {
 
     try {
       const response = await fetch(
-        'http://localhost:5000/auth/register',
+        'http://127.0.0.1:5000/auth/register',
         {
           method: 'POST',
           headers: {
@@ -105,15 +105,13 @@ function Register() {
        * We do NOT create a fake localStorage account here.
        */
 
-      if (selectedRole === 'farmer') {
-        navigate('/farm-setup')
-        return
-      }
+      sessionStorage.setItem(
+        'farmartSignupEmail',
+        formData.email.trim().toLowerCase(),
+      )
 
-      if (selectedRole === 'buyer') {
-        navigate('/buyer/marketplace')
-        return
-      }
+      navigate('/verify-account')
+      return
     } catch (error) {
       console.error('Registration error:', error)
 
@@ -137,7 +135,7 @@ function Register() {
     }
 
     window.location.href =
-    `http://localhost:5000/auth/google?role=${selectedRole}`
+    `http://127.0.0.1:5000/auth/google?role=${selectedRole}`
   }
 
   const roleLabel =

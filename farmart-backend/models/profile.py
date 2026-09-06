@@ -11,6 +11,7 @@ class Profile(db.Model):
     location = db.Column(db.String, nullable=True)
     profile_picture = db.Column(db.String, nullable=True)
     farm_name = db.Column(db.String, nullable=True)
+    description = db.Column(db.Text, nullable=True)
     verification_status = db.Column(db.String, nullable=False, default="pending")
     rejection_reason = db.Column(db.String, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)

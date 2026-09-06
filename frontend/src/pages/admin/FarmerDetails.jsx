@@ -57,7 +57,7 @@ export default function FarmerDetails() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 22 }}>
         <Stat label="Listings" value={farmer.listing_count} />
         <Stat label="Animals sold" value={farmer.animals_sold} />
-        <Stat label="Rating" value={farmer.rating ? `★ ${farmer.rating}` : "—"} />
+        <Stat label="Rating" value={farmer.rating ? farmer.rating : "—"} />
       </div>
 
       <div style={{ border: "1px solid var(--border, #DCE6D8)", borderRadius: 14, padding: 18, marginBottom: 20 }}>
@@ -98,7 +98,7 @@ export default function FarmerDetails() {
       ) : (
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: 12.5, color: "var(--green-700, #2F6D3F)", fontWeight: 700 }}>
-            ✓ Verified farmer
+            Verified farmer
           </span>
           <button onClick={handleSuspend} disabled={busy} style={dangerOutlineBtn}>
             Suspend account

@@ -2,12 +2,13 @@ from datetime import datetime, timezone
 from decimal import Decimal
 
 import requests
-from flask import request, session
+from flask import request
 from flask_restful import Resource
 
 from extensions import db
 from models.payment import Payment, PaymentMethod, PaymentStatus
 from models.order import Order, OrderStatus
+from resources.auth_utils import get_current_user
 from schemas.payment_schema import PaymentSchema
 from services.mpesa_service import MpesaService
 
@@ -19,13 +20,16 @@ payments_schema = PaymentSchema(many=True)
 class PaymentResource(Resource):
 
     def get(self, payment_id=None):
-        buyer_id = session.get("user_id")
+        user = get_current_user()
 
-        if not buyer_id:
+        if not user:
             return {"message": "Authorization required"}, 401
 
-        if session.get("user_role") != "buyer":
-            return {"message": "Buyer access required"}, 403
+        user_id = user.id
+        user_role = user.role
+
+        if user_role not in ("buyer", "admin"):
+            return {"message": "Access denied"}, 403
 
         if payment_id:
             payment = db.session.get(Payment, payment_id)
@@ -33,28 +37,33 @@ class PaymentResource(Resource):
             if not payment:
                 return {"message": "Payment not found"}, 404
 
-            if payment.order.buyer_id != buyer_id:
+            if user_role != "admin" and payment.order.buyer_id != user_id:
                 return {"message": "Access denied"}, 403
 
             return payment_schema.dump(payment), 200
 
-        payments = (
-            Payment.query
-            .join(Order)
-            .filter(Order.buyer_id == buyer_id)
-            .all()
-        )
+        if user_role == "admin":
+            payments = Payment.query.all()
+        else:
+            payments = (
+                Payment.query
+                .join(Order)
+                .filter(Order.buyer_id == user_id)
+                .all()
+            )
 
         return payments_schema.dump(payments), 200
 
     def post(self):
-        buyer_id = session.get("user_id")
+        user = get_current_user()
 
-        if not buyer_id:
+        if not user:
             return {"message": "Authorization required"}, 401
 
-        if session.get("user_role") != "buyer":
+        if user.role != "buyer":
             return {"message": "Buyer access required"}, 403
+
+        buyer_id = user.id
 
         data = request.get_json() or {}
 

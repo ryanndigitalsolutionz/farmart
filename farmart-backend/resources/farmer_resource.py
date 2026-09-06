@@ -3,6 +3,7 @@ from flask_restful import Resource
 from extensions import db
 from models.user import User
 from models.profile import Profile
+from resources.auth_utils import require_admin
 
 
 def _serialize_farmer(user):
@@ -14,7 +15,7 @@ def _serialize_farmer(user):
         "location": profile.location if profile else None,
         "phone_number": profile.phone if profile else None,
         "email": user.email,
-        "description": "",
+        "description": profile.description if profile else "",
         "status": profile.verification_status if profile else "pending",
         "rejection_reason": profile.rejection_reason if profile else None,
         "joined_date": user.created_at.isoformat() if user.created_at else None,
@@ -26,18 +27,30 @@ def _serialize_farmer(user):
 
 class FarmerListResource(Resource):
     def get(self):
+        error = require_admin()
+        if error:
+            return error
+
         farmers = User.query.filter_by(role="farmer").all()
         return [_serialize_farmer(f) for f in farmers], 200
 
 
 class FarmerResource(Resource):
     def get(self, user_id):
+        error = require_admin()
+        if error:
+            return error
+
         user = User.query.filter_by(id=user_id, role="farmer").first()
         if not user:
             return {"message": "Farmer not found"}, 404
         return _serialize_farmer(user), 200
 
     def patch(self, user_id):
+        error = require_admin()
+        if error:
+            return error
+
         user = User.query.filter_by(id=user_id, role="farmer").first()
         if not user:
             return {"message": "Farmer not found"}, 404

@@ -24,5 +24,7 @@ dist-ssr
 *.sw?
 farmart-backend/.env
 farmart-backend/instance/
-farmart-backend/migrations/
 farmart-backend/__pycache__/
+**/__pycache__/
+*.pyc
+*:Zone.Identifier

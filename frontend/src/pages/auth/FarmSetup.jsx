@@ -7,7 +7,11 @@ import {
   FiEdit3,
   FiShield,
 } from 'react-icons/fi'
-import { addPendingFarmer, getFarmerById } from '../../data/farmersStore'
+import {
+  getMyProfile,
+  createFarmProfile,
+  updateFarmProfile,
+} from '../../services/farmProfileApi'
 
 function FarmSetup() {
   const navigate = useNavigate()
@@ -19,11 +23,14 @@ function FarmSetup() {
     description: '',
   })
 
+  const [initializing, setInitializing] = useState(true)
+  const [userId, setUserId] = useState(null)
+  const [hasProfile, setHasProfile] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [submitted, setSubmitted] = useState(false)
-  const [pendingFarmerId, setPendingFarmerId] = useState(null)
   const [rejected, setRejected] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
+  const [error, setError] = useState('')
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -34,62 +41,104 @@ function FarmSetup() {
     }))
   }
 
-  const handleSubmit = (event) => {
+  useEffect(() => {
+    getMyProfile()
+      .then(({ user, profile }) => {
+        setUserId(user.id)
+
+        if (!profile || !profile.farm_name) {
+          return
+        }
+
+        setHasProfile(true)
+        setFormData({
+          farmName: profile.farm_name || '',
+          location: profile.location || '',
+          contact: profile.phone || '',
+          description: profile.description || '',
+        })
+
+        if (profile.verification_status === 'verified') {
+          navigate('/farmer/dashboard')
+          return
+        }
+
+        setSubmitted(true)
+
+        if (profile.verification_status === 'rejected') {
+          setRejected(true)
+          setRejectionReason(profile.rejection_reason || '')
+        }
+      })
+      .catch(() => {})
+      .finally(() => setInitializing(false))
+  }, [navigate])
+
+  const handleSubmit = async (event) => {
     event.preventDefault()
     setIsSaving(true)
+    setError('')
 
-    const newFarmer = addPendingFarmer({
+    const payload = {
       farm_name: formData.farmName,
       location: formData.location,
-      phone_number: formData.contact,
+      phone: formData.contact,
       description: formData.description,
-    })
+    }
 
-    localStorage.setItem(
-      'farmartFarmProfile',
-      JSON.stringify({
-        ...formData,
-        verificationStatus: 'pending',
-      }),
-    )
+    try {
+      if (hasProfile) {
+        await updateFarmProfile(userId, payload)
+      } else {
+        await createFarmProfile(userId, payload)
+      }
 
-    setTimeout(() => {
-      setIsSaving(false)
-      setPendingFarmerId(newFarmer.id)
+      setHasProfile(true)
+      setRejected(false)
+      setRejectionReason('')
       setSubmitted(true)
-    }, 700)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const handleTryAgain = () => {
     setSubmitted(false)
     setRejected(false)
-    setPendingFarmerId(null)
     setRejectionReason('')
   }
 
   // Poll for admin approval while the farmer waits, and redirect automatically.
   useEffect(() => {
-    if (!submitted || !pendingFarmerId) return
+    if (!submitted || rejected || !userId) return
 
     const interval = setInterval(() => {
-      const farmer = getFarmerById(pendingFarmerId)
+      getMyProfile()
+        .then(({ profile }) => {
+          if (!profile) return
 
-      if (!farmer) return
+          if (profile.verification_status === 'verified') {
+            clearInterval(interval)
+            navigate('/farmer/dashboard')
+          }
 
-      if (farmer.status === 'verified') {
-        clearInterval(interval)
-        navigate('/farmer/dashboard')
-      }
-
-      if (farmer.status === 'rejected') {
-        setRejectionReason(farmer.rejection_reason || '')
-        setRejected(true)
-        clearInterval(interval)
-      }
+          if (profile.verification_status === 'rejected') {
+            setRejectionReason(profile.rejection_reason || '')
+            setRejected(true)
+            clearInterval(interval)
+          }
+        })
+        .catch(() => {})
     }, 2000)
 
     return () => clearInterval(interval)
-  }, [submitted, pendingFarmerId, navigate])
+  }, [submitted, rejected, userId, navigate])
+
+  if (initializing) {
+    return null
+  }
 
   return (
     <>
@@ -801,6 +850,12 @@ function FarmSetup() {
                       </span>
                     </div>
                   </div>
+
+                  {error && (
+                    <p style={{ color: '#B2503E', fontSize: 13.5, margin: 0 }}>
+                      {error}
+                    </p>
+                  )}
 
                   <button
                     type="submit"

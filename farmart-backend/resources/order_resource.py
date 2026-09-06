@@ -1,11 +1,12 @@
 from decimal import Decimal
 
-from flask import request, session
+from flask import request
 from flask_restful import Resource
 
 from extensions import db
 from models import Order, OrderItem, Livestock, Product
 from models.order import OrderStatus
+from resources.auth_utils import get_current_user
 from schemas.order_schema import OrderSchema
 
 order_schema = OrderSchema()
@@ -15,13 +16,16 @@ orders_schema = OrderSchema(many=True)
 class OrderResource(Resource):
 
     def get(self, order_id=None):
-        buyer_id = session.get("user_id")
+        user = get_current_user()
 
-        if not buyer_id:
+        if not user:
             return {"message": "Authorization required"}, 401
 
-        if session.get("user_role") != "buyer":
-            return {"message": "Buyer access required"}, 403
+        user_id = user.id
+        user_role = user.role
+
+        if user_role not in ("buyer", "admin"):
+            return {"message": "Access denied"}, 403
 
         if order_id:
             order = db.session.get(Order, order_id)
@@ -29,25 +33,28 @@ class OrderResource(Resource):
             if not order:
                 return {"message": "Order not found"}, 404
 
-            if order.buyer_id != buyer_id:
+            if user_role != "admin" and order.buyer_id != user_id:
                 return {"message": "Access denied"}, 403
 
             return order_schema.dump(order), 200
 
-        orders = Order.query.filter_by(
-            buyer_id=buyer_id
-        ).all()
+        if user_role == "admin":
+            orders = Order.query.all()
+        else:
+            orders = Order.query.filter_by(buyer_id=user_id).all()
 
         return orders_schema.dump(orders), 200
 
     def post(self):
-        buyer_id = session.get("user_id")
+        user = get_current_user()
 
-        if not buyer_id:
+        if not user:
             return {"message": "Authorization required"}, 401
 
-        if session.get("user_role") != "buyer":
+        if user.role != "buyer":
             return {"message": "Buyer access required"}, 403
+
+        buyer_id = user.id
 
         data = request.get_json() or {}
         items = data.get("items")
@@ -163,4 +170,3 @@ class OrderResource(Resource):
                 "message": "Unable to create order",
                 "error": str(error),
             }, 400
-  

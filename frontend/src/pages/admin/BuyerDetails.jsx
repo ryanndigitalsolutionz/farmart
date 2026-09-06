@@ -1,15 +1,21 @@
 import PageHeader from "../../components/layout/PageHeader";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useAdmin } from "../../hooks/useAdmin";
+import { getBuyerDetail, suspendUser, reactivateUser } from "../../services/adminApi";
 
 export default function BuyerDetails() {
   const { buyerId } = useParams();
   const { refreshOverview } = useAdmin();
   const [buyer, setBuyer] = useState(null);
+  const [notFound, setNotFound] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    getBuyerDetail(buyerId).then(setBuyer).catch(console.error);
+    setNotFound(false);
+    getBuyerDetail(buyerId)
+      .then(setBuyer)
+      .catch(() => setNotFound(true));
   }, [buyerId]);
 
   const toggleSuspension = async () => {
@@ -27,6 +33,7 @@ export default function BuyerDetails() {
     }
   };
 
+  if (notFound) return <p style={{ color: "var(--text-muted, #66766A)" }}>Buyer not found.</p>;
   if (!buyer) return <p style={{ color: "var(--text-muted, #66766A)" }}>Loading buyer…</p>;
 
   return (
@@ -93,4 +100,3 @@ function Stat({ label, value }) {
     </div>
   );
 }
-// commit 26

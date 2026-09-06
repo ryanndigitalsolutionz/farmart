@@ -3,12 +3,17 @@ from flask_restful import Resource
 
 from extensions import bcrypt, db
 from models.user import User
+from resources.auth_utils import require_admin
 from schemas.user_schema import user_schema, users_schema
 
 
 class UserListResource(Resource):
 
     def get(self):
+        error = require_admin()
+        if error:
+            return error
+
         users = User.query.all()
 
         return {
@@ -17,6 +22,10 @@ class UserListResource(Resource):
         }, 200
 
     def post(self):
+        error = require_admin()
+        if error:
+            return error
+
         data = request.get_json() or {}
 
         required_fields = [
@@ -85,6 +94,10 @@ class UserListResource(Resource):
 class UserResource(Resource):
 
     def get(self, user_id):
+        error = require_admin()
+        if error:
+            return error
+
         user = User.query.get(user_id)
 
         if not user:
@@ -99,6 +112,10 @@ class UserResource(Resource):
         }, 200
 
     def patch(self, user_id):
+        error = require_admin()
+        if error:
+            return error
+
         user = User.query.get(user_id)
 
         if not user:
@@ -137,6 +154,11 @@ class UserResource(Resource):
         if "is_verified" in data:
             user.is_verified = bool(
                 data["is_verified"]
+            )
+
+        if "is_active" in data:
+            user.is_active = bool(
+                data["is_active"]
             )
 
         db.session.commit()

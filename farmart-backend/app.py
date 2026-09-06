@@ -27,11 +27,15 @@ from resources.user_resource import UserListResource, UserResource
 from resources.order_resource import OrderResource
 from resources.payment_resource import PaymentResource, MpesaCallbackResource
 from resources.farmer_resource import FarmerListResource, FarmerResource
+from resources.buyer_resource import BuyerListResource, BuyerResource
 from resources.livestock_resource import LivestockResource
 from resources.product_resource import ProductResource
 from resources.order_item_resource import OrderItemsResource
 from resources.review_resource import ReviewResource
 from resources.wishlist_resource import WishlistResource
+from resources.profile_resource import ProfileMeResource, ProfileResource
+from resources.admin_overview_resource import AdminOverviewResource
+from resources.commission_resource import CommissionRateResource
 
 
 def create_app():
@@ -89,41 +93,65 @@ def create_app():
         FarmerResource,
         "/api/farmers/<int:user_id>",
     )
+    api.add_resource(
+        BuyerListResource,
+        "/api/buyers",
+    )
+    api.add_resource(
+        BuyerResource,
+        "/api/buyers/<int:user_id>",
+    )
+    api.add_resource(
+        ProfileMeResource,
+        "/api/profile/me",
+    )
+    api.add_resource(
+        ProfileResource,
+        "/api/profile/<int:user_id>",
+    )
+    api.add_resource(
+        AdminOverviewResource,
+        "/api/admin/overview",
+    )
+    api.add_resource(
+        CommissionRateResource,
+        "/api/admin/commission",
+    )
 
     api.add_resource(
         LivestockResource,
-        "/livestock",
-        "/livestock/<int:livestock_id>",
+        "/api/livestock",
+        "/api/livestock/<int:livestock_id>",
     )
     api.add_resource(
         ProductResource,
-        "/products",
-        "/products/<int:product_id>",
+        "/api/products",
+        "/api/products/<int:product_id>",
     )
     api.add_resource(
         WishlistResource,
-        "/wishlist",
-        "/wishlist/<int:wishlist_id>",
+        "/api/wishlist",
+        "/api/wishlist/<int:wishlist_id>",
     )
     api.add_resource(
         ReviewResource,
-        "/reviews",
-        "/reviews/<int:review_id>",
+        "/api/reviews",
+        "/api/reviews/<int:review_id>",
     )
     api.add_resource(
         OrderResource,
-        "/orders",
-        "/orders/<int:order_id>",
+        "/api/orders",
+        "/api/orders/<int:order_id>",
     )
     api.add_resource(
         OrderItemsResource,
-        "/order-items",
-        "/order-items/<int:item_id>",
+        "/api/order-items",
+        "/api/order-items/<int:item_id>",
     )
     api.add_resource(
         PaymentResource,
-        "/payments",
-        "/payments/<int:payment_id>",
+        "/api/payments",
+        "/api/payments/<int:payment_id>",
     )
     api.add_resource(
         MpesaCallbackResource,

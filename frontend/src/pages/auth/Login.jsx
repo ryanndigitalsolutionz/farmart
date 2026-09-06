@@ -22,6 +22,7 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [needsVerification, setNeedsVerification] = useState(false)
 
   const handleChange = (e) => {
     setFormData({
@@ -34,6 +35,7 @@ function Login() {
     e.preventDefault()
 
     setError('')
+    setNeedsVerification(false)
 
     if (!formData.email || !formData.password) {
       setError('Please enter your email and password.')
@@ -44,7 +46,7 @@ function Login() {
 
     try {
       const response = await fetch(
-        'http://localhost:5000/auth/login',
+        'http://127.0.0.1:5000/auth/login',
         {
           method: 'POST',
           headers: {
@@ -64,6 +66,14 @@ function Login() {
         setError(
           data.error || 'Unable to log in. Please try again.',
         )
+
+        if (
+          response.status === 403 &&
+          data.error?.includes('not been verified')
+        ) {
+          setNeedsVerification(true)
+        }
+
         return
       }
 
@@ -96,6 +106,15 @@ function Login() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleGoVerify = () => {
+    sessionStorage.setItem(
+      'farmartSignupEmail',
+      formData.email.trim().toLowerCase(),
+    )
+    sessionStorage.setItem('farmartSignupNeedsResend', 'true')
+    navigate('/verify-account')
   }
 
   return (
@@ -603,6 +622,26 @@ function Login() {
               {error && (
                 <p className="auth-error">
                   {error}
+                  {needsVerification && (
+                    <>
+                      {' '}
+                      <button
+                        type="button"
+                        onClick={handleGoVerify}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          padding: 0,
+                          color: 'inherit',
+                          textDecoration: 'underline',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Verify now
+                      </button>
+                    </>
+                  )}
                 </p>
               )}
 
@@ -619,7 +658,7 @@ function Login() {
                 className="google-button"
                 onClick={() => {
                   window.location.href =
-                  `http://localhost:5000/auth/google?role=${selectedRole}`
+                  `http://127.0.0.1:5000/auth/google?role=${selectedRole}`
                 }}
               >
                 <FaGoogle size={17} />

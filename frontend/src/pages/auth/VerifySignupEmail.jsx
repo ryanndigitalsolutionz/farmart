@@ -1,42 +1,55 @@
-// VerifyEmail.jsx
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { FiMail, FiArrowRight } from 'react-icons/fi'
 
-function VerifyEmail() {
+const API_BASE_URL = 'http://127.0.0.1:5000'
+
+function VerifySignupEmail() {
   const navigate = useNavigate()
 
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
   const [loading, setLoading] = useState(false)
   const [resending, setResending] = useState(false)
 
   useEffect(() => {
-    const savedEmail = sessionStorage.getItem(
-      'farmartResetEmail',
-    )
+    const savedEmail = sessionStorage.getItem('farmartSignupEmail')
 
     if (!savedEmail) {
-      navigate('/forgot-password', {
-        replace: true,
-      })
+      navigate('/register', { replace: true })
       return
     }
 
     setEmail(savedEmail)
+
+    if (sessionStorage.getItem('farmartSignupNeedsResend') === 'true') {
+      sessionStorage.removeItem('farmartSignupNeedsResend')
+
+      fetch(`${API_BASE_URL}/auth/resend-signup-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: savedEmail }),
+      }).catch(() => {})
+    }
   }, [navigate])
+
+  const redirectForRole = (role) => {
+    if (role === 'farmer') {
+      navigate('/farm-setup')
+    } else if (role === 'buyer') {
+      navigate('/buyer/marketplace')
+    } else {
+      navigate('/login')
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
     const trimmedCode = code.trim()
-
-    if (!trimmedCode) {
-      setError('Please enter the verification code.')
-      return
-    }
 
     if (!/^\d{6}$/.test(trimmedCode)) {
       setError('Please enter the 6-digit verification code.')
@@ -47,12 +60,10 @@ function VerifyEmail() {
 
     try {
       const response = await fetch(
-        'http://127.0.0.1:5000/auth/verify-password-reset-otp',
+        `${API_BASE_URL}/auth/verify-signup-otp`,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
             email: email.trim(),
@@ -64,28 +75,14 @@ function VerifyEmail() {
       const data = await response.json()
 
       if (!response.ok) {
-        setError(
-          data.error ||
-          'Unable to verify the code.',
-        )
+        setError(data.error || 'Unable to verify the code.')
         return
       }
 
-      sessionStorage.setItem(
-        'farmartEmailVerified',
-        'true',
-      )
-
-      navigate('/reset-password')
-    } catch (error) {
-      console.error(
-        'Email verification error:',
-        error,
-      )
-
-      setError(
-        'Unable to connect to the Farmart server.',
-      )
+      sessionStorage.removeItem('farmartSignupEmail')
+      redirectForRole(data.user?.role)
+    } catch {
+      setError('Unable to connect to the Farmart server.')
     } finally {
       setLoading(false)
     }
@@ -93,42 +90,30 @@ function VerifyEmail() {
 
   const handleResend = async () => {
     setError('')
+    setInfo('')
     setCode('')
     setResending(true)
 
     try {
       const response = await fetch(
-        'http://127.0.0.1:5000/auth/forgot-password',
+        `${API_BASE_URL}/auth/resend-signup-otp`,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            email: email.trim(),
-          }),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email.trim() }),
         },
       )
 
       const data = await response.json()
 
       if (!response.ok) {
-        setError(
-          data.error ||
-          'Unable to resend the verification code.',
-        )
+        setError(data.error || 'Unable to resend the verification code.')
         return
       }
-    } catch (error) {
-      console.error(
-        'Resend verification error:',
-        error,
-      )
 
-      setError(
-        'Unable to connect to the Farmart server.',
-      )
+      setInfo('A new code has been sent to your email.')
+    } catch {
+      setError('Unable to connect to the Farmart server.')
     } finally {
       setResending(false)
     }
@@ -339,6 +324,15 @@ function VerifyEmail() {
     font-size: 13px;
   }
 
+  .verify-info {
+    margin: 0;
+
+    color: var(--farm-green);
+
+    font-family: "Modern Antiqua", serif;
+    font-size: 13px;
+  }
+
   .verify-submit {
     width: 100%;
     height: 60px;
@@ -411,21 +405,6 @@ function VerifyEmail() {
     color: var(--farm-text);
   }
 
-  .verify-back {
-    margin: 26px 0 0;
-
-    font-family: "Modern Antiqua", serif;
-    font-size: 14px;
-  }
-
-  .verify-back a {
-    color: var(--farm-muted);
-  }
-
-  .verify-back a:hover {
-    color: var(--farm-green);
-  }
-
   @media (max-width: 600px) {
     .verify-page {
       padding: 28px 16px;
@@ -463,22 +442,17 @@ function VerifyEmail() {
             </div>
 
             <div className="verify-heading">
-              <h1>Verify your email</h1>
+              <h1>Verify your account</h1>
 
               <p>
                 Enter the verification code we sent to your email
-                address to continue resetting your password.
+                address to activate your Farmart account.
               </p>
             </div>
 
-            <p className="verify-email">
-              {email}
-            </p>
+            <p className="verify-email">{email}</p>
 
-            <form
-              onSubmit={handleSubmit}
-              className="verify-form"
-            >
+            <form onSubmit={handleSubmit} className="verify-form">
               <label className="verify-field">
                 <span>Verification code</span>
 
@@ -490,9 +464,7 @@ function VerifyEmail() {
                     placeholder="000000"
                     value={code}
                     onChange={(e) =>
-                      setCode(
-                        e.target.value.replace(/\D/g, ''),
-                      )
+                      setCode(e.target.value.replace(/\D/g, ''))
                     }
                     autoComplete="one-time-code"
                     disabled={loading}
@@ -500,24 +472,16 @@ function VerifyEmail() {
                 </div>
               </label>
 
-              {error && (
-                <p className="verify-error">
-                  {error}
-                </p>
-              )}
+              {error && <p className="verify-error">{error}</p>}
+              {!error && info && <p className="verify-info">{info}</p>}
 
               <button
                 type="submit"
                 className="verify-submit"
                 disabled={loading}
               >
-                {loading
-                  ? 'Verifying...'
-                  : 'Verify & continue'}
-
-                {!loading && (
-                  <FiArrowRight size={18} />
-                )}
+                {loading ? 'Verifying...' : 'Verify & continue'}
+                {!loading && <FiArrowRight size={18} />}
               </button>
             </form>
 
@@ -528,16 +492,8 @@ function VerifyEmail() {
                 onClick={handleResend}
                 disabled={resending || loading}
               >
-                {resending
-                  ? 'Sending...'
-                  : 'Resend code'}
+                {resending ? 'Sending...' : 'Resend code'}
               </button>
-            </p>
-
-            <p className="verify-back">
-              <Link to="/forgot-password">
-                Change email address
-              </Link>
             </p>
           </div>
         </section>
@@ -546,4 +502,4 @@ function VerifyEmail() {
   )
 }
 
-export default VerifyEmail
+export default VerifySignupEmail

@@ -4,6 +4,7 @@ import { AnimatePresence } from 'framer-motion'
 import { CartProvider } from './context/CartContext'
 import { LivestockProvider } from './context/LivestockContext'
 import { WishlistProvider } from './context/WishlistContext'
+import { AdminProvider } from './context/AdminContext'
 
 import SplashScreen from './components/SplashScreen'
 import Header from './components/layout/Header'
@@ -18,6 +19,7 @@ import Register from './pages/auth/Register'
 import FarmSetup from './pages/auth/FarmSetup'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import VerifyEmail from './pages/auth/VerifyEmail'
+import VerifySignupEmail from './pages/auth/VerifySignupEmail'
 import ResetPassword from './pages/auth/ResetPassword'
 
 import FarmerDashboard from './pages/farmer/Dashboard'
@@ -29,6 +31,7 @@ import FarmerAnalytics from './pages/farmer/Analytics'
 import FarmerAnnouncements from './pages/farmer/Announcements'
 
 import BuyerRoute from './pages/routes/BuyerRoute'
+import RequireRole from './pages/routes/RequireRole'
 
 import AdminDashboard from './pages/admin/Dashboard'
 import Users from './pages/admin/Users'
@@ -75,6 +78,7 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/verify-account" element={<VerifySignupEmail />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/farm-setup" element={<FarmSetup />} />
 
@@ -92,28 +96,36 @@ function App() {
 
               <Route path="/buyer/*" element={<BuyerRoute />} />
 
-        <Route path="/admin" element={<DashboardLayout />}>
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="users" element={<Users />} />
-          <Route path="farmers" element={<Farmers />} />
+        <Route path="/admin" element={<RequireRole allow={["admin"]} />}>
           <Route
-            path="farmers/:farmerId"
-            element={<FarmerDetails />}
-          />
-          <Route
-            path="buyers/:buyerId"
-            element={<BuyerDetails />}
-          />
-          <Route path="listings" element={<Listings />} />
-          <Route path="orders" element={<AdminOrders />} />
-          <Route path="transactions" element={<Transactions />} />
-          <Route path="disputes" element={<Disputes />} />
-          <Route
-            path="announcements"
-            element={<Announcements />}
-          />
-          <Route path="settings" element={<Settings />} />
+            element={(
+              <AdminProvider>
+                <DashboardLayout />
+              </AdminProvider>
+            )}
+          >
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="users" element={<Users />} />
+            <Route path="farmers" element={<Farmers />} />
+            <Route
+              path="farmers/:farmerId"
+              element={<FarmerDetails />}
+            />
+            <Route
+              path="buyers/:buyerId"
+              element={<BuyerDetails />}
+            />
+            <Route path="listings" element={<Listings />} />
+            <Route path="orders" element={<AdminOrders />} />
+            <Route path="transactions" element={<Transactions />} />
+            <Route path="disputes" element={<Disputes />} />
+            <Route
+              path="announcements"
+              element={<Announcements />}
+            />
+            <Route path="settings" element={<Settings />} />
+          </Route>
         </Route>
 
               <Route
