@@ -17,6 +17,7 @@ import Welcome from './pages/auth/Welcome'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
 import FarmSetup from './pages/auth/FarmSetup'
+import GoogleCallback from './pages/auth/GoogleCallback'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import VerifyEmail from './pages/auth/VerifyEmail'
 import ResetPassword from './pages/auth/ResetPassword'
@@ -74,12 +75,34 @@ function App() {
               <Route path="/welcome" element={<Welcome />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/verify-email" element={<VerifyEmail />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route
+                path="/auth/google/callback"
+                element={<GoogleCallback />}
+              />
+              <Route
+                path="/forgot-password"
+                element={<ForgotPassword />}
+              />
+              <Route
+                path="/verify-email"
+                element={<VerifyEmail />}
+              />
+              <Route
+                path="/reset-password"
+                element={<ResetPassword />}
+              />
 
-              <Route element={<ProtectedRoute allowedRoles={['farmer']} />}>
-                <Route path="/farm-setup" element={<FarmSetup />} />
+              <Route
+                element={
+                  <ProtectedRoute
+                    allowedRoles={['farmer']}
+                  />
+                }
+              >
+                <Route
+                  path="/farm-setup"
+                  element={<FarmSetup />}
+                />
               </Route>
 
               <Route
@@ -89,15 +112,42 @@ function App() {
                   />
                 }
               >
-                <Route path="/farmer" element={<FarmerDashboardLayout />}>
-                  <Route index element={<FarmerDashboard />} />
-                  <Route path="dashboard" element={<FarmerDashboard />} />
-                  <Route path="create-listing" element={<CreateListings />} />
-                  <Route path="listings" element={<CreateListings />} />
-                  <Route path="orders" element={<FarmerOrders />} />
-                  <Route path="analytics" element={<FarmerAnalytics />} />
-                  <Route path="farm-profile" element={<FarmProfile />} />
-                  <Route path="profile" element={<FarmerProfile />} />
+                <Route
+                  path="/farmer"
+                  element={<FarmerDashboardLayout />}
+                >
+                  <Route
+                    index
+                    element={<FarmerDashboard />}
+                  />
+                  <Route
+                    path="dashboard"
+                    element={<FarmerDashboard />}
+                  />
+                  <Route
+                    path="create-listing"
+                    element={<CreateListings />}
+                  />
+                  <Route
+                    path="listings"
+                    element={<CreateListings />}
+                  />
+                  <Route
+                    path="orders"
+                    element={<FarmerOrders />}
+                  />
+                  <Route
+                    path="analytics"
+                    element={<FarmerAnalytics />}
+                  />
+                  <Route
+                    path="farm-profile"
+                    element={<FarmProfile />}
+                  />
+                  <Route
+                    path="profile"
+                    element={<FarmerProfile />}
+                  />
                 </Route>
               </Route>
 
@@ -108,7 +158,10 @@ function App() {
                   />
                 }
               >
-                <Route path="/buyer/*" element={<BuyerRoute />} />
+                <Route
+                  path="/buyer/*"
+                  element={<BuyerRoute />}
+                />
               </Route>
 
               <Route
@@ -118,14 +171,31 @@ function App() {
                   />
                 }
               >
-                <Route path="/admin" element={<DashboardLayout />}>
+                <Route
+                  path="/admin"
+                  element={<DashboardLayout />}
+                >
                   <Route
                     index
-                    element={<Navigate to="dashboard" replace />}
+                    element={
+                      <Navigate
+                        to="dashboard"
+                        replace
+                      />
+                    }
                   />
-                  <Route path="dashboard" element={<AdminDashboard />} />
-                  <Route path="users" element={<Users />} />
-                  <Route path="farmers" element={<Farmers />} />
+                  <Route
+                    path="dashboard"
+                    element={<AdminDashboard />}
+                  />
+                  <Route
+                    path="users"
+                    element={<Users />}
+                  />
+                  <Route
+                    path="farmers"
+                    element={<Farmers />}
+                  />
                   <Route
                     path="farmers/:farmerId"
                     element={<FarmerDetails />}
@@ -134,22 +204,45 @@ function App() {
                     path="buyers/:buyerId"
                     element={<BuyerDetails />}
                   />
-                  <Route path="listings" element={<Listings />} />
-                  <Route path="orders" element={<AdminOrders />} />
-                  <Route path="transactions" element={<Transactions />} />
-                  <Route path="reports" element={<Reports />} />
-                  <Route path="disputes" element={<Disputes />} />
+                  <Route
+                    path="listings"
+                    element={<Listings />}
+                  />
+                  <Route
+                    path="orders"
+                    element={<AdminOrders />}
+                  />
+                  <Route
+                    path="transactions"
+                    element={<Transactions />}
+                  />
+                  <Route
+                    path="reports"
+                    element={<Reports />}
+                  />
+                  <Route
+                    path="disputes"
+                    element={<Disputes />}
+                  />
                   <Route
                     path="announcements"
                     element={<Announcements />}
                   />
-                  <Route path="settings" element={<Settings />} />
+                  <Route
+                    path="settings"
+                    element={<Settings />}
+                  />
                 </Route>
               </Route>
 
               <Route
                 path="*"
-                element={<Navigate to="/" replace />}
+                element={
+                  <Navigate
+                    to="/"
+                    replace
+                  />
+                }
               />
             </Routes>
           </CartProvider>
