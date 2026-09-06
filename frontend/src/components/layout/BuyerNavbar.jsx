@@ -134,8 +134,8 @@ function BuyerNavbar() {
       'after:bg-[var(--farm-green)]',
       'after:origin-left after:transition-transform after:duration-200',
       isActive
-        ? 'font-bold text-[var(--farm-green-dark)] after:scale-x-100'
-        : 'after:scale-x-0 hover:text-[var(--farm-green-dark)]',
+        ? 'font-bold text-[var(--farm-text)] after:scale-x-100'
+        : 'after:scale-x-0 hover:text-[var(--farm-green)]',
     ].join(' ')
 
   const iconButtonClass = [
@@ -143,7 +143,7 @@ function BuyerNavbar() {
     'rounded-full border',
     'border-[var(--farm-green-border)]',
     'bg-[var(--farm-white)]',
-    'text-[var(--farm-green-dark)]',
+    'text-[var(--farm-text)]',
     'shadow-[4px_4px_9px_rgba(29,78,42,0.08),-3px_-3px_8px_rgba(255,255,255,0.55)]',
     'transition-all duration-150',
     'hover:border-[var(--farm-green)]',
@@ -174,11 +174,11 @@ function BuyerNavbar() {
       className="
         sticky top-0 z-[1000] w-full
         border-b border-[var(--farm-green-border)]
-        bg-[rgba(244,248,242,0.88)]
+        dark:bg-[var(--farm-background)]
         font-[var(--farm-body-font)]
         backdrop-blur-[16px]
         transition-colors duration-200
-        dark:bg-[rgba(20,32,26,0.9)]
+        
       "
     >
       {/* Navbar */}

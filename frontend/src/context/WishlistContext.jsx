@@ -1,32 +1,49 @@
 import { createContext, useContext, useState, useEffect} from 'react'
+import API_BASE_URL from '../api/api'
 
 const WishlistContext = createContext();
 
 export function WishlistProvider({ children }) {
-    // TODO(backend): replace this intitializer with a GET/api/wishlist call
+    const [wishlist, setWishlist] = useState([])
 
-    const [wishlist, setWishList] = useState(() => {
-        const savedWishlist = localStorage.getItem("wishlist");
+    const addToWishlist = async (animal) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/wishlist`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                },
+                body: JSON.stringify({
+                    livestock_id: animal.id,
+                }),
+            });
 
-        return savedWishlist ? JSON.parse(savedWishlist) : [];
-    });
+            const data = await response.json();
 
-    const addToWishlist = (animal) => {
-        // TODO(backend): POST/api/wishlist { animalId: animal.id }
-        setWishList((currentWishlist) => {
-            const alreadyInWishlist = currentWishlist.some(
-                (item) => item.id === animal.id
-            );
-            if (alreadyInWishlist) {
-                return currentWishlist;
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to add to wishlist');
             }
-            return [...currentWishlist, animal];
-        });
 
+            setWishlist((currentWishlist) => {
+                const alreadyInWishlist = currentWishlist.some(
+                    (item) => item.id === data.id
+                );
+
+                if (alreadyInWishlist) {
+                    return currentWishlist;
+                }
+
+                return [...currentWishlist, data];
+            });
+        } catch (error) {
+            console.error('Failed to add to wishlist:', error);
+        }
     };
     const removeFromWishlist = (animalId) => {
         // TODO(backend): DELETE /api/wishlist/:animalId
-        setWishList((currentWishlist) => 
+        setWishlist((currentWishlist) => 
             currentWishlist.filter((item) => item.id !== animalId)
         );
     };
@@ -41,11 +58,33 @@ export function WishlistProvider({ children }) {
         }
     };
     const clearWishlist = () => {
-        setWishList([]);
+        setWishlist([]);
     };
+
     useEffect(() => {
-        localStorage.setItem("wishlist", JSON.stringify(wishlist));
-    }, [wishlist]);
+        const loadWishlist = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/wishlist`, {
+                    credentials: 'include',
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to load wishlist');
+                }
+
+                setWishlist(data);
+            } catch (error) {
+                console.error('Failed to load wishlist:', error);
+            }
+        };
+
+        loadWishlist();
+    }, []);
 
   return (
     <WishlistContext.Provider

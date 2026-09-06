@@ -51,15 +51,17 @@ function Cart() {
                                 <FaShoppingCart size={24} />
                             </div>
                         </div>
+                        <div className="flex flex-col justify-center items-center gap-4">
 
-                        <h2 className="text-xl font-bold font-[var(--farm-heading-font)]">
-                            Your cart is empty
-                        </h2>
+                            <h2 className="text-xl font-bold font-[var(--farm-heading-font)]">
+                                Your cart is empty
+                            </h2>
 
-                        <p className="mt-2 text-sm text-[var(--farm-muted)] max-w-md mx-auto">
-                            You haven't added any livestock or farm products yet.
-                            Browse the marketplace and add something you like.
-                        </p>
+                            <p className="mt-2 text-sm text-[var(--farm-muted)] max-w-md mx-auto">
+                                You haven't added any livestock or farm products yet.
+                                Browse the marketplace and add something you like.
+                            </p>
+                        </div>
 
                         <Link
                             to="/buyer/marketplace"

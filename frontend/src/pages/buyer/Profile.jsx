@@ -39,7 +39,7 @@ function Profile() {
         setSuccess('')
 
         const response = await fetch(
-          `${API_BASE}/api/profile/me`,
+          `${API_BASE_URL}/api/profile/me`,
           {
             credentials: 'include',
           }

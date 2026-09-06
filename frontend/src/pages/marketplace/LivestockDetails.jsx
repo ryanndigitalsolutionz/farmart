@@ -63,61 +63,7 @@ function LivestockDetails() {
 
   return (
     <div className="p-5 max-w-2xl mx-auto shadow-2xl m-1">
-
-      {/* Top bar */}
-      <div className="flex items-center justify-between mb-5">
-
-        {/* Back */}
-        <Link
-          to="/buyer/marketplace"
-          className="
-            text-gray-500
-            font-semibold
-            hover:text-[var(--farm-green-dark)]
-            transition
-          "
-        >
-          ← Marketplace
-        </Link>
-
-        {/* Cart */}
-        <Link
-          to="/buyer/cart"
-          className="
-            flex items-center gap-2
-            px-4 py-2.5
-            rounded-xl
-            bg-[var(--farm-green)]
-            text-white
-            font-semibold
-            shadow-md
-            hover:bg-[var(--farm-green-dark)]
-            transition
-          "
-        >
-          <LuShoppingCart size={22} />
-
-          <span>Cart</span>
-
-          <span
-            className="
-              min-w-[26px]
-              h-[26px]
-              px-2
-              flex
-              items-center
-              justify-center
-              rounded-full
-              bg-white
-              text-[var(--farm-green-dark)]
-              text-xs
-              font-bold
-            "
-          >
-            {cartCount}
-          </span>
-        </Link>
-      </div>
+      
 
       {/* Animal image */}
       <img

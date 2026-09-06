@@ -302,11 +302,15 @@ function Marketplace() {
       `}</style>
 
       <main className="marketplace-page min-h-screen text-[var(--farm-text)] transition-[background_color,color] duration-180 ease-[ease]">
-        <div className="marketplace-container w-[min(1200px,calc(100%-40px))] mx-auto pt-[34px] pb-[70px] max-[620px]:w-[min(100%-28px,560px)] max-[620px]:pt-[24px]">
+        <div 
+          className="marketplace-container w-[min(1200px,calc(100%-40px))] 
+          mx-auto pt-[34px] pb-[70px] max-[620px]:w-[min(100%-28px,560px)] max-[620px]:pt-[24px]">
 
           <header className="marketplace-top flex flex-col items-center text-center">
 
-            <div className="marketplace-heading w-full h-[350px] bg-[url('/Image/marketplace-bg.jpg')] bg-cover bg-center bg-no-repeat rounded-lg"
+            <div 
+              className="marketplace-heading w-full h-[380px] 
+              bg-[url('/Image/marketplace-bg.jpg')] bg-cover bg-center bg-no-repeat rounded-lg"
             >
               <div className='p-4 flex flex-col justify-center items-center '>
               <h1 
@@ -322,13 +326,6 @@ function Marketplace() {
               </p>
               </div>
             </div>
-
-            {/* <div className="marketplace-search-wrapper w-min[680px,100%] mt-[30px] mx-auto">
-              <SearchBar
-                search={search}
-                setSearch={setSearch}
-              />
-            </div> */}
 
             <div className="category-switch flex justify-center gap-[5px] mx-auto mt-[30px] p-[5px] border border-[var(--farm-green-border)] rounded-[15px] bg-[var(--farm-green-soft)] max-[620px]:w-full">
 
