@@ -1,6 +1,6 @@
 function SexFilter({ sex, setSex }) {
   return (
-    <div>
+    <div className="flex items-center gap-2 border-2 rounded-2xl p-2 border-(--farm-green-border) w-40 ">
       <select
         value={sex}
         onChange={(e) => setSex(e.target.value)}

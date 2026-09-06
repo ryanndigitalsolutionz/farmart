@@ -1,6 +1,6 @@
 function BreedFilter({ breed, setBreed }) {
   return (
-    <div>
+    <div className="flex items-center gap-2 border-2 rounded-2xl p-2 border-(--farm-green-border) w-40 ">
         <select value={breed} onChange={(e) => setBreed(e.target.value)}>
             <option value="">All Breeds</option>
             <option value="Boer">Boer</option>

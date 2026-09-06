@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from . import db
+from extensions import db
 
 class Review(db.Model):
     __tablename__ = "reviews"
@@ -40,8 +40,7 @@ class Review(db.Model):
     )
 
     buyer = db.relationship(
-        "User", 
-        back_populates="reviews"
+        "User"
     )
     livestock = db.relationship(
         "Livestock", 

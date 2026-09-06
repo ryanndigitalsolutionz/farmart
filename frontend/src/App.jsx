@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
+import { CartProvider } from './context/CartContext'
+import { LivestockProvider } from './context/LivestockContext'
+import { WishlistProvider } from './context/WishlistContext'
 
 import SplashScreen from './components/SplashScreen'
 import Header from './components/layout/Header'
@@ -25,16 +28,7 @@ import FarmerOrders from './pages/farmer/Orders'
 import FarmerAnalytics from './pages/farmer/Analytics'
 import FarmerAnnouncements from './pages/farmer/Announcements'
 
-import Marketplace from './pages/buyer/Marketplace'
-import BuyerProfile from './pages/buyer/Profile'
-import Cart from './pages/buyer/Cart'
-import Checkout from './pages/buyer/Checkout'
-import BuyerPayments from './pages/buyer/Payments'
-import BuyerOrders from './pages/buyer/Orders'
-import OrderDetails from './pages/buyer/OrderDetails'
-import OrderConfirmation from './pages/buyer/OrderConfirmation'
-import Wishlist from './pages/buyer/Wishlist'
-import BuyerReviews from './pages/buyer/Reviews'
+import BuyerRoute from './pages/routes/BuyerRoute'
 
 import AdminDashboard from './pages/admin/Dashboard'
 import Users from './pages/admin/Users'
@@ -69,17 +63,20 @@ function App() {
         {showSplash && <SplashScreen key="splash" />}
       </AnimatePresence>
 
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/faqs" element={<FAQs />} />
+      <LivestockProvider>
+        <WishlistProvider>
+          <CartProvider>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/faqs" element={<FAQs />} />
 
-        <Route path="/welcome" element={<Welcome />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/farm-setup" element={<FarmSetup />} />
+              <Route path="/welcome" element={<Welcome />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/farm-setup" element={<FarmSetup />} />
 
         <Route path="/farmer" element={<FarmerDashboardLayout />}>
           <Route index element={<FarmerDashboard />} />
@@ -93,22 +90,7 @@ function App() {
           <Route path="profile" element={<FarmerProfile />} />
         </Route>
 
-        <Route path="/buyer">
-          <Route index element={<Marketplace />} />
-          <Route path="marketplace" element={<Marketplace />} />
-          <Route path="profile" element={<BuyerProfile />} />
-          <Route path="cart" element={<Cart />} />
-          <Route path="checkout" element={<Checkout />} />
-          <Route path="payments" element={<BuyerPayments />} />
-          <Route path="orders" element={<BuyerOrders />} />
-          <Route path="orders/:orderId" element={<OrderDetails />} />
-          <Route
-            path="order-confirmation"
-            element={<OrderConfirmation />}
-          />
-          <Route path="wishlist" element={<Wishlist />} />
-          <Route path="reviews" element={<BuyerReviews />} />
-        </Route>
+              <Route path="/buyer/*" element={<BuyerRoute />} />
 
         <Route path="/admin" element={<DashboardLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />
@@ -134,12 +116,14 @@ function App() {
           <Route path="settings" element={<Settings />} />
         </Route>
 
-        <Route
-          path="*"
-          element={<Navigate to="/" replace />}
-          
-        />
-      </Routes>
+              <Route
+                path="*"
+                element={<Navigate to="/" replace />}
+              />
+            </Routes>
+          </CartProvider>
+        </WishlistProvider>
+      </LivestockProvider>
     </>
   )
 }
