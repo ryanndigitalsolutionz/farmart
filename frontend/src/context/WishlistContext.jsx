@@ -41,15 +41,52 @@ export function WishlistProvider({ children }) {
             console.error('Failed to add to wishlist:', error);
         }
     };
-    const removeFromWishlist = (animalId) => {
-        // TODO(backend): DELETE /api/wishlist/:animalId
-        setWishlist((currentWishlist) => 
-            currentWishlist.filter((item) => item.id !== animalId)
+    
+    const removeFromWishlist = async (animalId) => {
+    try {
+        const wishlistItem = wishlist.find(
+            (item) => item.livestock_id === animalId
         );
+
+        if (!wishlistItem) {
+            return;
+        }
+
+        const response = await fetch(
+            `${API_BASE_URL}/wishlist/${wishlistItem.id}`,
+            {
+                method: "DELETE",
+                credentials: "include",
+                headers: {
+                    Accept: "application/json",
+                },
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.message || "Failed to remove from wishlist"
+            );
+        }
+
+        setWishlist((currentWishlist) =>
+            currentWishlist.filter(
+                (item) => item.id !== wishlistItem.id
+            )
+        );
+        
+        } catch (error) {
+            console.error("Failed to remove from wishlist:", error);
+        }
     };
+
     const isInWishlist = (animalId) => {
-        return wishlist.some((item) =>item.id === animalId )
+        return wishlist.some(
+            (item) => item.livestock_id === animalId )
     };
+    
     const toggleWishlist = (animal) => {
         if (isInWishlist(animal.id)) {
             removeFromWishlist(animal.id);
