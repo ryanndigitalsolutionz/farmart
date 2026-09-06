@@ -35,10 +35,6 @@ GOOGLE_SCOPES = [
     methods=["GET"],
 )
 def current_user():
-    """
-    Return the currently authenticated user.
-    """
-
     user_id = session.get("user_id")
 
     if not user_id:
@@ -47,7 +43,10 @@ def current_user():
             "error": "Not authenticated.",
         }), 401
 
-    user = db.session.get(User, user_id)
+    user = db.session.get(
+        User,
+        user_id,
+    )
 
     if not user:
         session.clear()
@@ -68,6 +67,7 @@ def current_user():
             "is_verified": user.is_verified,
         },
     }), 200
+
 
 @auth_bp.route(
     "/google",
@@ -111,52 +111,6 @@ def google_login():
     )
 
     return redirect(authorization_url)
-
-
-@auth_bp.route(
-    "/me",
-    methods=["GET"],
-)
-def current_user():
-    user_id = session.get("user_id")
-
-    if not user_id:
-        return jsonify({
-            "success": False,
-            "error": "Not authenticated.",
-        }), 401
-
-    user = db.session.get(
-        User,
-        user_id,
-    )
-
-    if not user:
-        session.pop(
-            "user_id",
-            None,
-        )
-        session.pop(
-            "user_role",
-            None,
-        )
-
-        return jsonify({
-            "success": False,
-            "error": "User not found.",
-        }), 404
-
-    return jsonify({
-        "success": True,
-        "user": {
-            "id": user.id,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "email": user.email,
-            "role": user.role,
-            "is_verified": user.is_verified,
-        },
-    }), 200
 
 
 @auth_bp.route(
