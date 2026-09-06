@@ -32,10 +32,10 @@ function Profile() {
         setError('')
 
         const [profileResponse, listingsResponse] = await Promise.all([
-          fetch(`${API_BASE}/api/profile/me`, {
+          fetch(`${API_BASE_URL}/api/profile/me`, {
             credentials: 'include',
           }),
-          fetch(`${API_BASE}/livestock`, {
+          fetch(`${API_BASE_URL}/livestock`, {
             credentials: 'include',
           }),
         ])
@@ -122,7 +122,7 @@ function Profile() {
       const firstName = nameParts.shift() || ''
       const lastName = nameParts.join(' ')
 
-      const response = await fetch(`${API_BASE}/api/profile/me`, {
+      const response = await fetch(`${API_BASE_URL}/api/profile/me`, {
         method: 'PATCH',
         credentials: 'include',
         headers: {

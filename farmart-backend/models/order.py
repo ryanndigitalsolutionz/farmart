@@ -62,4 +62,3 @@ class Order(db.Model):
         back_populates="order",
         cascade="all, delete-orphan",
     )
-    

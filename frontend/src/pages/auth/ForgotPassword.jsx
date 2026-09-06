@@ -1,7 +1,7 @@
-// ForgotPassword.jsx
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { FiMail, FiArrowRight } from 'react-icons/fi'
+import API_BASE_URL from '../../api/api'
 
 function ForgotPassword() {
   const navigate = useNavigate()
@@ -75,7 +75,7 @@ function ForgotPassword() {
 
   return (
     <>
-<style>{`
+      <style>{`
   .forgot-page {
     min-height: 100vh;
     width: 100%;
