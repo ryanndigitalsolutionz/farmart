@@ -12,7 +12,7 @@ from flask import (
 
 from config import Config
 from extensions import bcrypt, db
-from models import User, PasswordResetToken
+from models import User, Profile, PasswordResetToken
 from services.email_service import send_password_reset_otp
 
 
@@ -286,6 +286,13 @@ def register():
     )
 
     db.session.add(user)
+    db.session.flush()
+
+    profile = Profile(
+        user_id=user.id,
+    )
+    
+    db.session.add(profile)
     db.session.commit()
 
     session["user_id"] = user.id

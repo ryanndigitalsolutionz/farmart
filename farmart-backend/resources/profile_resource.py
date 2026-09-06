@@ -68,6 +68,7 @@ class CurrentProfileResource(Resource):
             user_id=current_user_id
         ).first()
 
+
         if not profile:
             return {
                 "success": False,
