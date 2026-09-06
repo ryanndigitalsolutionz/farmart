@@ -467,7 +467,7 @@ function LandingPage() {
 
       <a href="#">Help Center</a>
       <a href="#">Contact</a>
-      <a href="#">FAQs</a>
+      <a href="/faqs">FAQs</a>
       <a href="#">Report a Problem</a>
     </div>
 
