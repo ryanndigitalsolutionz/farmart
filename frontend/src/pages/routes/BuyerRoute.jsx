@@ -11,11 +11,17 @@ import OrderDetails from '../buyer/OrderDetails'
 import OrderConfirmation from '../buyer/OrderConfirmation'
 import Wishlist from '../buyer/Wishlist'
 import BuyerReviews from '../buyer/Reviews'
+import BuyerNavbar from '../../components/layout/BuyerNavbar'
+import CartToast from '../../components/marketplace/Carttoast'
 
 function BuyerRoute() {
   return (
+    <>
+    <BuyerNavbar/>
+
     <Routes>
       <Route index element={<Marketplace />} />
+      <Route path=''/>
       <Route path="marketplace" element={<Marketplace />} />
       <Route path="profile" element={<BuyerProfile />} />
       <Route path="cart" element={<Cart />} />
@@ -31,7 +37,11 @@ function BuyerRoute() {
       <Route path="wishlist" element={<Wishlist />} />
       <Route path="reviews" element={<BuyerReviews />} />
     </Routes>
+    
+    <CartToast/>
+    </>
   )
 }
 
-export default BuyerRoute
+export default BuyerRoute;
+

@@ -1,15 +1,11 @@
-import { useMemo, useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { useMemo, useState, useEffect } from 'react' 
+import { Link, useSearchParams  } from 'react-router-dom'
 import {
   FaShoppingCart,
-  FaHeart,
-  FaUser,
-  FaClipboardList,
-  FaStar,
   FaSlidersH,
 } from 'react-icons/fa'
 
-import SearchBar from '../../components/marketplace/SearchBar'
+// import SearchBar from '../../components/marketplace/SearchBar'
 import FilterPanel from '../../components/marketplace/FilterPanel'
 import SortDropdown from '../../components/marketplace/SortDropdown'
 import ProductFilterPanel from '../../components/products/filters/ProductFilterPanel'
@@ -19,9 +15,10 @@ import API_BASE_URL from '../../api/api'
 
 function Marketplace() {
   const [category, setCategory] = useState('livestock')
-  const [showFilters, setShowFilters] = useState(true)
+  const [showFilters, setShowFilters] = useState(false)
 
-  const [search, setSearch] = useState('')
+  const [searchParams] = useSearchParams()
+  const search = searchParams.get('q') || ''
   const [sort, setSort] = useState('')
 
   const [type, setType] = useState('')
@@ -49,7 +46,7 @@ function Marketplace() {
         setProductsLoading(true)
         setProductsError('')
 
-        const response = await fetch(`${API_BASE}/products`, {
+        const response = await fetch(`${API_BASE_URL}/products`, {
           credentials: 'include',
         })
 
@@ -309,32 +306,29 @@ function Marketplace() {
 
           <header className="marketplace-top flex flex-col items-center text-center">
 
-            <div className="marketplace-logo w-[190px] h-[68px] mb-[22px] max-[620px]:w-[160px] max-[620px]:h-[58px]">
-              <img
-                src="/logo/farmart_full_logo_testing.png"
-                alt="Farmart"
-                className="w-full h-full object-contain"
-              />
-            </div>
-
-            <div className="marketplace-heading">
-              <h1 className="m-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[clamp(36px,6vw,50px)] font-bold leading-[1.1] tracking-[-1px]">
-                Find what your farm has to offer.
+            <div className="marketplace-heading w-full h-[350px] bg-[url('/Image/marketplace-bg.jpg')] bg-cover bg-center bg-no-repeat rounded-lg"
+            >
+              <div className='p-4 flex flex-col justify-center items-center '>
+              <h1 
+                className="m-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] 
+                text-[clamp(36px,6vw,50px)] font-bold leading-[1.1] tracking-[-1px]  ">
+                Trusted farmers. Quality livestock
               </h1>
 
-              <p className="max-w-[700px] mx-auto mt-[16px] text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[15px] leading-[1.8] text-center px-15">
-                Discover livestock and farm products directly
-                from farmers, with transparent prices and
-                trustworthy listings.
+              <p 
+                className="max-w-[700px] mx-auto mt-[16px] text-[var(--farm-muted)] 
+                font-[var(--farm-body-font)] text-[15px] leading-[1.8] text-center px-[15px]">
+                Bringing the farm closer to you, at fair prices you can count on.
               </p>
+              </div>
             </div>
 
-            <div className="marketplace-search-wrapper w-min[680px,100%] mt-[30px] mx-auto">
+            {/* <div className="marketplace-search-wrapper w-min[680px,100%] mt-[30px] mx-auto">
               <SearchBar
                 search={search}
                 setSearch={setSearch}
               />
-            </div>
+            </div> */}
 
             <div className="category-switch flex justify-center gap-[5px] mx-auto mt-[30px] p-[5px] border border-[var(--farm-green-border)] rounded-[15px] bg-[var(--farm-green-soft)] max-[620px]:w-full">
 
@@ -654,50 +648,7 @@ function Marketplace() {
             )}
 
           </section>
-
-          <nav className="buyer-actions flex justify-center flex-wrap gap-[10px] mt-[52px] pt-[24px] border-t border-[var(--farm-green-border)] max-[620px]:flex-col">
-
-            <Link
-              to="/buyer/checkout"
-              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
-            >
-              <FaShoppingCart size={13} />
-              Checkout
-            </Link>
-
-            <Link
-              to="/buyer/orders"
-              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
-            >
-              <FaClipboardList size={13} />
-              Orders
-            </Link>
-
-            <Link
-              to="/buyer/wishlist"
-              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
-            >
-              <FaHeart size={13} />
-              Wishlist
-            </Link>
-
-            <Link
-              to="/buyer/reviews"
-              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
-            >
-              <FaStar size={13} />
-              Reviews
-            </Link>
-
-            <Link
-              to="/buyer/profile"
-              className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
-            >
-              <FaUser size={13} />
-              Profile
-            </Link>
-
-          </nav>
+         
 
         </div>
       </main>

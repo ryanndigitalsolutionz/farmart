@@ -24,7 +24,7 @@ function Wishlist() {
         setIsLoading(true)
         setError('')
 
-        const response = await fetch(`${API_BASE}/wishlist`, {
+        const response = await fetch(`${API_BASE_URL}/wishlist`, {
           credentials: 'include',
         })
 
