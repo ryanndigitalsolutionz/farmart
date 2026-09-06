@@ -35,3 +35,20 @@
     var(--farm-background);
 }
 
+@theme {
+  --animate-buyer-navbar-bump: buyer-navbar-bump 380ms ease;
+
+  @keyframes buyer-navbar-bump {
+    0% {
+      transform: scale(1);
+    }
+
+    35% {
+      transform: scale(1.18);
+    }
+
+    100% {
+      transform: scale(1);
+    }
+  }
+}

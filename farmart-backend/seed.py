@@ -8,7 +8,6 @@ from models import User, Profile, Livestock, Product
 
 app = create_app()
 
-
 FARMERS = [
     {
         "first_name": "Dalion",
@@ -74,6 +73,13 @@ FARMERS = [
         "location": "Machakos",
     },
 ]
+
+BUYER = {
+    "first_name": "Faith",
+    "last_name": "Kamande",
+    "email": "faith.buyer@example.com",
+    "password": "Buyer2026!",
+}
 
 
 ADMIN = {
@@ -353,6 +359,14 @@ def seed_farmers():
 
     return farmers
 
+def seed_buyer():
+    return get_or_create_user(
+        first_name=BUYER["first_name"],
+        last_name=BUYER["last_name"],
+        email=BUYER["email"],
+        password=BUYER["password"],
+        role="buyer",
+    )
 
 def seed_livestock(farmers):
     for livestock_data in LIVESTOCK:
@@ -499,6 +513,7 @@ if __name__ == "__main__":
         print("\nStarting Farmart development seed...\n")
 
         seed_admin()
+        seed_buyer()
         farmers = seed_farmers()
         seed_livestock(farmers)
         seed_products(farmers)

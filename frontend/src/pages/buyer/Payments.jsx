@@ -29,7 +29,7 @@ function Payments() {
                 setError("");
 
                 const response = await fetch(
-                    `${API_BASE}/orders/${id}`,
+                    `${API_BASE_URL}/orders/${id}`,
                     {
                         credentials: "include",
                     }
