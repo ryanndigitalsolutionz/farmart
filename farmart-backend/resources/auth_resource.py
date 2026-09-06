@@ -31,6 +31,45 @@ GOOGLE_SCOPES = [
 
 
 @auth_bp.route(
+    "/me",
+    methods=["GET"],
+)
+def current_user():
+    """
+    Return the currently authenticated user.
+    """
+
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({
+            "success": False,
+            "error": "Not authenticated.",
+        }), 401
+
+    user = db.session.get(User, user_id)
+
+    if not user:
+        session.clear()
+
+        return jsonify({
+            "success": False,
+            "error": "User account not found.",
+        }), 401
+
+    return jsonify({
+        "success": True,
+        "user": {
+            "id": user.id,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": user.email,
+            "role": user.role,
+            "is_verified": user.is_verified,
+        },
+    }), 200
+
+@auth_bp.route(
     "/google",
     methods=["GET"],
 )

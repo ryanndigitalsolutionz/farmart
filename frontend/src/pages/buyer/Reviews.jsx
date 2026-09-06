@@ -26,7 +26,7 @@ function Reviews() {
         setIsLoading(true)
         setError('')
 
-        const response = await fetch(`${API_BASE}/reviews`, {
+        const response = await fetch(`${API_BASE_URL}/reviews`, {
           credentials: 'include',
         })
 

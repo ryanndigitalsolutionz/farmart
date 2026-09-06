@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { CartProvider } from './context/CartContext'
 import { LivestockProvider } from './context/LivestockContext'
@@ -47,7 +47,11 @@ import Settings from './pages/admin/Settings'
 import './App.css'
 
 function App() {
+  const location = useLocation()
+  const isBuyerRoute = location.pathname.startsWith('/buyer')
+
   const [showSplash, setShowSplash] = useState(true)
+  
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -59,7 +63,7 @@ function App() {
 
   return (
     <>
-      <Header />
+      {!isBuyerRoute && <Header />}
 
       <AnimatePresence>
         {showSplash && <SplashScreen key="splash" />}

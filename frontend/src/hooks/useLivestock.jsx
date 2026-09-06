@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-
-const API_BASE_URL = './api'
+import API_BASE_URL from '../api/api'
 
 function useLivestock() {
   const [livestock, setLivestock] = useState([])
@@ -15,7 +14,7 @@ function useLivestock() {
       setError('')
 
       try {
-        const response = await fetch(`${API}/livestock`, {
+        const response = await fetch(`${API_BASE_URL}/livestock`, {
           method: 'GET',
           credentials: 'include',
           headers: {
@@ -43,6 +42,8 @@ function useLivestock() {
           setLivestock(items)
         }
       } catch (err) {
+        console.error('Livestock fetch error:', err)
+
         if (mounted) {
           setLivestock([])
           setError(err.message || 'Unable to load livestock')
@@ -68,4 +69,5 @@ function useLivestock() {
   }
 }
 
-export default useLivestock;
+export default useLivestock
+
