@@ -49,7 +49,7 @@ function Marketplace() {
         setProductsLoading(true)
         setProductsError('')
 
-        const response = await fetch(`${API_BASE}/products`, {
+        const response = await fetch(`${API_BASE_URL}/products`, {
           credentials: 'include',
         })
 
@@ -120,10 +120,12 @@ function Marketplace() {
         !sex || item.sex === sex
 
       const matchesMinPrice =
-        !minPrice || Number(item.price) >= Number(minPrice)
+        !minPrice ||
+        Number(item.price) >= Number(minPrice)
 
       const matchesMaxPrice =
-        !maxPrice || Number(item.price) <= Number(maxPrice)
+        !maxPrice ||
+        Number(item.price) <= Number(maxPrice)
 
       return (
         matchesSearch &&
@@ -306,9 +308,7 @@ function Marketplace() {
 
       <main className="marketplace-page min-h-screen text-[var(--farm-text)] transition-[background_color,color] duration-180 ease-[ease]">
         <div className="marketplace-container w-[min(1200px,calc(100%-40px))] mx-auto pt-[34px] pb-[70px] max-[620px]:w-[min(100%-28px,560px)] max-[620px]:pt-[24px]">
-
           <header className="marketplace-top flex flex-col items-center text-center">
-
             <div className="marketplace-logo w-[190px] h-[68px] mb-[22px] max-[620px]:w-[160px] max-[620px]:h-[58px]">
               <img
                 src="/logo/farmart_full_logo_testing.png"
@@ -329,7 +329,7 @@ function Marketplace() {
               </p>
             </div>
 
-            <div className="marketplace-search-wrapper w-min[680px,100%] mt-[30px] mx-auto">
+            <div className="marketplace-search-wrapper w-[min(680px,100%)] mt-[30px] mx-auto">
               <SearchBar
                 search={search}
                 setSearch={setSearch}
@@ -337,7 +337,6 @@ function Marketplace() {
             </div>
 
             <div className="category-switch flex justify-center gap-[5px] mx-auto mt-[30px] p-[5px] border border-[var(--farm-green-border)] rounded-[15px] bg-[var(--farm-green-soft)] max-[620px]:w-full">
-
               <button
                 type="button"
                 onClick={() => setCategory('livestock')}
@@ -383,15 +382,11 @@ function Marketplace() {
               >
                 Farm Products
               </button>
-
             </div>
-
           </header>
 
           <section className="marketplace-layout mt-[42px]">
-
             <div className="marketplace-toolbar flex items-center justify-between gap-[20px] mb-[18px] max-[620px]:items-start max-[620px]:flex-col">
-
               <div className="marketplace-results">
                 <h2 className="m-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[27px]">
                   {category === 'livestock'
@@ -409,7 +404,6 @@ function Marketplace() {
               </div>
 
               <div className="toolbar-actions flex gap-[10px]">
-
                 <button
                   type="button"
                   className="toolbar-button inline-flex items-center gap-[8px] py-[10px] px-[14px] border border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-text)] font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)]"
@@ -427,13 +421,11 @@ function Marketplace() {
                   sort={sort}
                   setSort={setSort}
                 />
-
               </div>
             </div>
 
             {showFilters && (
               <div className="filter-wrapper mb-[28px] p-[18px] border border-[var(--farm-green-border)] rounded-[17px] bg-[var(--farm-green-soft)]">
-
                 <div className="filter-heading flex items-center justify-between mb-[15px]">
                   <h3 className="m-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[18px]">
                     {category === 'livestock'
@@ -477,7 +469,6 @@ function Marketplace() {
                     setMaxQuantity={setMaxQuantity}
                   />
                 )}
-
               </div>
             )}
 
@@ -489,7 +480,6 @@ function Marketplace() {
               </div>
             ) : category === 'products' && productsError ? (
               <div className="empty-state py-[70px] px-[24px] border border-[var(--farm-green-border)] rounded-[20px] bg-[var(--farm-green-soft)] text-center">
-
                 <h3 className="m-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[25px]">
                   Unable to load farm products.
                 </h3>
@@ -497,17 +487,14 @@ function Marketplace() {
                 <p className="mt-[12px] mr-auto ml-auto mb-0 text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[14px]">
                   {productsError}
                 </p>
-
               </div>
             ) : visibleItems.length > 0 ? (
               <div className="marketplace-grid grid grid-cols-[repeat(3,1fr)] max-[900px]:grid-cols-[repeat(2,1fr)] max-[620px]:grid-cols-[1fr] gap-[20px]">
-
                 {visibleItems.map((item) => (
                   <article
                     key={`${category}-${item.id}`}
                     className="marketplace-card overflow-hidden border border-[var(--farm-green-border)] rounded-[19px] bg-[var(--farm-green-soft)] shadow-[0_8px_25px_var(--farm-green-glow)] transition-[border-color,box-shadow,background] duration-[180ms] ease-[ease] hover:border-[var(--farm-green)] hover:shadow-[0_14px_32px_var(--farm-green-glow)]"
                   >
-
                     <div className="marketplace-image w-full h-[220px] bg-[var(--farm-background)] max-[620px]:h-[240px]">
                       {item.image ? (
                         <img
@@ -523,7 +510,6 @@ function Marketplace() {
                     </div>
 
                     <div className="marketplace-card-body p-[20px]">
-
                       <div className="marketplace-card-type text-[var(--farm-green)] font-[var(--farm-body-font)] text-[12px] font-bold uppercase tracking-[0.7px]">
                         {item.type}
                       </div>
@@ -533,7 +519,6 @@ function Marketplace() {
                       </h3>
 
                       <div className="marketplace-card-info grid grid-cols-[repeat(2,1fr)] gap-[8px] mt-[15px]">
-
                         {category === 'livestock' ? (
                           <>
                             <div className="marketplace-info-item text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[12px] leading-[1.5]">
@@ -579,7 +564,6 @@ function Marketplace() {
                             </div>
                           </>
                         )}
-
                       </div>
 
                       <div className="marketplace-price mt-[18px] text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[21px] font-bold">
@@ -588,7 +572,6 @@ function Marketplace() {
 
                       {category === 'livestock' ? (
                         <div className="flex gap-2 mt-[15px]">
-
                           <Link
                             to={`/buyer/livestock/${item.id}`}
                             className="block flex-1"
@@ -612,7 +595,6 @@ function Marketplace() {
                           >
                             <FaShoppingCart size={13} />
                           </button>
-
                         </div>
                       ) : (
                         <button
@@ -629,15 +611,12 @@ function Marketplace() {
                           Add to Cart
                         </button>
                       )}
-
                     </div>
                   </article>
                 ))}
-
               </div>
             ) : (
               <div className="empty-state py-[70px] px-[24px] border border-[var(--farm-green-border)] rounded-[20px] bg-[var(--farm-green-soft)] text-center">
-
                 <h3 className="m-0 text-[var(--farm-text)] font-[var(--farm-heading-font)] text-[25px]">
                   {category === 'products'
                     ? "Sorry, but there's no produce recorded this month."
@@ -649,14 +628,11 @@ function Marketplace() {
                     ? 'Check back later for new farm products.'
                     : 'Try changing or clearing your filters.'}
                 </p>
-
               </div>
             )}
-
           </section>
 
           <nav className="buyer-actions flex justify-center flex-wrap gap-[10px] mt-[52px] pt-[24px] border-t border-[var(--farm-green-border)] max-[620px]:flex-col">
-
             <Link
               to="/buyer/checkout"
               className="buyer-action inline-flex items-center gap-[8px] py-[11px] px-[15px] border border-[var(--farm-green-border)] rounded-[11px] bg-[var(--farm-green-soft)] text-[var(--farm-muted)] font-[var(--farm-body-font)] text-[13px] font-semibold no-underline cursor-pointer transition-[border-color,background,color] duration-[160ms] ease-[ease] hover:border-[var(--farm-green)] hover:bg-[var(--farm-green-soft)] max-[620px]:justify-center"
@@ -696,9 +672,7 @@ function Marketplace() {
               <FaUser size={13} />
               Profile
             </Link>
-
           </nav>
-
         </div>
       </main>
     </>

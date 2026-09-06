@@ -1,71 +1,45 @@
-import { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import {
-  FaEnvelope,
-  FaLock,
-  FaUser,
-  FaEye,
-  FaEyeSlash,
-  FaGoogle,
-} from 'react-icons/fa'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { FiMail, FiArrowRight } from 'react-icons/fi'
 import API_BASE_URL from '../../api/api'
 
-function Register() {
+function VerifyEmail() {
   const navigate = useNavigate()
-  const location = useLocation()
 
-  const selectedRole = location.state?.role || ''
-
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  })
-
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [email, setEmail] = useState('')
+  const [code, setCode] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [resending, setResending] = useState(false)
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    })
-  }
+  useEffect(() => {
+    const savedEmail = sessionStorage.getItem(
+      'farmartResetEmail',
+    )
+
+    if (!savedEmail) {
+      navigate('/forgot-password', {
+        replace: true,
+      })
+      return
+    }
+
+    setEmail(savedEmail)
+  }, [navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
-    if (!selectedRole) {
-      setError('Please select a registration role first.')
+    const trimmedCode = code.trim()
+
+    if (!trimmedCode) {
+      setError('Please enter the verification code.')
       return
     }
 
-    if (selectedRole === 'admin') {
-      setError('Administrator accounts cannot be created here.')
-      return
-    }
-
-    if (
-      !formData.name.trim() ||
-      !formData.email.trim() ||
-      !formData.password ||
-      !formData.confirmPassword
-    ) {
-      setError('Please complete all fields.')
-      return
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match.')
-      return
-    }
-
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters.')
+    if (!/^\d{6}$/.test(trimmedCode)) {
+      setError('Please enter the 6-digit verification code.')
       return
     }
 
@@ -81,10 +55,8 @@ function Register() {
           },
           credentials: 'include',
           body: JSON.stringify({
-            name: formData.name.trim(),
-            email: formData.email.trim().toLowerCase(),
-            password: formData.password,
-            role: selectedRole,
+            email: email.trim(),
+            otp: trimmedCode,
           }),
         },
       )
@@ -94,21 +66,23 @@ function Register() {
       if (!response.ok) {
         setError(
           data.error ||
-            'Unable to create your Farmart account.',
+          'Unable to verify the code.',
         )
         return
       }
 
-      if (selectedRole === 'farmer') {
-        navigate('/farm-setup')
-        return
-      }
+      sessionStorage.setItem(
+        'farmartEmailVerified',
+        'true',
+      )
 
-      if (selectedRole === 'buyer') {
-        navigate('/buyer/marketplace')
-        return
-      }
+      navigate('/reset-password')
     } catch (error) {
+      console.error(
+        'Email verification error:',
+        error,
+      )
+
       setError(
         'Unable to connect to the Farmart server.',
       )
@@ -117,641 +91,454 @@ function Register() {
     }
   }
 
-  const handleGoogleRegister = () => {
-    if (!selectedRole) {
-      setError('Please select a registration role first.')
-      return
-    }
+  const handleResend = async () => {
+    setError('')
+    setCode('')
+    setResending(true)
 
-    if (selectedRole === 'admin') {
-      setError('Administrator accounts cannot be created here.')
-      return
-    }
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/auth/forgot-password`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            email: email.trim(),
+          }),
+        },
+      )
 
-    window.location.href =
-      `${API_BASE_URL}/auth/google?role=${selectedRole}`
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(
+          data.error ||
+          'Unable to resend the verification code.',
+        )
+        return
+      }
+    } catch (error) {
+      console.error(
+        'Resend verification error:',
+        error,
+      )
+
+      setError(
+        'Unable to connect to the Farmart server.',
+      )
+    } finally {
+      setResending(false)
+    }
   }
-
-  const roleLabel =
-    selectedRole === 'farmer'
-      ? 'Farmer'
-      : selectedRole === 'buyer'
-        ? 'Buyer'
-        : 'Farmart'
 
   return (
     <>
       <style>{`
-        .register-page {
-          min-height: 100vh;
-          width: 100%;
+  .verify-page {
+    min-height: 100vh;
+    width: 100%;
 
-          display: flex;
-          align-items: center;
-          justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-          padding: 60px 24px;
+    padding: 48px 24px;
+    box-sizing: border-box;
 
-          background:
-            radial-gradient(
-              circle at 50% 30%,
-              rgba(39, 122, 68, 0.09),
-              transparent 46%
-            ),
-            var(--farm-background);
+    background:
+      radial-gradient(
+        circle at 50% 35%,
+        rgba(39, 122, 68, 0.11),
+        transparent 43%
+      ),
+      var(--farm-background);
 
-          color: var(--farm-text);
+    color: var(--farm-text);
+  }
 
-          transition:
-            background 180ms ease,
-            color 180ms ease;
-        }
+  .verify-card {
+    width: min(100%, 520px);
+    padding: 58px 56px 48px;
 
-        .register-card {
-          width: min(100%, 570px);
-          overflow: hidden;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
 
-          border: 1px solid var(--farm-green-border);
-          border-radius: 30px;
+    border: 1px solid var(--farm-green-border);
+    border-radius: 28px;
 
-          background: var(--auth-card);
-
-          box-shadow:
-            0 28px 80px var(--farm-green-glow),
-            0 6px 20px var(--farm-green-glow);
-
-          transition:
-            background 180ms ease,
-            border-color 180ms ease,
-            box-shadow 180ms ease;
-        }
+    background: var(--auth-card);
 
-        .register-content {
-          padding: 64px 68px 48px;
-        }
+    box-shadow:
+      0 24px 70px var(--farm-green-glow),
+      0 4px 16px var(--farm-green-glow);
+  }
 
-        .register-logo {
-          width: min(100%, 300px);
-          min-height: 100px;
+  .verify-card::before {
+    content: '';
+    position: absolute;
 
-          display: flex;
-          align-items: center;
-          justify-content: center;
+    top: 0;
+    left: 50%;
 
-          padding: 14px 22px;
-          margin: 0 auto 30px;
+    width: 110px;
+    height: 4px;
 
-          border: 1px solid var(--farm-green-border);
-          border-radius: 20px;
+    transform: translateX(-50%);
 
-          background: var(--auth-logo-bg);
-        }
+    background: var(--farm-green);
+    border-radius: 0 0 8px 8px;
+  }
 
-        .register-logo img {
-          width: 100%;
-          height: 100px;
-          object-fit: contain;
-        }
+  .verify-content {
+    position: relative;
+    z-index: 1;
 
-        .register-heading {
-          text-align: center;
-        }
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 
-        .register-heading h1 {
-          margin: 0;
+    text-align: center;
+  }
 
-          color: var(--farm-text);
+  .verify-icon {
+    width: 46px;
+    height: 46px;
 
-          font-family: "IBM Plex Serif", serif;
-          font-size: clamp(36px, 7vw, 47px);
-          font-weight: 700;
-          line-height: 1.1;
-          letter-spacing: -1px;
-        }
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-        .register-heading p {
-          max-width: 410px;
-          margin: 18px auto 38px;
+    margin-bottom: 20px;
 
-          color: var(--farm-muted);
+    border-radius: 50%;
 
-          font-family: "Modern Antiqua", serif;
-          font-size: 16px;
-          line-height: 1.75;
-        }
+    background: var(--farm-green-soft);
+    color: var(--farm-green);
+  }
 
-        .register-role {
-          width: fit-content;
+  .verify-heading h1 {
+    margin: 0;
 
-          margin: -18px auto 28px;
-          padding: 8px 15px;
+    color: var(--farm-text);
 
-          border: 1px solid var(--farm-green-border);
-          border-radius: 999px;
+    font-family: "IBM Plex Serif", serif;
+    font-size: clamp(34px, 6vw, 44px);
+    font-weight: 700;
+    line-height: 1.1;
+  }
 
-          background: var(--farm-green-soft);
-          color: var(--farm-green);
+  .verify-heading p {
+    max-width: 390px;
+    margin: 18px auto 34px;
 
-          font-family: "Modern Antiqua", serif;
-          font-size: 13px;
-          font-weight: 600;
-        }
+    color: var(--farm-muted);
 
-        .register-form {
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
-        }
+    font-family: "Modern Antiqua", serif;
+    font-size: 16px;
+    line-height: 1.7;
+  }
 
-        .register-field {
-          display: flex;
-          flex-direction: column;
-          gap: 9px;
-        }
+  .verify-email {
+    margin: 0 0 28px;
 
-        .register-field > label {
-          color: var(--farm-text);
+    color: var(--farm-green);
 
-          font-family: "Modern Antiqua", serif;
-          font-size: 14px;
-          font-weight: 600;
-        }
+    font-family: "Modern Antiqua", serif;
+    font-size: 15px;
+    font-weight: 600;
 
-        .register-input {
-          width: 100%;
-          min-height: 61px;
+    overflow-wrap: anywhere;
+  }
 
-          display: flex;
-          align-items: center;
-          gap: 13px;
+  .verify-form {
+    width: 100%;
 
-          padding: 0 17px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
 
-          border: 1px solid var(--farm-green-border);
-          border-radius: 15px;
+  .verify-field {
+    width: 100%;
+    text-align: left;
+  }
 
-          background: var(--auth-input);
-          color: var(--farm-green);
+  .verify-field > span {
+    display: block;
+    margin-bottom: 9px;
 
-          box-sizing: border-box;
+    color: var(--farm-text);
 
-          transition:
-            border-color 180ms ease,
-            background 180ms ease,
-            box-shadow 180ms ease;
-        }
+    font-family: "Modern Antiqua", serif;
+    font-size: 14px;
+  }
 
-        .register-input:focus-within {
-          border-color: var(--farm-green);
-          background: var(--auth-input-focus);
+  .verify-input {
+    width: 100%;
+    height: 60px;
 
-          box-shadow:
-            0 0 0 4px var(--farm-green-glow);
-        }
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-        .register-input input {
-          width: 100%;
-          min-width: 0;
-          height: 100%;
+    padding: 0 18px;
+    box-sizing: border-box;
 
-          padding: 0;
+    border: 1px solid var(--farm-green-border);
+    border-radius: 14px;
 
-          border: 0;
-          outline: 0;
+    background: var(--auth-input);
 
-          background: transparent;
-          color: var(--farm-text);
+    transition:
+      border-color 180ms ease,
+      background 180ms ease,
+      box-shadow 180ms ease;
+  }
 
-          font-family: "Modern Antiqua", serif;
-          font-size: 15px;
-        }
+  .verify-input:focus-within {
+    border-color: var(--farm-green);
+    background: var(--auth-input-focus);
 
-        .register-input input::placeholder {
-          color: var(--farm-muted);
-        }
+    box-shadow:
+      0 0 0 4px var(--farm-green-glow);
+  }
 
-        .register-password-toggle {
-          width: 34px;
-          height: 34px;
+  .verify-input input {
+    width: 100%;
+    height: 100%;
 
-          flex-shrink: 0;
+    border: none;
+    outline: none;
 
-          display: flex;
-          align-items: center;
-          justify-content: center;
+    background: transparent;
+    color: var(--farm-text);
 
-          padding: 0;
+    font-family: "Modern Antiqua", serif;
+    font-size: 22px;
+    font-weight: 600;
 
-          border: 0;
-          border-radius: 9px;
+    letter-spacing: 7px;
+    text-align: center;
+  }
 
-          background: transparent;
-          color: var(--farm-muted);
+  .verify-input input::placeholder {
+    color: var(--farm-muted);
+    letter-spacing: 6px;
+  }
 
-          cursor: pointer;
+  .verify-error {
+    margin: 0;
 
-          transition:
-            background 160ms ease,
-            color 160ms ease;
-        }
+    color: var(--farm-error);
 
-        .register-password-toggle:hover {
-          background: var(--farm-green-glow);
-          color: var(--farm-green);
-        }
+    font-family: "Modern Antiqua", serif;
+    font-size: 13px;
+  }
 
-        .register-error {
-          margin: 0;
+  .verify-submit {
+    width: 100%;
+    height: 60px;
 
-          color: var(--farm-error);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
 
-          font-family: "Modern Antiqua", serif;
-          font-size: 14px;
-          line-height: 1.5;
-          text-align: center;
-        }
+    margin-top: 4px;
 
-        .register-submit {
-          width: 100%;
-          min-height: 62px;
-          margin-top: 4px;
+    border: 1px solid var(--farm-green);
+    border-radius: 14px;
 
-          border: 1px solid var(--farm-green);
-          border-radius: 16px;
+    background: var(--farm-green);
+    color: #ffffff;
 
-          background: var(--farm-green);
-          color: #ffffff;
+    font-family: "Modern Antiqua", serif;
+    font-size: 15px;
+    font-weight: 600;
 
-          font-family: "Modern Antiqua", serif;
-          font-size: 16px;
-          font-weight: 600;
+    cursor: pointer;
 
-          cursor: pointer;
+    transition:
+      background 180ms ease,
+      box-shadow 180ms ease,
+      opacity 180ms ease;
+  }
 
-          transition:
-            background 180ms ease,
-            box-shadow 180ms ease,
-            opacity 180ms ease;
-        }
+  .verify-submit:hover:not(:disabled) {
+    background: #236b3d;
+    box-shadow: 0 10px 24px var(--farm-green-glow);
+  }
 
-        .register-submit:hover:not(:disabled) {
-          background: #216b3b;
-          box-shadow: 0 12px 28px var(--farm-green-glow);
-        }
+  .verify-submit:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
 
-        .register-submit:disabled {
-          cursor: not-allowed;
-          opacity: 0.65;
-        }
+  .verify-resend {
+    margin: 22px 0 0;
 
-        .google-button {
-          width: 100%;
-          min-height: 58px;
+    color: var(--farm-muted);
 
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
+    font-family: "Modern Antiqua", serif;
+    font-size: 14px;
+  }
 
-          border: 1px solid #4285f4;
-          border-radius: 15px;
+  .verify-resend button {
+    padding: 0;
 
-          background: #4285f4;
-          color: #ffffff;
+    border: none;
+    background: transparent;
 
-          font-family: "Modern Antiqua", serif;
-          font-size: 15px;
-          font-weight: 600;
+    color: var(--farm-green);
 
-          cursor: pointer;
+    font-family: "Modern Antiqua", serif;
+    font-size: inherit;
+    font-weight: 600;
 
-          transition:
-            background 180ms ease,
-            box-shadow 180ms ease;
-        }
+    cursor: pointer;
+  }
 
-        .google-button:hover {
-          box-shadow: 0 10px 24px rgba(66, 133, 244, 0.25);
-        }
+  .verify-resend button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
 
-        .google-note {
-          margin: -8px 0 0;
+  .verify-resend button:hover:not(:disabled) {
+    color: var(--farm-text);
+  }
 
-          color: var(--farm-muted);
+  .verify-back {
+    margin: 26px 0 0;
 
-          font-family: "Modern Antiqua", serif;
-          font-size: 12px;
-          text-align: center;
-        }
+    font-family: "Modern Antiqua", serif;
+    font-size: 14px;
+  }
 
-        .register-switch {
-          margin: 30px 0 0;
+  .verify-back a {
+    color: var(--farm-muted);
+  }
 
-          color: var(--farm-muted);
+  .verify-back a:hover {
+    color: var(--farm-green);
+  }
 
-          font-family: "Modern Antiqua", serif;
-          font-size: 14px;
-          line-height: 1.7;
-          text-align: center;
-        }
+  @media (max-width: 600px) {
+    .verify-page {
+      padding: 28px 16px;
+    }
 
-        .register-switch a {
-          color: var(--farm-green);
-          font-weight: 700;
-          text-decoration: none;
-        }
+    .verify-card {
+      padding: 48px 28px 40px;
+      border-radius: 24px;
+    }
+  }
 
-        .register-switch a:hover {
-          color: var(--farm-text);
-        }
+  @media (max-width: 430px) {
+    .verify-page {
+      padding: 16px;
+    }
 
-        .register-divider {
-          width: 100%;
-          height: 1px;
-          margin: 30px 0 22px;
+    .verify-card {
+      padding: 42px 22px 34px;
+    }
+  }
+`}</style>
 
-          background: var(--farm-green-border);
-        }
+      <main className="verify-page">
+        <section className="verify-card">
+          <div className="verify-content">
 
-        .register-terms {
-          max-width: 410px;
-          margin: 0 auto;
-
-          color: var(--farm-muted);
-
-          font-family: "Modern Antiqua", serif;
-          font-size: 12px;
-          line-height: 1.8;
-          text-align: center;
-        }
-
-        :root {
-          --auth-card: #ffffff;
-          --auth-logo-bg: #f4f8f2;
-          --auth-input: #f5f9f5;
-          --auth-input-focus: #ffffff;
-          --auth-footer: #f8fbf8;
-        }
-
-        [data-theme="dark"] {
-          --auth-card: #1c2b22;
-          --auth-logo-bg: #14201a;
-          --auth-input: #17241d;
-          --auth-input-focus: #1c2b22;
-          --auth-footer: #17241d;
-        }
-
-        @media (max-width: 600px) {
-          .register-page {
-            padding: 32px 16px;
-          }
-
-          .register-content {
-            padding: 54px 28px 42px;
-          }
-
-          .register-logo {
-            min-height: 82px;
-            padding: 10px 18px;
-          }
-
-          .register-logo img {
-            height: 82px;
-          }
-
-          .register-heading h1 {
-            font-size: 37px;
-          }
-        }
-
-        @media (max-width: 400px) {
-          .register-page {
-            padding: 20px 10px;
-          }
-
-          .register-card {
-            border-radius: 24px;
-          }
-
-          .register-content {
-            padding: 46px 20px 36px;
-          }
-        }
-      `}</style>
-
-      <main className="register-page">
-        <section className="register-card">
-          <div className="register-content">
-
-            <div className="register-logo">
+            <div className="login-logo">
               <img
-                src="/logo/farmart_full_logo_testing.png"
+                src="/favicon/farm.png"
                 alt="Farmart"
               />
             </div>
 
-            <div className="register-heading">
-              <h1>Create your account</h1>
+            <div className="verify-icon">
+              <FiMail size={24} />
+            </div>
+
+            <div className="verify-heading">
+              <h1>Verify your email</h1>
 
               <p>
-                Join Farmart and connect directly with farmers,
-                buyers and the livestock marketplace.
+                Enter the verification code we sent to your email
+                address to continue resetting your password.
               </p>
             </div>
 
-            {selectedRole && (
-              <div className="register-role">
-                Registering as {roleLabel}
-              </div>
-            )}
+            <p className="verify-email">
+              {email}
+            </p>
 
             <form
               onSubmit={handleSubmit}
-              className="register-form"
+              className="verify-form"
             >
+              <label className="verify-field">
+                <span>Verification code</span>
 
-              <div className="register-field">
-                <label htmlFor="name">
-                  Full name
-                </label>
-
-                <div className="register-input">
-                  <FaUser size={17} />
-
+                <div className="verify-input">
                   <input
-                    id="name"
                     type="text"
-                    name="name"
-                    placeholder="Your full name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    autoComplete="name"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-
-              <div className="register-field">
-                <label htmlFor="email">
-                  Email address
-                </label>
-
-                <div className="register-input">
-                  <FaEnvelope size={17} />
-
-                  <input
-                    id="email"
-                    type="email"
-                    name="email"
-                    placeholder="you@example.com"
-                    value={formData.email}
-                    onChange={handleChange}
-                    autoComplete="email"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-
-              <div className="register-field">
-                <label htmlFor="password">
-                  Create password
-                </label>
-
-                <div className="register-input">
-                  <FaLock size={17} />
-
-                  <input
-                    id="password"
-                    type={
-                      showPassword
-                        ? 'text'
-                        : 'password'
-                    }
-                    name="password"
-                    placeholder="Create a password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    autoComplete="new-password"
-                    disabled={loading}
-                  />
-
-                  <button
-                    type="button"
-                    className="register-password-toggle"
-                    onClick={() =>
-                      setShowPassword(!showPassword)
-                    }
-                    aria-label={
-                      showPassword
-                        ? 'Hide password'
-                        : 'Show password'
-                    }
-                    disabled={loading}
-                  >
-                    {showPassword ? (
-                      <FaEyeSlash size={17} />
-                    ) : (
-                      <FaEye size={17} />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <div className="register-field">
-                <label htmlFor="confirmPassword">
-                  Confirm password
-                </label>
-
-                <div className="register-input">
-                  <FaLock size={17} />
-
-                  <input
-                    id="confirmPassword"
-                    type={
-                      showConfirmPassword
-                        ? 'text'
-                        : 'password'
-                    }
-                    name="confirmPassword"
-                    placeholder="Confirm your password"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    autoComplete="new-password"
-                    disabled={loading}
-                  />
-
-                  <button
-                    type="button"
-                    className="register-password-toggle"
-                    onClick={() =>
-                      setShowConfirmPassword(
-                        !showConfirmPassword,
+                    inputMode="numeric"
+                    maxLength="6"
+                    placeholder="000000"
+                    value={code}
+                    onChange={(e) =>
+                      setCode(
+                        e.target.value.replace(/\D/g, ''),
                       )
                     }
-                    aria-label={
-                      showConfirmPassword
-                        ? 'Hide password'
-                        : 'Show password'
-                    }
+                    autoComplete="one-time-code"
                     disabled={loading}
-                  >
-                    {showConfirmPassword ? (
-                      <FaEyeSlash size={17} />
-                    ) : (
-                      <FaEye size={17} />
-                    )}
-                  </button>
+                  />
                 </div>
-              </div>
+              </label>
 
               {error && (
-                <p className="register-error">
+                <p className="verify-error">
                   {error}
                 </p>
               )}
 
               <button
                 type="submit"
-                className="register-submit"
+                className="verify-submit"
                 disabled={loading}
               >
                 {loading
-                  ? 'Creating account...'
-                  : 'Create account'}
+                  ? 'Verifying...'
+                  : 'Verify & continue'}
+
+                {!loading && (
+                  <FiArrowRight size={18} />
+                )}
               </button>
-
-              <button
-                type="button"
-                className="google-button"
-                onClick={handleGoogleRegister}
-                disabled={loading}
-              >
-                <FaGoogle size={17} />
-                Continue with Google
-              </button>
-
-              <p className="google-note">
-                Continue securely with your Google account.
-              </p>
-
             </form>
 
-            <p className="register-switch">
-              Already have an account?{' '}
-              <Link
-                to="/login"
-                state={{ role: selectedRole }}
+            <p className="verify-resend">
+              Didn't receive a code?{' '}
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={resending || loading}
               >
-                Log in
-              </Link>
+                {resending
+                  ? 'Sending...'
+                  : 'Resend code'}
+              </button>
             </p>
 
-            <div className="register-divider" />
-
-            <p className="register-terms">
-              By creating an account you agree to Farmart's
-              Terms and Conditions of service &amp; Fair-Trade
-              Policy
+            <p className="verify-back">
+              <Link to="/forgot-password">
+                Change email address
+              </Link>
             </p>
 
           </div>
@@ -761,4 +548,4 @@ function Register() {
   )
 }
 
-export default Register
+export default VerifyEmail

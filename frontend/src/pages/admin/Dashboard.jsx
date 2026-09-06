@@ -1,7 +1,18 @@
+// Dashboard.jsx
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence, useSpring, useTransform } from "framer-motion";
-import { getFarmers, verifyFarmer, rejectFarmer } from "../../services/adminApi";
+import {
+  motion,
+  AnimatePresence,
+  useSpring,
+  useTransform,
+} from "framer-motion";
+import {
+  getFarmers,
+  verifyFarmer,
+  rejectFarmer,
+} from "../../services/adminApi";
 import RejectReasonModal from "../../components/common/RejectReasonModal";
 
 const metrics = {
@@ -15,43 +26,76 @@ export default function Dashboard() {
   const [tab, setTab] = useState("farmers");
   const [pendingFarmers, setPendingFarmers] = useState([]);
   const [error, setError] = useState(null);
+  const [loadingFarmers, setLoadingFarmers] = useState(true);
   const [rejectTarget, setRejectTarget] = useState(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {
-    getFarmers()
-      .then((farmers) => {
+    let isMounted = true;
+
+    const loadPendingFarmers = async () => {
+      try {
+        if (isMounted) {
+          setError(null);
+        }
+
+        const farmers = await getFarmers();
+
+        if (!isMounted) return;
+
         setPendingFarmers(
           farmers.filter((farmer) => farmer.status === "pending")
         );
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Failed to load farmers:", error);
+
+        if (!isMounted) return;
+
         setError(error.message || "Failed to load farmers");
-        setPendingFarmers([]);
-      });
+      } finally {
+        if (isMounted) {
+          setLoadingFarmers(false);
+        }
+      }
+    };
+
+    loadPendingFarmers();
+
+    // Refresh the verification queue every 10 seconds.
+    const interval = setInterval(loadPendingFarmers, 10000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   const handleApprove = async (farmerId) => {
     try {
       await verifyFarmer(farmerId);
+
       setPendingFarmers((list) =>
         list.filter((farmer) => farmer.id !== farmerId)
       );
     } catch (error) {
-      console.error(error);
+      console.error("Failed to approve farmer:", error);
+      setError(error.message || "Failed to approve farmer");
     }
   };
 
   const handleRejectSubmit = async (reason) => {
     try {
       await rejectFarmer(rejectTarget.id, reason);
+
       setPendingFarmers((list) =>
         list.filter((farmer) => farmer.id !== rejectTarget.id)
       );
+
       setRejectTarget(null);
     } catch (error) {
-      console.error(error);
+      console.error("Failed to reject farmer:", error);
+      setError(error.message || "Failed to reject farmer");
     }
   };
 
@@ -74,6 +118,7 @@ export default function Dashboard() {
           >
             Platform overview
           </h1>
+
           <p
             style={{
               color: "var(--text-muted, #66766A)",
@@ -110,17 +155,20 @@ export default function Dashboard() {
           value={metrics?.total_users}
           loading={false}
         />
+
         <MetricCard
           label="Active listings"
           value={metrics?.active_listings}
           loading={false}
         />
+
         <MetricCard
           label="GMV this month"
           value={metrics?.gmv_this_month}
           prefix="KES "
           loading={false}
         />
+
         <MetricCard
           label="Open disputes"
           value={metrics?.open_disputes}
@@ -172,6 +220,7 @@ export default function Dashboard() {
                 }}
               />
             )}
+
             {tab !== t && (
               <span
                 style={{
@@ -183,6 +232,7 @@ export default function Dashboard() {
                 }}
               />
             )}
+
             {t}
           </button>
         ))}
@@ -207,7 +257,17 @@ export default function Dashboard() {
                 {error}
               </p>
             )}
-            {pendingFarmers.length === 0 && (
+
+            {loadingFarmers ? (
+              <p
+                style={{
+                  color: "var(--text-muted, #66766A)",
+                  fontSize: 13,
+                }}
+              >
+                Loading farmers...
+              </p>
+            ) : pendingFarmers.length === 0 ? (
               <p
                 style={{
                   color: "var(--text-muted, #66766A)",
@@ -216,7 +276,7 @@ export default function Dashboard() {
               >
                 No farmers waiting on verification
               </p>
-            )}
+            ) : null}
 
             <AnimatePresence>
               {pendingFarmers.map((farmer) => (
@@ -254,6 +314,7 @@ export default function Dashboard() {
                     >
                       {farmer.farm_name || "(No farm name yet)"}
                     </div>
+
                     <div
                       style={{
                         color: "var(--text-muted, #66766A)",

@@ -8,6 +8,7 @@ import {
   FaEyeSlash,
   FaGoogle,
 } from 'react-icons/fa'
+import API_BASE_URL from '../../api/api'
 
 function Register() {
   const navigate = useNavigate()
@@ -72,7 +73,7 @@ function Register() {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/auth/register`, 
+        `${API_BASE_URL}/auth/register`,
         {
           method: 'POST',
           headers: {
@@ -98,25 +99,37 @@ function Register() {
         return
       }
 
-      /*
-       * The Flask backend has already created the account
-       * and established the session.
-       *
-       * We do NOT create a fake localStorage account here.
-       */
+      if (!data.user || !data.user.role) {
+        setError('Unable to determine your account role.')
+        return
+      }
 
-      if (selectedRole === 'farmer') {
+      localStorage.setItem(
+        'farmartUser',
+        JSON.stringify({
+          id: data.user.id,
+          first_name: data.user.first_name,
+          last_name: data.user.last_name,
+          email: data.user.email,
+          role: data.user.role,
+          is_verified: data.user.is_verified,
+          isLoggedIn: true,
+        }),
+      )
+
+      if (data.user.role === 'farmer') {
         navigate('/farm-setup')
         return
       }
 
-      if (selectedRole === 'buyer') {
+      if (data.user.role === 'buyer') {
         navigate('/buyer/marketplace')
         return
       }
-    } catch (error) {
-      console.error('Registration error:', error)
 
+      localStorage.removeItem('farmartUser')
+      setError('Your account has an invalid role.')
+    } catch (error) {
       setError(
         'Unable to connect to the Farmart server.',
       )
@@ -137,7 +150,7 @@ function Register() {
     }
 
     window.location.href =
-    `http://localhost:5000/auth/google?role=${selectedRole}`
+      `${API_BASE_URL}/auth/google?role=${selectedRole}`
   }
 
   const roleLabel =
@@ -493,8 +506,6 @@ function Register() {
     text-align: center;
   }
 
-  /* AUTH THEME SURFACES */
-
   :root {
     --auth-card: #ffffff;
     --auth-logo-bg: #f4f8f2;
@@ -547,7 +558,7 @@ function Register() {
       padding: 46px 20px 36px;
     }
   }
-`}</style>
+      `}</style>
 
       <main className="register-page">
         <section className="register-card">
