@@ -5,6 +5,7 @@ import {
   FaImage,
   FaPlus,
   FaCheck,
+  FaUpload,
 } from 'react-icons/fa'
 import farmartImages from '../../data/farmartImages'
 
@@ -15,6 +16,8 @@ function CreateListings() {
 
   const [listingType, setListingType] = useState('livestock')
   const [selectedImage, setSelectedImage] = useState('')
+  const [imageMode, setImageMode] = useState('upload')
+  const [uploadedImageName, setUploadedImageName] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -93,8 +96,53 @@ function CreateListings() {
   const handleListingTypeChange = (type) => {
     setListingType(type)
     setSelectedImage('')
+    setUploadedImageName('')
+    setImageMode('upload')
     setError('')
     setSuccess('')
+  }
+
+  const handleImageUpload = (event) => {
+    const file = event.target.files?.[0]
+
+    if (!file) {
+      return
+    }
+
+    setError('')
+    setSuccess('')
+
+    if (!file.type.startsWith('image/')) {
+      setSelectedImage('')
+      setUploadedImageName('')
+      setError('Please select an image file.')
+      event.target.value = ''
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setSelectedImage('')
+      setUploadedImageName('')
+      setError('Your image must be 5 MB or smaller.')
+      event.target.value = ''
+      return
+    }
+
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      setSelectedImage(String(reader.result || ''))
+      setUploadedImageName(file.name)
+    }
+
+    reader.onerror = () => {
+      setSelectedImage('')
+      setUploadedImageName('')
+      setError('Unable to read that image. Please try another file.')
+    }
+
+    reader.readAsDataURL(file)
+    event.target.value = ''
   }
 
   const resetForm = () => {
@@ -119,6 +167,8 @@ function CreateListings() {
       productQuantityUnit: 'g',
     })
     setSelectedImage('')
+    setUploadedImageName('')
+    setImageMode('upload')
   }
 
   const handleSubmit = async (event) => {
@@ -404,6 +454,124 @@ function CreateListings() {
           line-height: 1.6;
         }
 
+        .farmer-image-mode {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 10px;
+          margin-bottom: 16px;
+        }
+
+        .farmer-image-mode-option {
+          min-height: 50px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 9px;
+          padding: 0 15px;
+          border: 1px solid var(--farm-green-border);
+          border-radius: 12px;
+          background: var(--farm-background);
+          color: var(--farm-muted);
+          font-family: "Modern Antiqua", serif;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
+        }
+
+        .farmer-image-mode-option.active {
+          border-color: var(--farm-green);
+          background: var(--farm-green-soft);
+          color: var(--farm-text);
+        }
+
+        .farmer-image-mode-option input {
+          position: absolute;
+          opacity: 0;
+          pointer-events: none;
+        }
+
+        .farmer-upload-area {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 145px;
+          gap: 14px;
+          align-items: stretch;
+        }
+
+        .farmer-upload-box {
+          min-height: 145px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 24px;
+          border: 1px dashed var(--farm-green-border);
+          border-radius: 14px;
+          background: var(--farm-background);
+          color: var(--farm-mint);
+          text-align: center;
+          cursor: pointer;
+          box-sizing: border-box;
+          transition: border-color 180ms ease, background 180ms ease;
+        }
+
+        .farmer-upload-box:hover {
+          border-color: var(--farm-mint);
+          background: var(--farm-green-soft);
+        }
+
+        .farmer-upload-box input {
+          display: none;
+        }
+
+        .farmer-upload-title {
+          color: var(--farm-text);
+          font-family: "IBM Plex Serif", serif;
+          font-size: 17px;
+        }
+
+        .farmer-upload-subtitle {
+          color: var(--farm-muted);
+          font-family: "Modern Antiqua", serif;
+          font-size: 12px;
+          line-height: 1.5;
+        }
+
+        .farmer-upload-preview {
+          position: relative;
+          min-height: 145px;
+          overflow: hidden;
+          border: 2px solid var(--farm-gold);
+          border-radius: 14px;
+          background: var(--farm-background);
+        }
+
+        .farmer-upload-preview img {
+          width: 100%;
+          height: 100%;
+          min-height: 145px;
+          display: block;
+          object-fit: cover;
+        }
+
+        .farmer-upload-preview .farmer-image-check {
+          top: 8px;
+          right: 8px;
+        }
+
+        .farmer-test-images-note {
+          margin-bottom: 14px;
+          padding: 11px 13px;
+          border: 1px solid var(--farm-green-border);
+          border-radius: 10px;
+          background: var(--farm-background);
+          color: var(--farm-muted);
+          font-family: "Modern Antiqua", serif;
+          font-size: 12px;
+          line-height: 1.5;
+        }
+
         .farmer-image-grid {
           display: grid;
           grid-template-columns:
@@ -541,6 +709,13 @@ function CreateListings() {
 
           .farmer-form-grid,
           .farmer-form-grid.two {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 600px) {
+          .farmer-image-mode,
+          .farmer-upload-area {
             grid-template-columns: 1fr;
           }
         }
@@ -1080,45 +1255,118 @@ function CreateListings() {
                 </div>
 
                 <p className="farmer-image-help">
-                  Select one image for this listing. These images are
-                  provided for Farmart testing.
+                  Upload your own image up to 5 MB, or turn on test images while building your listing.
                 </p>
 
-                {availableImages.length > 0 ? (
-                  <div className="farmer-image-grid">
-                    {availableImages.map((image, index) => (
-                      <button
-                        type="button"
-                        key={image}
-                        className={`farmer-image-option ${
-                          selectedImage === image
-                            ? 'selected'
-                            : ''
-                        }`}
-                        onClick={() =>
-                          setSelectedImage(image)
-                        }
-                        aria-label={`Select listing image ${index + 1}`}
-                        aria-pressed={
-                          selectedImage === image
-                        }
-                      >
-                        <img
-                          src={image}
-                          alt={`Listing option ${index + 1}`}
-                        />
+                <div className="farmer-image-mode">
+                  <label className={`farmer-image-mode-option ${
+                    imageMode === 'upload' ? 'active' : ''
+                  }`}>
+                    <FaUpload size={15} />
+                    <span>Upload your image</span>
+                    <input
+                      type="radio"
+                      name="imageMode"
+                      value="upload"
+                      checked={imageMode === 'upload'}
+                      onChange={() => {
+                        setImageMode('upload')
+                        setSelectedImage('')
+                        setUploadedImageName('')
+                        setError('')
+                      }}
+                    />
+                  </label>
 
-                        {selectedImage === image && (
-                          <span className="farmer-image-check">
-                            <FaCheck size={15} />
-                          </span>
-                        )}
-                      </button>
-                    ))}
+                  <label className={`farmer-image-mode-option ${
+                    imageMode === 'test' ? 'active' : ''
+                  }`}>
+                    <FaImage size={15} />
+                    <span>Use test images</span>
+                    <input
+                      type="radio"
+                      name="imageMode"
+                      value="test"
+                      checked={imageMode === 'test'}
+                      onChange={() => {
+                        setImageMode('test')
+                        setSelectedImage('')
+                        setUploadedImageName('')
+                        setError('')
+                      }}
+                    />
+                  </label>
+                </div>
+
+                {imageMode === 'upload' ? (
+                  <div className="farmer-upload-area">
+                    <label className="farmer-upload-box">
+                      <FaUpload size={22} />
+                      <span className="farmer-upload-title">
+                        {uploadedImageName || 'Choose an image'}
+                      </span>
+                      <span className="farmer-upload-subtitle">
+                        JPG, PNG, WEBP or another image format · Max 5 MB
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                      />
+                    </label>
+
+                    {selectedImage && (
+                      <div className="farmer-upload-preview">
+                        <img
+                          src={selectedImage}
+                          alt="Your selected listing"
+                        />
+                        <span className="farmer-image-check">
+                          <FaCheck size={15} />
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ) : availableImages.length > 0 ? (
+                  <div className="farmer-test-images">
+                    <div className="farmer-test-images-note">
+                      Test images are temporary placeholders. Replace them with your own image when ready.
+                    </div>
+                    <div className="farmer-image-grid">
+                      {availableImages.map((image, index) => (
+                        <button
+                          type="button"
+                          key={image}
+                          className={`farmer-image-option ${
+                            selectedImage === image
+                              ? 'selected'
+                              : ''
+                          }`}
+                          onClick={() =>
+                            setSelectedImage(image)
+                          }
+                          aria-label={`Select test listing image ${index + 1}`}
+                          aria-pressed={
+                            selectedImage === image
+                          }
+                        >
+                          <img
+                            src={image}
+                            alt={`Test listing option ${index + 1}`}
+                          />
+
+                          {selectedImage === image && (
+                            <span className="farmer-image-check">
+                              <FaCheck size={15} />
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 ) : (
                   <div className="farmer-no-images">
-                    No images are currently available.
+                    No test images are currently available.
                   </div>
                 )}
               </section>

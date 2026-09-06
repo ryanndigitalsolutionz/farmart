@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { FiLock, FiEye, FiEyeOff, FiArrowRight } from 'react-icons/fi'
 import { FaShieldAlt } from 'react-icons/fa'
+import API_BASE_URL from '../../api/api'
 
 function ResetPassword() {
   const navigate = useNavigate()

@@ -1,293 +1,265 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
-  FaMapMarkerAlt as MapPin,
-  FaPhone as Phone,
-  FaHome as House,
-  FaPen as PenLine,
-  FaShieldAlt as ShieldCheck,
-} from "react-icons/fa";
-
-const API_BASE_URL = "../../api/api";
+  FiMapPin,
+  FiPhone,
+  FiHome,
+  FiEdit3,
+  FiShield,
+} from 'react-icons/fi'
+import { API_BASE_URL } from '../../api/api'
 
 function FarmSetup() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const [formData, setFormData] = useState({
-    farmName: "",
-    location: "",
-    contact: "",
-    description: "",
-  });
+    farmName: '',
+    location: '',
+    contact: '',
+    description: '',
+  })
 
-  const [isSaving, setIsSaving] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [pendingFarmerId, setPendingFarmerId] = useState(null)
+  const [rejected, setRejected] = useState(false)
+  const [rejectionReason, setRejectionReason] = useState('')
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const storedApplication = localStorage.getItem(
+      'farmartFarmerApplication',
+    )
+
+    if (!storedApplication) return
+
+    try {
+      const application = JSON.parse(storedApplication)
+
+      if (!application || !application.farmerId) return
+
+      setFormData({
+        farmName: application.farmName || '',
+        location: application.location || '',
+        contact: application.contact || '',
+        description: application.description || '',
+      })
+
+      setPendingFarmerId(application.farmerId)
+
+      if (application.status === 'rejected') {
+        setRejected(true)
+        setRejectionReason(application.rejectionReason || '')
+      }
+
+      if (application.status === 'verified') {
+        navigate('/farmer/dashboard')
+        return
+      }
+
+      setSubmitted(true)
+    } catch {
+      localStorage.removeItem('farmartFarmerApplication')
+    }
+  }, [navigate])
 
   const handleChange = (event) => {
-    const { name, value } = event.target;
+    const { name, value } = event.target
 
     setFormData((previous) => ({
       ...previous,
       [name]: value,
-    }));
-  };
+    }))
+  }
 
   const handleSubmit = async (event) => {
-    event.preventDefault();
+    event.preventDefault()
 
-    setError("");
-    setIsSaving(true);
+    if (isSaving) return
+
+    setIsSaving(true)
+    setError('')
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/farmers`, {
-        method: "POST",
-        credentials: "include",
+        method: 'POST',
+        credentials: 'include',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          farm_name: formData.farmName.trim(),
-          location: formData.location.trim(),
-          phone: formData.contact.trim(),
-          description: formData.description.trim(),
+          farm_name: formData.farmName,
+          location: formData.location,
+          phone: formData.contact,
+          description: formData.description,
         }),
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}))
 
       if (!response.ok) {
         throw new Error(
           data.message ||
             data.error ||
-            "Unable to submit your farm application."
-        );
+            'Your farm application could not be submitted.',
+        )
       }
 
-      setSubmitted(true);
-    } catch (requestError) {
+      const farmer = data.farmer || data
+
+      if (!farmer.id) {
+        throw new Error(
+          'Your application was submitted, but the farmer account could not be identified.',
+        )
+      }
+
+      localStorage.setItem(
+        'farmartFarmProfile',
+        JSON.stringify({
+          ...formData,
+          verificationStatus: 'pending',
+        }),
+      )
+
+      localStorage.setItem(
+        'farmartFarmerApplication',
+        JSON.stringify({
+          farmerId: farmer.id,
+          farmName: formData.farmName,
+          location: formData.location,
+          contact: formData.contact,
+          description: formData.description,
+          status: farmer.status || 'pending',
+          rejectionReason: farmer.rejection_reason || '',
+        }),
+      )
+
+      setPendingFarmerId(farmer.id)
+      setSubmitted(true)
+      setRejected(farmer.status === 'rejected')
+      setRejectionReason(farmer.rejection_reason || '')
+    } catch (err) {
       setError(
-        requestError.message ||
-          "Unable to connect to the Farmart server."
-      );
+        err.message ||
+          'Something went wrong while submitting your farm.',
+      )
     } finally {
-      setIsSaving(false);
+      setIsSaving(false)
     }
-  };
-
-  if (submitted) {
-    return (
-      <>
-        <style>{`
-          .farm-setup-page {
-            min-height: 100vh;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 64px 28px;
-            box-sizing: border-box;
-            background:
-              radial-gradient(
-                circle at 50% 35%,
-                var(--farm-green-glow),
-                transparent 45%
-              ),
-              var(--farm-background);
-            color: var(--farm-text);
-            font-family: "Modern Antiqua", serif;
-            transition:
-              background 180ms ease,
-              color 180ms ease;
-          }
-
-          .farm-setup-frame {
-            width: min(100%, 560px);
-            background: var(--auth-card);
-            border: 1px solid var(--farm-green-border);
-            border-radius: 30px;
-            box-shadow:
-              0 28px 75px var(--farm-green-glow),
-              0 5px 18px var(--farm-green-glow);
-            overflow: hidden;
-            transition:
-              background 180ms ease,
-              border-color 180ms ease,
-              box-shadow 180ms ease;
-          }
-
-          .farm-setup-content {
-            padding: 58px 60px 54px;
-            text-align: center;
-          }
-
-          .farm-setup-logo-frame {
-            width: min(100%, 250px);
-            min-height: 78px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px 18px;
-            margin: 0 auto 30px;
-            box-sizing: border-box;
-            border: 1px solid var(--farm-green-border);
-            border-radius: 18px;
-            background: var(--auth-logo-bg);
-          }
-
-          .farm-setup-logo {
-            width: 100%;
-            max-width: 220px;
-            height: auto;
-            display: block;
-            object-fit: contain;
-          }
-
-          .farm-setup-heading {
-            margin: 0;
-            color: var(--farm-text);
-            font-family: "IBM Plex Serif", serif;
-            font-size: clamp(32px, 5vw, 42px);
-            font-weight: 700;
-            line-height: 1.15;
-          }
-
-          .farm-setup-subtitle {
-            max-width: 420px;
-            margin: 18px auto 34px;
-            color: var(--farm-muted);
-            font-size: 16px;
-            line-height: 1.7;
-          }
-
-          .farm-setup-verification {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 18px;
-            text-align: left;
-            border: 1px solid var(--farm-green-border);
-            border-radius: 15px;
-            background: var(--farm-green-soft);
-          }
-
-          .farm-setup-verification-icon {
-            width: 44px;
-            height: 44px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            background: var(--farm-green-glow);
-            color: var(--farm-green);
-          }
-
-          .farm-setup-verification-copy {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-          }
-
-          .farm-setup-verification-copy strong {
-            color: var(--farm-text);
-            font-size: 14px;
-          }
-
-          .farm-setup-verification-copy span {
-            color: var(--farm-muted);
-            font-size: 13px;
-            line-height: 1.5;
-          }
-
-          .farm-setup-back {
-            width: 100%;
-            min-height: 56px;
-            margin-top: 18px;
-            border: 1px solid var(--farm-green);
-            border-radius: 15px;
-            background: var(--farm-green);
-            color: var(--farm-white);
-            font-family: "Modern Antiqua", serif;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition:
-              background 180ms ease,
-              box-shadow 180ms ease;
-          }
-
-          .farm-setup-back:hover {
-            background: var(--green-700);
-            box-shadow: 0 9px 22px var(--farm-green-glow);
-          }
-
-          @media (max-width: 620px) {
-            .farm-setup-page {
-              padding: 34px 18px;
-            }
-
-            .farm-setup-content {
-              padding: 48px 28px 40px;
-            }
-          }
-
-          @media (max-width: 420px) {
-            .farm-setup-content {
-              padding: 42px 20px 34px;
-            }
-
-            .farm-setup-logo-frame {
-              width: min(100%, 220px);
-            }
-          }
-        `}</style>
-
-        <main className="farm-setup-page">
-          <section className="farm-setup-frame">
-            <div className="farm-setup-content">
-              <div className="farm-setup-logo-frame">
-                <img
-                  className="farm-setup-logo"
-                  src="/logo/farmart_full_logo_testing.png"
-                  alt="Farmart"
-                />
-              </div>
-
-              <h1 className="farm-setup-heading">
-                Application submitted
-              </h1>
-
-              <p className="farm-setup-subtitle">
-                Your farm application has been sent to Farmart for review.
-              </p>
-
-              <div className="farm-setup-verification">
-                <div className="farm-setup-verification-icon">
-                  <ShieldCheck size={20} />
-                </div>
-
-                <div className="farm-setup-verification-copy">
-                  <strong>Verification pending</strong>
-                  <span>
-                    You'll receive an email when an admin makes a decision.
-                  </span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                className="farm-setup-back"
-                onClick={() => navigate("/farmer/dashboard")}
-              >
-                Continue
-              </button>
-            </div>
-          </section>
-        </main>
-      </>
-    );
   }
+
+  const handleTryAgain = () => {
+    localStorage.removeItem('farmartFarmerApplication')
+    setSubmitted(false)
+    setRejected(false)
+    setPendingFarmerId(null)
+    setRejectionReason('')
+    setError('')
+  }
+
+  useEffect(() => {
+    if (!submitted || !pendingFarmerId) return
+
+    let active = true
+
+    const checkApplication = async () => {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/farmers/${pendingFarmerId}`,
+          {
+            method: 'GET',
+            credentials: 'include',
+          },
+        )
+
+        const data = await response.json().catch(() => ({}))
+
+        if (!response.ok) {
+          if (response.status === 403 || response.status === 404) {
+            return
+          }
+
+          throw new Error(
+            data.message ||
+              data.error ||
+              'Unable to check your verification status.',
+          )
+        }
+
+        if (!active) return
+
+        const farmer = data.farmer || data
+
+        if (farmer.status === 'verified') {
+          localStorage.setItem(
+            'farmartFarmerApplication',
+            JSON.stringify({
+              farmerId: farmer.id,
+              farmName: farmer.farm_name || formData.farmName,
+              location: farmer.location || formData.location,
+              contact: farmer.phone_number || formData.contact,
+              description: farmer.description || formData.description,
+              status: 'verified',
+              rejectionReason: '',
+            }),
+          )
+
+          localStorage.setItem(
+            'farmartFarmProfile',
+            JSON.stringify({
+              farmName: farmer.farm_name || formData.farmName,
+              location: farmer.location || formData.location,
+              contact: farmer.phone_number || formData.contact,
+              description: farmer.description || formData.description,
+              verificationStatus: 'verified',
+            }),
+          )
+
+          navigate('/farmer/dashboard')
+          return
+        }
+
+        if (farmer.status === 'rejected') {
+          localStorage.setItem(
+            'farmartFarmerApplication',
+            JSON.stringify({
+              farmerId: farmer.id,
+              farmName: farmer.farm_name || formData.farmName,
+              location: farmer.location || formData.location,
+              contact: farmer.phone_number || formData.contact,
+              description: farmer.description || formData.description,
+              status: 'rejected',
+              rejectionReason: farmer.rejection_reason || '',
+            }),
+          )
+
+          setRejectionReason(farmer.rejection_reason || '')
+          setRejected(true)
+        }
+      } catch (err) {
+        if (active) {
+          setError(
+            err.message ||
+              'Unable to check your verification status.',
+          )
+        }
+      }
+    }
+
+    checkApplication()
+
+    const interval = setInterval(checkApplication, 2000)
+
+    return () => {
+      active = false
+      clearInterval(interval)
+    }
+  }, [
+    submitted,
+    pendingFarmerId,
+    navigate,
+    formData,
+  ])
 
   return (
     <>
@@ -300,6 +272,7 @@ function FarmSetup() {
           justify-content: center;
           padding: 64px 28px;
           box-sizing: border-box;
+
           background:
             radial-gradient(
               circle at 50% 35%,
@@ -307,8 +280,10 @@ function FarmSetup() {
               transparent 45%
             ),
             var(--farm-background);
+
           color: var(--farm-text);
           font-family: "Modern Antiqua", serif;
+
           transition:
             background 180ms ease,
             color 180ms ease;
@@ -316,14 +291,17 @@ function FarmSetup() {
 
         .farm-setup-frame {
           width: min(100%, 560px);
+          position: relative;
+          overflow: hidden;
+
           background: var(--auth-card);
           border: 1px solid var(--farm-green-border);
           border-radius: 30px;
+
           box-shadow:
             0 28px 75px var(--farm-green-glow),
             0 5px 18px var(--farm-green-glow);
-          overflow: hidden;
-          position: relative;
+
           transition:
             background 180ms ease,
             border-color 180ms ease,
@@ -335,56 +313,78 @@ function FarmSetup() {
           position: absolute;
           top: 0;
           left: 50%;
+
           width: 120px;
           height: 5px;
+
           transform: translateX(-50%);
           border-radius: 0 0 8px 8px;
+
           background: var(--farm-green);
         }
 
         .farm-setup-content {
-          padding: 58px 60px 54px;
-        }
-
-        .farm-setup-logo-frame {
-          width: min(100%, 250px);
-          min-height: 78px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 12px 18px;
-          margin: 0 auto 30px;
-          box-sizing: border-box;
-          border: 1px solid var(--farm-green-border);
-          border-radius: 18px;
-          background: var(--auth-logo-bg);
+          padding: 62px 60px 54px;
         }
 
         .farm-setup-logo {
+          width: min(100%, 300px);
+          min-height: 100px;
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          padding: 14px 22px;
+          margin: 0 auto 30px;
+
+          box-sizing: border-box;
+
+          border: 1px solid var(--farm-green-border);
+          border-radius: 20px;
+
+          background: var(--auth-logo-bg);
+
+          transition:
+            background 180ms ease,
+            border-color 180ms ease;
+        }
+
+        .farm-setup-logo img {
           width: 100%;
-          max-width: 220px;
-          height: auto;
-          display: block;
+          height: 100px;
           object-fit: contain;
+          display: block;
         }
 
         .farm-setup-heading {
           margin: 0;
+
           text-align: center;
+
           color: var(--farm-text);
+
           font-family: "IBM Plex Serif", serif;
           font-size: clamp(32px, 5vw, 42px);
           font-weight: 700;
           line-height: 1.15;
+
+          transition: color 180ms ease;
         }
 
         .farm-setup-subtitle {
           max-width: 410px;
+
           margin: 18px auto 42px;
+
           text-align: center;
+
           color: var(--farm-muted);
+
           font-size: 16px;
           line-height: 1.7;
+
+          transition: color 180ms ease;
         }
 
         .farm-setup-form {
@@ -395,40 +395,53 @@ function FarmSetup() {
 
         .farm-setup-field {
           width: 100%;
+
           display: flex;
           align-items: flex-start;
+
           gap: 15px;
           padding: 17px 18px;
+
           box-sizing: border-box;
+
           border: 1px solid var(--farm-green-border);
           border-radius: 16px;
-          background: var(--farm-green-soft);
+
+          background: var(--auth-input);
+
           transition:
-            background 180ms ease,
             border-color 180ms ease,
+            background 180ms ease,
             box-shadow 180ms ease;
         }
 
         .farm-setup-field:focus-within {
           border-color: var(--farm-green);
           background: var(--auth-input-focus);
-          box-shadow: 0 0 0 4px var(--farm-green-glow);
+
+          box-shadow:
+            0 0 0 4px var(--farm-green-glow);
         }
 
         .farm-setup-field-icon {
           width: 23px;
           height: 23px;
+
           flex-shrink: 0;
+
           margin-top: 4px;
+
           display: flex;
           align-items: center;
           justify-content: center;
+
           color: var(--farm-green);
         }
 
         .farm-setup-field-content {
           min-width: 0;
           flex: 1;
+
           display: flex;
           flex-direction: column;
           gap: 7px;
@@ -436,8 +449,10 @@ function FarmSetup() {
 
         .farm-setup-field-label {
           color: var(--farm-text);
+
           font-size: 12px;
           font-weight: 700;
+
           letter-spacing: 0.04em;
           text-transform: uppercase;
         }
@@ -446,12 +461,17 @@ function FarmSetup() {
         .farm-setup-field textarea {
           width: 100%;
           min-width: 0;
+
           box-sizing: border-box;
+
           border: none;
           outline: none;
+
           padding: 0;
+
           background: transparent;
           color: var(--farm-text);
+
           font-family: "Modern Antiqua", serif;
           font-size: 15px;
           line-height: 1.6;
@@ -470,28 +490,41 @@ function FarmSetup() {
         .farm-setup-divider {
           width: 100%;
           height: 1px;
+
           margin: 8px 0 2px;
+
           background: var(--farm-green-border);
         }
 
         .farm-setup-verification {
           display: flex;
           align-items: center;
+
           gap: 14px;
           padding: 16px;
+
           border: 1px solid var(--farm-green-border);
           border-radius: 15px;
+
           background: var(--farm-green-soft);
+
+          transition:
+            background 180ms ease,
+            border-color 180ms ease;
         }
 
         .farm-setup-verification-icon {
           width: 40px;
           height: 40px;
+
           flex-shrink: 0;
+
           display: flex;
           align-items: center;
           justify-content: center;
+
           border-radius: 11px;
+
           background: var(--farm-green-glow);
           color: var(--farm-green);
         }
@@ -504,51 +537,215 @@ function FarmSetup() {
 
         .farm-setup-verification-copy strong {
           color: var(--farm-text);
+
           font-size: 14px;
           font-weight: 700;
         }
 
         .farm-setup-verification-copy span {
           color: var(--farm-muted);
-          font-size: 13px;
-          line-height: 1.5;
-        }
 
-        .farm-setup-error {
-          margin: 0;
-          color: #b2503e;
           font-size: 13px;
           line-height: 1.5;
-          text-align: center;
         }
 
         .farm-setup-submit {
           width: 100%;
           min-height: 58px;
+
           margin-top: 5px;
-          border: 1px solid var(--farm-green);
+
+          border: none;
           border-radius: 15px;
+
           background: var(--farm-green);
-          color: var(--farm-white);
+          color: #ffffff;
+
           font-family: "Modern Antiqua", serif;
           font-size: 16px;
           font-weight: 700;
+
           cursor: pointer;
-          box-shadow: 0 9px 22px var(--farm-green-glow);
+
+          box-shadow:
+            0 9px 22px var(--farm-green-glow);
+
           transition:
+            transform 180ms ease,
             background 180ms ease,
-            box-shadow 180ms ease,
-            opacity 180ms ease;
+            box-shadow 180ms ease;
         }
 
         .farm-setup-submit:hover:not(:disabled) {
-          background: var(--green-700);
-          box-shadow: 0 11px 26px var(--farm-green-glow);
+          background: var(--farm-green-dark);
+
+          transform: translateY(-2px);
+
+          box-shadow:
+            0 13px 28px var(--farm-green-glow);
+        }
+
+        .farm-setup-submit:active:not(:disabled) {
+          transform: translateY(0);
         }
 
         .farm-setup-submit:disabled {
           opacity: 0.65;
           cursor: not-allowed;
+        }
+
+        .farm-setup-pending {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          gap: 6px;
+          padding: 12px 0 4px;
+        }
+
+        .farm-setup-pending-orb {
+          position: relative;
+          width: 92px;
+          height: 92px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 12px;
+        }
+
+        .farm-setup-pending-ring {
+          position: absolute;
+          inset: 0;
+          border-radius: 50%;
+          border: 2px solid var(--farm-green);
+          opacity: 0;
+          animation: farm-pending-pulse 2.4s ease-out infinite;
+        }
+
+        .farm-setup-pending-ring:nth-child(2) {
+          animation-delay: 0.8s;
+        }
+
+        .farm-setup-pending-ring:nth-child(3) {
+          animation-delay: 1.6s;
+        }
+
+        @keyframes farm-pending-pulse {
+          0% {
+            transform: scale(0.55);
+            opacity: 0.55;
+          }
+
+          100% {
+            transform: scale(1.7);
+            opacity: 0;
+          }
+        }
+
+        .farm-setup-pending-icon {
+          position: relative;
+          z-index: 1;
+          width: 54px;
+          height: 54px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--farm-green);
+          color: #ffffff;
+          box-shadow: 0 8px 20px var(--farm-green-glow);
+          animation: farm-pending-sway 3s ease-in-out infinite;
+        }
+
+        @keyframes farm-pending-sway {
+          0%, 100% {
+            transform: rotate(0deg);
+          }
+
+          50% {
+            transform: rotate(7deg);
+          }
+        }
+
+        .farm-setup-pending-title {
+          font-family: "IBM Plex Serif", serif;
+          font-size: 24px;
+          font-weight: 700;
+          color: var(--farm-text);
+          margin: 0;
+        }
+
+        .farm-setup-pending-copy {
+          max-width: 360px;
+          color: var(--farm-muted);
+          font-size: 14.5px;
+          line-height: 1.7;
+          margin: 10px 0 0;
+        }
+
+        .farm-setup-pending-copy strong {
+          color: var(--farm-text);
+        }
+
+        .farm-setup-pending-faint {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: var(--farm-muted);
+          opacity: 0.65;
+          font-size: 12.5px;
+          font-style: italic;
+          margin: 22px 0 0;
+        }
+
+        .farm-setup-pending-dots span {
+          display: inline-block;
+          width: 5px;
+          height: 5px;
+          margin-left: 2px;
+          border-radius: 50%;
+          background: var(--farm-green);
+          animation: farm-pending-dot 1.4s ease-in-out infinite both;
+        }
+
+        .farm-setup-pending-dots span:nth-child(2) {
+          animation-delay: 0.2s;
+        }
+
+        .farm-setup-pending-dots span:nth-child(3) {
+          animation-delay: 0.4s;
+        }
+
+        @keyframes farm-pending-dot {
+          0%, 80%, 100% {
+            transform: scale(0.6);
+            opacity: 0.35;
+          }
+
+          40% {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+
+        .farm-setup-rejected-copy {
+          max-width: 360px;
+          color: var(--farm-muted);
+          font-size: 14.5px;
+          line-height: 1.7;
+          margin: 10px 0 26px;
+        }
+
+        .farm-setup-error {
+          margin: 0 0 18px;
+          padding: 12px 14px;
+          border-radius: 12px;
+          border: 1px solid #F0C9C1;
+          background: #FFF5F2;
+          color: #B2503E;
+          font-family: "Modern Antiqua", serif;
+          font-size: 13px;
+          line-height: 1.5;
         }
 
         @media (max-width: 620px) {
@@ -563,6 +760,15 @@ function FarmSetup() {
           .farm-setup-content {
             padding: 48px 28px 40px;
           }
+
+          .farm-setup-logo {
+            min-height: 82px;
+            padding: 10px 18px;
+          }
+
+          .farm-setup-logo img {
+            height: 82px;
+          }
         }
 
         @media (max-width: 420px) {
@@ -574,8 +780,25 @@ function FarmSetup() {
             padding: 42px 20px 34px;
           }
 
-          .farm-setup-logo-frame {
-            width: min(100%, 220px);
+          .farm-setup-heading {
+            font-size: 30px;
+          }
+
+          .farm-setup-subtitle {
+            font-size: 15px;
+            margin-bottom: 32px;
+          }
+
+          .farm-setup-field {
+            padding: 15px;
+          }
+
+          .farm-setup-logo {
+            min-height: 76px;
+          }
+
+          .farm-setup-logo img {
+            height: 76px;
           }
         }
       `}</style>
@@ -583,146 +806,225 @@ function FarmSetup() {
       <main className="farm-setup-page">
         <section className="farm-setup-frame">
           <div className="farm-setup-content">
-            <div className="farm-setup-logo-frame">
+            <div className="farm-setup-logo">
               <img
-                className="farm-setup-logo"
                 src="/logo/farmart_full_logo_testing.png"
                 alt="Farmart"
               />
             </div>
 
-            <h1 className="farm-setup-heading">
-              Set up your farm
-            </h1>
-
-            <p className="farm-setup-subtitle">
-              Tell buyers a little about your farm before you start selling.
-            </p>
-
-            <form
-              onSubmit={handleSubmit}
-              className="farm-setup-form"
-            >
-              <label className="farm-setup-field">
-                <span className="farm-setup-field-icon">
-                  <House size={18} />
-                </span>
-
-                <span className="farm-setup-field-content">
-                  <span className="farm-setup-field-label">
-                    Farm name
-                  </span>
-
-                  <input
-                    type="text"
-                    name="farmName"
-                    placeholder="e.g. Kiambu Green Pastures"
-                    value={formData.farmName}
-                    onChange={handleChange}
-                    required
-                  />
-                </span>
-              </label>
-
-              <label className="farm-setup-field">
-                <span className="farm-setup-field-icon">
-                  <MapPin size={18} />
-                </span>
-
-                <span className="farm-setup-field-content">
-                  <span className="farm-setup-field-label">
-                    Location
-                  </span>
-
-                  <input
-                    type="text"
-                    name="location"
-                    placeholder="e.g. Kiambu County"
-                    value={formData.location}
-                    onChange={handleChange}
-                    required
-                  />
-                </span>
-              </label>
-
-              <label className="farm-setup-field">
-                <span className="farm-setup-field-icon">
-                  <Phone size={18} />
-                </span>
-
-                <span className="farm-setup-field-content">
-                  <span className="farm-setup-field-label">
-                    Contact number
-                  </span>
-
-                  <input
-                    type="tel"
-                    name="contact"
-                    placeholder="e.g. 0712 345 678"
-                    value={formData.contact}
-                    onChange={handleChange}
-                    required
-                  />
-                </span>
-              </label>
-
-              <label className="farm-setup-field">
-                <span className="farm-setup-field-icon">
-                  <PenLine size={18} />
-                </span>
-
-                <span className="farm-setup-field-content">
-                  <span className="farm-setup-field-label">
-                    About your farm
-                  </span>
-
-                  <textarea
-                    name="description"
-                    placeholder="Tell buyers briefly what you farm or sell..."
-                    value={formData.description}
-                    onChange={handleChange}
-                    rows="3"
-                    required
-                  />
-                </span>
-              </label>
-
-              <div className="farm-setup-divider" />
-
-              <div className="farm-setup-verification">
-                <div className="farm-setup-verification-icon">
-                  <ShieldCheck size={18} />
-                </div>
-
-                <div className="farm-setup-verification-copy">
-                  <strong>Verification pending</strong>
-                  <span>
-                    Your farm will be reviewed by Farmart admin.
-                  </span>
-                </div>
+            {error && (
+              <div className="farm-setup-error">
+                {error}
               </div>
+            )}
 
-              {error && (
-                <p className="farm-setup-error">
-                  {error}
+            {submitted && !rejected && (
+              <div className="farm-setup-pending">
+                <div className="farm-setup-pending-orb">
+                  <span className="farm-setup-pending-ring" />
+                  <span className="farm-setup-pending-ring" />
+                  <span className="farm-setup-pending-ring" />
+
+                  <span className="farm-setup-pending-icon">
+                    <FiShield size={22} />
+                  </span>
+                </div>
+
+                <h1 className="farm-setup-pending-title">
+                  Almost there!
+                </h1>
+
+                <p className="farm-setup-pending-copy">
+                  <strong>{formData.farmName}</strong> has been submitted for
+                  review. You'll be taken to your dashboard automatically
+                  once it's approved.
                 </p>
-              )}
 
-              <button
-                type="submit"
-                className="farm-setup-submit"
-                disabled={isSaving}
-              >
-                {isSaving
-                  ? "Submitting your application..."
-                  : "Submit for verification"}
-              </button>
-            </form>
+                <span className="farm-setup-pending-faint">
+                  The admin will approve you soon
+
+                  <span className="farm-setup-pending-dots">
+                    <span />
+                    <span />
+                    <span />
+                  </span>
+                </span>
+              </div>
+            )}
+
+            {submitted && rejected && (
+              <div className="farm-setup-pending">
+                <div className="farm-setup-pending-orb">
+                  <span
+                    className="farm-setup-pending-icon"
+                    style={{ background: '#B2503E' }}
+                  >
+                    <FiShield size={22} />
+                  </span>
+                </div>
+
+                <h1 className="farm-setup-pending-title">
+                  Not approved this time
+                </h1>
+
+                <p className="farm-setup-rejected-copy">
+                  Your farm profile wasn't approved.
+
+                  {rejectionReason && (
+                    <>
+                      <br />
+                      <br />
+                      <strong>Admin's note:</strong> {rejectionReason}
+                    </>
+                  )}
+
+                  <br />
+                  <br />
+                  You can update your details and submit again.
+                </p>
+
+                <button
+                  type="button"
+                  className="farm-setup-submit"
+                  onClick={handleTryAgain}
+                >
+                  Try again
+                </button>
+              </div>
+            )}
+
+            {!submitted && (
+              <>
+                <h1 className="farm-setup-heading">
+                  Set up your farm
+                </h1>
+
+                <p className="farm-setup-subtitle">
+                  Tell buyers a little about your farm before you start selling.
+                </p>
+
+                <form
+                  onSubmit={handleSubmit}
+                  className="farm-setup-form"
+                >
+                  <label className="farm-setup-field">
+                    <span className="farm-setup-field-icon">
+                      <FiHome size={18} />
+                    </span>
+
+                    <span className="farm-setup-field-content">
+                      <span className="farm-setup-field-label">
+                        Farm name
+                      </span>
+
+                      <input
+                        type="text"
+                        name="farmName"
+                        placeholder="e.g. Kiambu Green Pastures"
+                        value={formData.farmName}
+                        onChange={handleChange}
+                        required
+                      />
+                    </span>
+                  </label>
+
+                  <label className="farm-setup-field">
+                    <span className="farm-setup-field-icon">
+                      <FiMapPin size={18} />
+                    </span>
+
+                    <span className="farm-setup-field-content">
+                      <span className="farm-setup-field-label">
+                        Location
+                      </span>
+
+                      <input
+                        type="text"
+                        name="location"
+                        placeholder="e.g. Kiambu County"
+                        value={formData.location}
+                        onChange={handleChange}
+                        required
+                      />
+                    </span>
+                  </label>
+
+                  <label className="farm-setup-field">
+                    <span className="farm-setup-field-icon">
+                      <FiPhone size={18} />
+                    </span>
+
+                    <span className="farm-setup-field-content">
+                      <span className="farm-setup-field-label">
+                        Contact number
+                      </span>
+
+                      <input
+                        type="tel"
+                        name="contact"
+                        placeholder="e.g. 0712 345 678"
+                        value={formData.contact}
+                        onChange={handleChange}
+                        required
+                      />
+                    </span>
+                  </label>
+
+                  <label className="farm-setup-field">
+                    <span className="farm-setup-field-icon">
+                      <FiEdit3 size={18} />
+                    </span>
+
+                    <span className="farm-setup-field-content">
+                      <span className="farm-setup-field-label">
+                        About your farm
+                      </span>
+
+                      <textarea
+                        name="description"
+                        placeholder="Tell buyers briefly what you farm or sell..."
+                        value={formData.description}
+                        onChange={handleChange}
+                        rows="3"
+                        required
+                      />
+                    </span>
+                  </label>
+
+                  <div className="farm-setup-divider" />
+
+                  <div className="farm-setup-verification">
+                    <div className="farm-setup-verification-icon">
+                      <FiShield size={18} />
+                    </div>
+
+                    <div className="farm-setup-verification-copy">
+                      <strong>Verification pending</strong>
+
+                      <span>
+                        Your farm will be reviewed by Farmart admin.
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="farm-setup-submit"
+                    disabled={isSaving}
+                  >
+                    {isSaving
+                      ? 'Saving your farm...'
+                      : 'Save & continue'}
+                  </button>
+                </form>
+              </>
+            )}
           </div>
         </section>
       </main>
     </>
-  );
+  )
 }
 
-export default FarmSetup;
+export default FarmSetup

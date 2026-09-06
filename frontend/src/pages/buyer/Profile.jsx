@@ -6,6 +6,7 @@ import {
   FaMapMarkerAlt,
   FaEdit,
   FaSave,
+  FaCamera,
 } from 'react-icons/fa'
 
 import API_BASE_URL from '../../api/api'
@@ -16,6 +17,7 @@ function Profile() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [profileImage, setProfileImage] = useState('')
 
   const [profile, setProfile] = useState({
     name: '',
@@ -30,6 +32,14 @@ function Profile() {
     phone: '',
     location: '',
   })
+
+  useEffect(() => {
+    const savedImage = localStorage.getItem('farmartBuyerProfileImage')
+
+    if (savedImage) {
+      setProfileImage(savedImage)
+    }
+  }, [])
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -94,6 +104,45 @@ function Profile() {
     setSuccess('')
   }
 
+  const handleImageChange = (event) => {
+    const file = event.target.files?.[0]
+
+    if (!file) {
+      return
+    }
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file.')
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Profile pictures must be 5 MB or smaller.')
+      return
+    }
+
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      const imageData = reader.result
+
+      setProfileImage(imageData)
+      localStorage.setItem(
+        'farmartBuyerProfileImage',
+        imageData
+      )
+
+      setError('')
+      setSuccess('Profile picture updated.')
+    }
+
+    reader.onerror = () => {
+      setError('Unable to load that image.')
+    }
+
+    reader.readAsDataURL(file)
+  }
+
   const handleEdit = () => {
     setError('')
     setSuccess('')
@@ -141,7 +190,7 @@ function Profile() {
       }
 
       const response = await fetch(
-        `${API_BASE}/api/profile/me`,
+        `${API_BASE_URL}/api/profile/me`,
         {
           method: 'PATCH',
           credentials: 'include',
@@ -272,13 +321,20 @@ function Profile() {
           border-bottom: 1px solid #d1e1d3;
         }
 
+        .buyer-profile-avatar-wrapper {
+          position: relative;
+          width: 92px;
+          height: 92px;
+          flex-shrink: 0;
+        }
+
         .buyer-profile-avatar {
-          width: 76px;
-          height: 76px;
+          width: 92px;
+          height: 92px;
           display: flex;
           align-items: center;
           justify-content: center;
-          flex-shrink: 0;
+          overflow: hidden;
           border-radius: 50%;
           background: linear-gradient(
             135deg,
@@ -290,6 +346,43 @@ function Profile() {
           box-shadow:
             5px 5px 12px rgba(45, 112, 66, 0.18),
             -4px -4px 10px rgba(255, 255, 255, 0.8);
+        }
+
+        .buyer-profile-avatar img {
+          width: 100%;
+          height: 100%;
+          display: block;
+          object-fit: cover;
+          object-position: center;
+        }
+
+        .buyer-profile-avatar-upload {
+          position: absolute;
+          right: -2px;
+          bottom: -2px;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 3px solid #ffffff;
+          border-radius: 50%;
+          background: #2d7042;
+          color: #ffffff;
+          cursor: pointer;
+          box-shadow: 3px 3px 8px rgba(45, 112, 66, 0.2);
+          transition:
+            background 180ms ease,
+            transform 180ms ease;
+        }
+
+        .buyer-profile-avatar-upload:hover {
+          background: #245d36;
+          transform: scale(1.06);
+        }
+
+        .buyer-profile-avatar-upload input {
+          display: none;
         }
 
         .buyer-profile-name {
@@ -478,7 +571,6 @@ function Profile() {
 
       <main className="buyer-profile-page">
         <div className="buyer-profile-container">
-
           <header className="buyer-profile-header">
             <h1 className="buyer-profile-title">
               My Profile
@@ -502,7 +594,6 @@ function Profile() {
           )}
 
           <section className="buyer-profile-card">
-
             {loading ? (
               <div className="buyer-profile-loading">
                 Loading profile...
@@ -510,8 +601,32 @@ function Profile() {
             ) : (
               <>
                 <div className="buyer-profile-top">
-                  <div className="buyer-profile-avatar">
-                    <FaUser />
+                  <div className="buyer-profile-avatar-wrapper">
+                    <div className="buyer-profile-avatar">
+                      {profileImage ? (
+                        <img
+                          src={profileImage}
+                          alt={`${profile.name || 'Buyer'} profile`}
+                        />
+                      ) : (
+                        <FaUser />
+                      )}
+                    </div>
+
+                    <label
+                      className="buyer-profile-avatar-upload"
+                      htmlFor="profile-image"
+                      title="Upload profile picture"
+                    >
+                      <FaCamera size={13} />
+
+                      <input
+                        id="profile-image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                    </label>
                   </div>
 
                   <div>
@@ -531,7 +646,6 @@ function Profile() {
                   </h3>
 
                   <div className="buyer-profile-fields">
-
                     <div className="buyer-profile-field">
                       <label
                         className="buyer-profile-label"
@@ -611,7 +725,6 @@ function Profile() {
                         disabled={!editing || saving}
                       />
                     </div>
-
                   </div>
                 </div>
 
@@ -644,15 +757,15 @@ function Profile() {
                       disabled={saving}
                     >
                       <FaSave />
-                      {saving ? 'Saving Changes...' : 'Save Changes'}
+                      {saving
+                        ? 'Saving Changes...'
+                        : 'Save Changes'}
                     </button>
                   )}
                 </div>
               </>
             )}
-
           </section>
-
         </div>
       </main>
     </>

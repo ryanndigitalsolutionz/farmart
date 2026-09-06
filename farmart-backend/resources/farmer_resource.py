@@ -137,13 +137,21 @@ class FarmerListResource(Resource):
 
 class FarmerResource(Resource):
     def get(self, user_id):
-        if session.get("user_role") != "admin":
-            return {"message": "Admin access required"}, 403
+        current_user_id = session.get("user_id")
+        current_user_role = session.get("user_role")
 
-        user = User.query.filter_by(
-            id=user_id,
-            role="farmer",
-        ).first()
+        if current_user_role == "admin":
+            user = User.query.filter_by(
+                id=user_id,
+                role="farmer",
+            ).first()
+        elif current_user_role == "farmer" and current_user_id == user_id:
+            user = User.query.filter_by(
+                id=user_id,
+                role="farmer",
+            ).first()
+        else:
+            return {"message": "Access denied"}, 403
 
         if not user:
             return {"message": "Farmer not found"}, 404

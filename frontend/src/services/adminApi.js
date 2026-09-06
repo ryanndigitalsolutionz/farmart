@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:5000";
+import API_BASE_URL from "../api/api";
 
 async function request(url, options = {}) {
   const response = await fetch(url, {
@@ -26,6 +26,11 @@ async function request(url, options = {}) {
 export async function getUsers() {
   const data = await request(`${API_BASE_URL}/api/users`);
   return data.users || data;
+}
+
+export async function getBuyerDetail(buyerId) {
+  const data = await request(`${API_BASE_URL}/api/users/${buyerId}`);
+  return data.user || data;
 }
 
 export async function getOrders() {

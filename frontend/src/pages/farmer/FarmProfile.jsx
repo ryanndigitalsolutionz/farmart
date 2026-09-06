@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { FaCheck } from 'react-icons/fa'
+import { FaCheck, FaClock } from 'react-icons/fa'
 
 import API_BASE_URL from '../../api/api'
 
@@ -9,7 +9,6 @@ function FarmProfile() {
     location: '',
     contact: '',
     description: '',
-    verificationStatus: 'pending',
   })
 
   const [originalFarm, setOriginalFarm] = useState({
@@ -17,7 +16,6 @@ function FarmProfile() {
     location: '',
     contact: '',
     description: '',
-    verificationStatus: 'pending',
   })
 
   const [isEditing, setIsEditing] = useState(false)
@@ -25,6 +23,7 @@ function FarmProfile() {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [isVerified, setIsVerified] = useState(false)
 
   useEffect(() => {
     const loadFarmProfile = async () => {
@@ -32,7 +31,7 @@ function FarmProfile() {
         setError('')
 
         const response = await fetch(
-          `${API_BASE}/api/profile/me`,
+          `${API_BASE_URL}/api/profile/me`,
           {
             credentials: 'include',
           }
@@ -51,8 +50,16 @@ function FarmProfile() {
           location: data.profile?.location || '',
           contact: data.profile?.phone || '',
           description: data.profile?.description || '',
-          verificationStatus:
-            data.profile?.verification_status || 'pending',
+        }
+
+        const storedUser = localStorage.getItem('farmartUser')
+        if (storedUser) {
+          try {
+            const user = JSON.parse(storedUser)
+            setIsVerified(user?.is_verified === true)
+          } catch {
+            setIsVerified(false)
+          }
         }
 
         setFarm(nextFarm)
@@ -102,7 +109,7 @@ function FarmProfile() {
       setSuccess('')
 
       const response = await fetch(
-        `${API_BASE}/api/profile/me`,
+        `${API_BASE_URL}/api/profile/me`,
         {
           method: 'PATCH',
           credentials: 'include',
@@ -141,8 +148,6 @@ function FarmProfile() {
         location: data.profile?.location || '',
         contact: data.profile?.phone || '',
         description: data.profile?.description || '',
-        verificationStatus:
-          data.profile?.verification_status || 'pending',
       }
 
       setFarm(savedFarm)
@@ -217,6 +222,11 @@ function FarmProfile() {
           border-radius: 50%;
           background: #299151;
           color: #ffffff;
+        }
+
+        .farm-verification-icon.pending {
+          background: #c9972b;
+        }
         }
 
         .farm-profile-message {
@@ -381,13 +391,11 @@ function FarmProfile() {
           </header>
 
           <div className="farm-verification">
-            <span className="farm-verification-icon">
-              <FaCheck size={7} />
+            <span className={`farm-verification-icon ${isVerified ? 'verified' : 'pending'}`}>
+              {isVerified ? <FaCheck size={7} /> : <FaClock size={7} />}
             </span>
 
-            {farm.verificationStatus === 'approved'
-              ? 'Verified Farm'
-              : 'Verification Pending'}
+            {isVerified ? 'Verified Farm' : 'Verification Pending'}
           </div>
 
           {error && (

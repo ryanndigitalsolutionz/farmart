@@ -13,7 +13,7 @@ function Login() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const selectedRole = location.state?.role || 'farmer'
+  const selectedRole = location.state?.role || ''
 
   const [formData, setFormData] = useState({
     email: '',
@@ -33,7 +33,6 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
     setError('')
 
     if (!formData.email || !formData.password) {
@@ -53,7 +52,7 @@ function Login() {
           },
           credentials: 'include',
           body: JSON.stringify({
-            email: formData.email,
+            email: formData.email.trim().toLowerCase(),
             password: formData.password,
           }),
         },
@@ -65,6 +64,11 @@ function Login() {
         setError(
           data.error || 'Unable to log in. Please try again.',
         )
+        return
+      }
+
+      if (!data.user || !data.user.role) {
+        setError('Unable to determine your account role.')
         return
       }
 
@@ -88,6 +92,7 @@ function Login() {
       } else if (data.user.role === 'admin') {
         navigate('/admin/dashboard')
       } else {
+        localStorage.removeItem('farmartUser')
         setError('Your account has an invalid role.')
       }
     } catch (error) {
@@ -97,6 +102,16 @@ function Login() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleGoogleLogin = () => {
+    if (!selectedRole) {
+      setError('Please select a login role first.')
+      return
+    }
+
+    window.location.href =
+      `${API_BASE_URL}/auth/google?role=${selectedRole}`
   }
 
   return (
@@ -551,6 +566,7 @@ function Login() {
                     value={formData.email}
                     onChange={handleChange}
                     autoComplete="email"
+                    disabled={loading}
                   />
                 </div>
               </label>
@@ -572,6 +588,7 @@ function Login() {
                     value={formData.password}
                     onChange={handleChange}
                     autoComplete="current-password"
+                    disabled={loading}
                   />
 
                   <button
@@ -585,6 +602,7 @@ function Login() {
                         ? 'Hide password'
                         : 'Show password'
                     }
+                    disabled={loading}
                   >
                     {showPassword ? (
                       <FaEyeSlash size={17} />
@@ -618,10 +636,8 @@ function Login() {
               <button
                 type="button"
                 className="google-button"
-                onClick={() => {
-                  window.location.href =
-                    `${API_BASE_URL}/auth/google?role=${selectedRole}`
-                }}
+                onClick={handleGoogleLogin}
+                disabled={loading}
               >
                 <FaGoogle size={17} />
                 Continue with Google
