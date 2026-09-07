@@ -101,7 +101,10 @@ function OrderDetails() {
 
         const data = await response.json()
 
-        console.log("ORDER DETAILS RESPONSE:", data)
+        console.log(
+          "ORDER DETAILS RESPONSE:", 
+          JSON.stringify(data.items?.[0],null, 2)
+        )
 
         if (!response.ok) {
           throw new Error(

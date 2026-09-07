@@ -47,12 +47,20 @@ def _item_data(item):
         data["livestock"] = {
             "id": item.livestock.id,
             "name": item.livestock.name,
+            "image": item.livestock.image,
+            "type": item.livestock.type,
+            "breed": item.livestock.breed,
+            "price": str(item.livestock.price),
         }
 
     if item.product:
         data["product"] = {
             "id": item.product.id,
             "name": item.product.name,
+            "image": item.product.image,
+            "type": item.product.type,
+            "price": str(item.product.price),
+            "location": item.product.location,
         }
 
     return data
@@ -83,7 +91,22 @@ class OrderResource(Resource):
                         "message": "Access denied"
                     }, 403
 
-                return order_schema.dump(order), 200
+                return {
+                    "id": order.id,
+                    "buyer_id": order.buyer_id,
+                    "buyer": _buyer_data(order),
+                    "total_amount": str(order.total_amount),
+                    "status": _status_value(order.status),
+                    "created_at": (
+                        order.created_at.isoformat()
+                        if order.created_at
+                        else None
+                    ),
+                    "items": [
+                        _item_data(item)
+                        for item in order.items
+                    ],
+                }, 200
 
             orders = (
                 Order.query
