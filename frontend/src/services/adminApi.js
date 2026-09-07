@@ -1,189 +1,134 @@
-const API_BASE_URL = "http://127.0.0.1:5000";
+import API_BASE_URL from "../api/api";
 
-async function parseJsonOrThrow(response, fallbackMessage) {
+async function request(url, options = {}) {
+  const response = await fetch(url, {
+    credentials: "include",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+  });
+
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(data.error || data.message || fallbackMessage);
+    throw new Error(
+      data.error ||
+      data.message ||
+      "The request could not be completed."
+    );
   }
 
   return data;
 }
 
 export async function getCurrentUser() {
-  const response = await fetch(`${API_BASE_URL}/api/profile/me`, {
-    credentials: "include",
-  });
-  return parseJsonOrThrow(response, "Failed to load current user.");
+  return request(`${API_BASE_URL}/api/profile/me`);
 }
 
 export async function getOverview() {
-  const response = await fetch(`${API_BASE_URL}/api/admin/overview`, {
-    credentials: "include",
-  });
-  return parseJsonOrThrow(response, "Failed to load dashboard overview.");
+  return request(`${API_BASE_URL}/api/admin/overview`);
 }
 
 export async function getUsers() {
-  const response = await fetch(`${API_BASE_URL}/api/users`, {
-    credentials: "include",
-  });
-  const data = await parseJsonOrThrow(response, "Failed to load users.");
-  return data.users;
+  const data = await request(`${API_BASE_URL}/api/users`);
+  return data.users || data;
 }
 
 export async function getOrders() {
-  const response = await fetch(`${API_BASE_URL}/api/orders`, {
-    credentials: "include",
-  });
-  return parseJsonOrThrow(response, "Failed to load orders.");
+  return request(`${API_BASE_URL}/api/orders`);
 }
 
 export async function getPayments() {
-  const response = await fetch(`${API_BASE_URL}/api/payments`, {
-    credentials: "include",
-  });
-  return parseJsonOrThrow(response, "Failed to load payments.");
+  return request(`${API_BASE_URL}/api/payments`);
 }
 
 export async function getFarmers() {
-  const response = await fetch(`${API_BASE_URL}/api/farmers`, {
-    credentials: "include",
-  });
-  return parseJsonOrThrow(response, "Failed to load farmers.");
+  return request(`${API_BASE_URL}/api/farmers`);
 }
 
 export async function getFarmerDetail(farmerId) {
-  const response = await fetch(`${API_BASE_URL}/api/farmers/${farmerId}`, {
-    credentials: "include",
-  });
-  return parseJsonOrThrow(response, "Farmer not found.");
+  return request(`${API_BASE_URL}/api/farmers/${farmerId}`);
 }
 
 export async function verifyFarmer(farmerId) {
-  const response = await fetch(`${API_BASE_URL}/api/farmers/${farmerId}`, {
+  return request(`${API_BASE_URL}/api/farmers/${farmerId}`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ action: "verify" }),
+    body: JSON.stringify({
+      action: "verify",
+    }),
   });
-  return parseJsonOrThrow(response, "Failed to verify farmer.");
 }
 
 export async function rejectFarmer(farmerId, reason) {
-  const response = await fetch(`${API_BASE_URL}/api/farmers/${farmerId}`, {
+  return request(`${API_BASE_URL}/api/farmers/${farmerId}`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ action: "reject", reason }),
+    body: JSON.stringify({
+      action: "reject",
+      reason,
+    }),
   });
-  return parseJsonOrThrow(response, "Failed to reject farmer.");
-}
-
-export async function getBuyers() {
-  const response = await fetch(`${API_BASE_URL}/api/buyers`, {
-    credentials: "include",
-  });
-  return parseJsonOrThrow(response, "Failed to load buyers.");
 }
 
 export async function getBuyerDetail(buyerId) {
-  const response = await fetch(`${API_BASE_URL}/api/buyers/${buyerId}`, {
-    credentials: "include",
-  });
-  return parseJsonOrThrow(response, "Buyer not found.");
-}
-
-export async function verifyUser(userId) {
-  const response = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ is_verified: true }),
-  });
-  return parseJsonOrThrow(response, "Failed to verify account.");
+  const data = await request(`${API_BASE_URL}/api/users/${buyerId}`);
+  return data.user || data;
 }
 
 export async function suspendUser(userId) {
-  const response = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
+  return request(`${API_BASE_URL}/api/users/${userId}`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ is_active: false }),
+    body: JSON.stringify({
+      action: "suspend",
+    }),
   });
-  return parseJsonOrThrow(response, "Failed to suspend account.");
-}
-
-export async function reactivateUser(userId) {
-  const response = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ is_active: true }),
-  });
-  return parseJsonOrThrow(response, "Failed to reactivate account.");
 }
 
 export async function getCommissionRate() {
-  const response = await fetch(`${API_BASE_URL}/api/admin/commission`, {
-    credentials: "include",
-  });
-  return parseJsonOrThrow(response, "Failed to load commission rate.");
+  return request(`${API_BASE_URL}/api/admin/commission`);
 }
 
 export async function updateCommissionRate(percentage) {
-  const response = await fetch(`${API_BASE_URL}/api/admin/commission`, {
+  return request(`${API_BASE_URL}/api/admin/commission`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ percentage }),
+    body: JSON.stringify({
+      percentage,
+    }),
   });
-  return parseJsonOrThrow(response, "Failed to update commission rate.");
 }
 
 export async function getAnnouncements() {
-  const response = await fetch(`${API_BASE_URL}/api/announcements`);
-  return parseJsonOrThrow(response, "Failed to load announcements.");
+  return request(`${API_BASE_URL}/api/announcements`);
 }
 
 export async function sendAnnouncement({ authorId, title, message }) {
-  const response = await fetch(`${API_BASE_URL}/api/announcements`, {
+  return request(`${API_BASE_URL}/api/announcements`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ author_id: authorId, title, message }),
+    body: JSON.stringify({
+      author_id: authorId,
+      title,
+      message,
+    }),
   });
-  return parseJsonOrThrow(response, "Failed to send announcement.");
 }
 
-// The features below (listing moderation flags, buyer/farmer disputes)
-// have no backing model or endpoint on the server yet. Left as inert
-// stubs so the pages that call them render an empty state instead of
-// crashing, until that backend work exists.
-
-export async function getListingsForReview({ flaggedOnly } = {}) {
-  void flaggedOnly;
+export async function getListingsForReview() {
   return [];
 }
 
-export async function approveListing(animalId) {
-  void animalId;
+export async function approveListing() {
   return { success: true };
 }
 
-export async function suspendListing(animalId, reason) {
-  void animalId;
-  void reason;
+export async function suspendListing() {
   return { success: true };
 }
 
-export async function getDisputes({ status } = {}) {
-  void status;
+export async function getDisputes() {
   return [];
 }
 
-export async function resolveDispute(disputeId, notes) {
-  void disputeId;
-  void notes;
+export async function resolveDispute() {
   return { success: true };
 }

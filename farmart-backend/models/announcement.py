@@ -16,3 +16,4 @@ class Announcement(db.Model):
 
     def __repr__(self):
         return f"<Announcement id={self.id} title={self.title}>"
+    

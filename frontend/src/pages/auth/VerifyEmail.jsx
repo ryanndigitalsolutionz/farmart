@@ -1,7 +1,7 @@
-// VerifyEmail.jsx
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { FiMail, FiArrowRight } from 'react-icons/fi'
+import API_BASE_URL from '../../api/api'
 
 function VerifyEmail() {
   const navigate = useNavigate()
@@ -47,7 +47,7 @@ function VerifyEmail() {
 
     try {
       const response = await fetch(
-        'http://127.0.0.1:5000/auth/verify-password-reset-otp',
+`${API_BASE_URL}/auth/verify-password-reset-otp`
         {
           method: 'POST',
           headers: {
@@ -98,7 +98,7 @@ function VerifyEmail() {
 
     try {
       const response = await fetch(
-        'http://127.0.0.1:5000/auth/forgot-password',
+`${API_BASE_URL}/auth/forgot-password`
         {
           method: 'POST',
           headers: {
@@ -451,9 +451,10 @@ function VerifyEmail() {
       <main className="verify-page">
         <section className="verify-card">
           <div className="verify-content">
+
             <div className="login-logo">
               <img
-                src="/logo/farmart_full_logo_testing.png"
+                src="/favicon/farm.png"
                 alt="Farmart"
               />
             </div>
@@ -539,6 +540,7 @@ function VerifyEmail() {
                 Change email address
               </Link>
             </p>
+
           </div>
         </section>
       </main>

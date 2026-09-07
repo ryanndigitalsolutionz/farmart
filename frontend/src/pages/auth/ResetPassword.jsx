@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { FiLock, FiEye, FiEyeOff, FiArrowRight } from 'react-icons/fi'
 import { FaShieldAlt } from 'react-icons/fa'
+import API_BASE_URL from '../../api/api'
 
 function ResetPassword() {
   const navigate = useNavigate()
@@ -54,7 +55,7 @@ function ResetPassword() {
 
     try {
       const response = await fetch(
-        'http://127.0.0.1:5000/auth/reset-password',
+`${API_BASE_URL}/auth/reset-password`
         {
           method: 'POST',
           headers: {

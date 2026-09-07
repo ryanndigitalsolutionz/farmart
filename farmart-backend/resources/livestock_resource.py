@@ -12,15 +12,29 @@ livestock_list_schema = LivestockSchema(many=True)
 class LivestockResource(Resource):
 
     def get(self, livestock_id=None):
+        farmer_id = session.get("user_id")
+        role = session.get("user_role")
+
         if livestock_id:
             livestock = db.session.get(Livestock, livestock_id)
 
             if not livestock:
                 return {"message": "Livestock not found"}, 404
 
+            if role == "farmer" and livestock.farmer_id != farmer_id:
+                return {"message": "Access denied"}, 403
+
             return livestock_schema.dump(livestock), 200
 
-        livestock = Livestock.query.all()
+        if role == "farmer":
+            if not farmer_id:
+                return {"message": "Authorization required"}, 401
+
+            livestock = Livestock.query.filter_by(
+                farmer_id=farmer_id
+            ).all()
+        else:
+            livestock = Livestock.query.all()
 
         return livestock_list_schema.dump(livestock), 200
 

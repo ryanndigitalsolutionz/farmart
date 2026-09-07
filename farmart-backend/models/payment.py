@@ -90,4 +90,3 @@ class Payment(db.Model):
         "Order",
         back_populates="payments",
     )
-    

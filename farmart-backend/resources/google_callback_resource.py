@@ -243,22 +243,6 @@ def google_callback():
     session["user_id"] = user.id
     session["user_role"] = user.role
 
-    if user.role == "farmer":
-        return redirect(
-            "http://localhost:5173/farm-setup"
-        )
-
-    if user.role == "buyer":
-        return redirect(
-            "http://localhost:5173/buyer/marketplace"
-        )
-
-    if user.role == "admin":
-        return redirect(
-            "http://localhost:5173/admin/dashboard"
-        )
-
-    return jsonify({
-        "success": False,
-        "error": "Unable to determine user role.",
-    }), 400
+    return redirect(
+        "http://localhost:5173/auth/google/callback"
+    )

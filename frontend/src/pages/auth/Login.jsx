@@ -7,12 +7,18 @@ import {
   FaEyeSlash,
   FaGoogle,
 } from 'react-icons/fa'
+import API_BASE_URL from '../../api/api'
 
 function Login() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const selectedRole = location.state?.role || 'farmer'
+  const roleFromWelcome = location.state?.role || ''
+  const cameFromWelcome = Boolean(roleFromWelcome)
+
+  const [selectedRole, setSelectedRole] = useState(
+    roleFromWelcome || 'buyer',
+  )
 
   const [formData, setFormData] = useState({
     email: '',
@@ -33,7 +39,6 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
     setError('')
     setNeedsVerification(false)
 
@@ -46,7 +51,7 @@ function Login() {
 
     try {
       const response = await fetch(
-        'http://127.0.0.1:5000/auth/login',
+        `${API_BASE_URL}/auth/login`,
         {
           method: 'POST',
           headers: {
@@ -54,7 +59,7 @@ function Login() {
           },
           credentials: 'include',
           body: JSON.stringify({
-            email: formData.email,
+            email: formData.email.trim().toLowerCase(),
             password: formData.password,
           }),
         },
@@ -74,6 +79,11 @@ function Login() {
           setNeedsVerification(true)
         }
 
+        return
+      }
+
+      if (!data.user || !data.user.role) {
+        setError('Unable to determine your account role.')
         return
       }
 
@@ -97,9 +107,10 @@ function Login() {
       } else if (data.user.role === 'admin') {
         navigate('/admin/dashboard')
       } else {
+        localStorage.removeItem('farmartUser')
         setError('Your account has an invalid role.')
       }
-    } catch (error) {
+    } catch {
       setError(
         'Unable to connect to the Farmart server.',
       )
@@ -113,8 +124,25 @@ function Login() {
       'farmartSignupEmail',
       formData.email.trim().toLowerCase(),
     )
-    sessionStorage.setItem('farmartSignupNeedsResend', 'true')
+
+    sessionStorage.setItem(
+      'farmartSignupNeedsResend',
+      'true',
+    )
+
     navigate('/verify-account')
+  }
+
+  const handleGoogleLogin = () => {
+    setError('')
+
+    if (!selectedRole) {
+      setError('Please select Buyer or Farmer.')
+      return
+    }
+
+    window.location.href =
+      `${API_BASE_URL}/auth/google?role=${selectedRole}`
   }
 
   return (
@@ -137,6 +165,7 @@ function Login() {
             var(--farm-background);
 
           color: var(--farm-text);
+
           transition:
             background 180ms ease,
             color 180ms ease;
@@ -150,6 +179,7 @@ function Login() {
           border-radius: 30px;
 
           background: var(--auth-card);
+
           box-shadow:
             0 28px 80px var(--farm-green-glow),
             0 6px 20px var(--farm-green-glow);
@@ -205,13 +235,64 @@ function Login() {
 
         .login-heading p {
           max-width: 390px;
-          margin: 18px auto 38px;
+          margin: 18px auto 30px;
 
           color: var(--farm-muted);
 
           font-family: "Modern Antiqua", serif;
           font-size: 16px;
           line-height: 1.75;
+        }
+
+        .role-toggle {
+          width: fit-content;
+
+          display: flex;
+          align-items: center;
+
+          margin: 0 auto 30px;
+          padding: 4px;
+
+          border: 1px solid var(--farm-green-border);
+          border-radius: 999px;
+
+          background: var(--auth-input);
+
+          box-shadow: 0 5px 18px var(--farm-green-glow);
+        }
+
+        .role-toggle-button {
+          min-width: 105px;
+          min-height: 38px;
+
+          padding: 0 18px;
+
+          border: 0;
+          border-radius: 999px;
+
+          background: transparent;
+          color: var(--farm-muted);
+
+          font-family: "Modern Antiqua", serif;
+          font-size: 13px;
+          font-weight: 600;
+
+          cursor: pointer;
+
+          transition:
+            background 180ms ease,
+            color 180ms ease,
+            box-shadow 180ms ease;
+        }
+
+        .role-toggle-button.active {
+          background: var(--farm-green);
+          color: #ffffff;
+          box-shadow: 0 5px 14px var(--farm-green-glow);
+        }
+
+        .role-toggle-button:not(.active):hover {
+          color: var(--farm-green);
         }
 
         .login-form {
@@ -228,6 +309,7 @@ function Login() {
 
         .login-field > span {
           color: var(--farm-text);
+
           font-family: "Modern Antiqua", serif;
           font-size: 14px;
           font-weight: 600;
@@ -401,6 +483,11 @@ function Login() {
           opacity: 1;
         }
 
+        .google-button:disabled {
+          cursor: not-allowed;
+          opacity: 0.65;
+        }
+
         .google-note {
           margin: -8px 0 0;
 
@@ -509,6 +596,10 @@ function Login() {
           .login-footer {
             gap: 20px;
           }
+
+          .role-toggle-button {
+            min-width: 95px;
+          }
         }
 
         @media (max-width: 400px) {
@@ -527,6 +618,11 @@ function Login() {
           .login-footer {
             gap: 12px;
             font-size: 11px;
+          }
+
+          .role-toggle-button {
+            min-width: 88px;
+            padding: 0 14px;
           }
         }
       `}</style>
@@ -551,11 +647,44 @@ function Login() {
               </p>
             </div>
 
+            <div className="role-toggle">
+              <button
+                type="button"
+                className={
+                  selectedRole === 'buyer'
+                    ? 'role-toggle-button active'
+                    : 'role-toggle-button'
+                }
+                onClick={() => {
+                  setSelectedRole('buyer')
+                  setError('')
+                }}
+                disabled={loading}
+              >
+                Buyer
+              </button>
+
+              <button
+                type="button"
+                className={
+                  selectedRole === 'farmer'
+                    ? 'role-toggle-button active'
+                    : 'role-toggle-button'
+                }
+                onClick={() => {
+                  setSelectedRole('farmer')
+                  setError('')
+                }}
+                disabled={loading}
+              >
+                Farmer
+              </button>
+            </div>
+
             <form
               onSubmit={handleSubmit}
               className="login-form"
             >
-
               <label className="login-field">
                 <span>Email</span>
 
@@ -569,6 +698,7 @@ function Login() {
                     value={formData.email}
                     onChange={handleChange}
                     autoComplete="email"
+                    disabled={loading}
                   />
                 </div>
               </label>
@@ -590,6 +720,7 @@ function Login() {
                     value={formData.password}
                     onChange={handleChange}
                     autoComplete="current-password"
+                    disabled={loading}
                   />
 
                   <button
@@ -603,6 +734,7 @@ function Login() {
                         ? 'Hide password'
                         : 'Show password'
                     }
+                    disabled={loading}
                   >
                     {showPassword ? (
                       <FaEyeSlash size={17} />
@@ -622,9 +754,11 @@ function Login() {
               {error && (
                 <p className="auth-error">
                   {error}
+
                   {needsVerification && (
                     <>
                       {' '}
+
                       <button
                         type="button"
                         onClick={handleGoVerify}
@@ -650,16 +784,16 @@ function Login() {
                 className="login-submit"
                 disabled={loading}
               >
-                {loading ? 'Logging in...' : 'Log in'}
+                {loading
+                  ? 'Logging in...'
+                  : 'Log in'}
               </button>
 
               <button
                 type="button"
                 className="google-button"
-                onClick={() => {
-                  window.location.href =
-                  `http://127.0.0.1:5000/auth/google?role=${selectedRole}`
-                }}
+                onClick={handleGoogleLogin}
+                disabled={loading}
               >
                 <FaGoogle size={17} />
                 Continue with Google
@@ -668,18 +802,20 @@ function Login() {
               <p className="google-note">
                 Enabled! Continue securely with your Google account.
               </p>
-
             </form>
 
-            <p className="login-register">
-              New to Farmart?{' '}
-              <Link
-                to="/register"
-                state={{ role: selectedRole }}
-              >
-                Register
-              </Link>
-            </p>
+            {cameFromWelcome && (
+              <p className="login-register">
+                New to Farmart?{' '}
+
+                <Link
+                  to="/register"
+                  state={{ role: selectedRole }}
+                >
+                  Register
+                </Link>
+              </p>
+            )}
 
             <div className="login-divider" />
 
@@ -695,7 +831,6 @@ function Login() {
             <span>Verified</span>
             <span>Fair Trade</span>
           </div>
-
         </section>
       </main>
     </>

@@ -73,15 +73,51 @@ GOOGLE_SCOPES = [
     "profile",
 ]
 
+
+@auth_bp.route(
+    "/me",
+    methods=["GET"],
+)
+def current_user():
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({
+            "success": False,
+            "error": "Not authenticated.",
+        }), 401
+
+    user = db.session.get(
+        User,
+        user_id,
+    )
+
+    if not user:
+        session.clear()
+
+        return jsonify({
+            "success": False,
+            "error": "User account not found.",
+        }), 401
+
+    return jsonify({
+        "success": True,
+        "user": {
+            "id": user.id,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": user.email,
+            "role": user.role,
+            "is_verified": user.is_verified,
+        },
+    }), 200
+
+
 @auth_bp.route(
     "/google",
     methods=["GET"],
 )
 def google_login():
-    """
-    Start the Google OAuth login flow.
-    """
-
     role = request.args.get(
         "role",
         "farmer",
@@ -120,15 +156,12 @@ def google_login():
 
     return redirect(authorization_url)
 
+
 @auth_bp.route(
     "/login",
     methods=["POST"],
 )
 def login():
-    """
-    Authenticate a user with email and password.
-    """
-
     data = request.get_json()
 
     if not data:
@@ -207,17 +240,12 @@ def login():
         },
     }), 200
 
+
 @auth_bp.route(
     "/register",
     methods=["POST"],
 )
 def register():
-    """
-    Create a new Farmer or Buyer account.
-    Newly registered accounts require verification
-    before normal login access is granted.
-    """
-
     data = request.get_json()
 
     if not data:
@@ -320,6 +348,7 @@ def register():
             "is_verified": user.is_verified,
         },
     }), 201
+
 
 @auth_bp.route(
     "/verify-signup-otp",
@@ -466,11 +495,6 @@ def resend_signup_otp():
     methods=["POST"],
 )
 def forgot_password():
-    """
-    Send a 6-digit OTP to a user's email
-    for password recovery.
-    """
-
     data = request.get_json()
 
     if not data or not data.get("email"):
@@ -534,15 +558,12 @@ def forgot_password():
         "message": "Verification code sent successfully.",
     }), 200
 
+
 @auth_bp.route(
     "/verify-password-reset-otp",
     methods=["POST"],
 )
 def verify_password_reset_otp():
-    """
-    Verify the 6-digit OTP entered on VerifyEmail.jsx.
-    """
-
     data = request.get_json()
 
     if not data:
@@ -609,16 +630,12 @@ def verify_password_reset_otp():
         "message": "Email verified successfully.",
     }), 200
 
+
 @auth_bp.route(
     "/reset-password",
     methods=["POST"],
 )
 def reset_password():
-    """
-    Set a new password after successful
-    email verification.
-    """
-
     data = request.get_json()
 
     if not data or not data.get("password"):

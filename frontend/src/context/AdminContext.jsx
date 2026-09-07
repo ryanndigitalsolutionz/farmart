@@ -11,6 +11,7 @@ export function AdminProvider({ children }) {
 
   const refreshOverview = useCallback(() => {
     setLoading(true);
+
     return getOverview()
       .then((data) => {
         setOverview(data);
@@ -32,7 +33,13 @@ export function AdminProvider({ children }) {
 
   return (
     <AdminContext.Provider
-      value={{ overview, loading, error, refreshOverview, currentUser }}
+      value={{
+        overview,
+        loading,
+        error,
+        refreshOverview,
+        currentUser,
+      }}
     >
       {children}
     </AdminContext.Provider>

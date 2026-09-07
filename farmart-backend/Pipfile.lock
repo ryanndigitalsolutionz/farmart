@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "096c1eb7862ba16e43b1187fbc354e0fae0fcfe4422bdf4770550b6c9fe9e0a5"
+            "sha256": "a8c961fef4950b5224f7f471faa785c09de9a71ddaa6b295e38809604731a7e8"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -445,7 +445,7 @@
                 "sha256:f7278591501941bb2456af102bb9cd59aab48c6cfd6e2dd68fa1290bb0c49a42",
                 "sha256:fef01bd457f11fc158b130ca0027a3c365693280e8e231b65bdaf57999f39f5b"
             ],
-            "markers": "python_version >= '3.10'",
+            "markers": "platform_machine == 'aarch64' or (platform_machine == 'ppc64le' or (platform_machine == 'x86_64' or (platform_machine == 'amd64' or (platform_machine == 'AMD64' or (platform_machine == 'win32' or platform_machine == 'WIN32')))))",
             "version": "==3.5.5"
         },
         "gunicorn": {
@@ -632,7 +632,7 @@
                 "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274",
                 "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==1.17.0"
         },
         "sqlalchemy": {

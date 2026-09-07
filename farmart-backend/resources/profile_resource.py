@@ -7,50 +7,136 @@ from models.user import User
 from schemas.profile_schema import profile_schema
 
 
+def serialize_user(user):
+    return {
+        "id": user.id,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "email": user.email,
+        "role": user.role,
+        "is_verified": user.is_verified,
+    }
+
+
 class ProfileMeResource(Resource):
-    """Returns the logged-in user's own role/profile, keyed off the
-    session cookie rather than a user_id in the URL. Used by the
-    frontend route guard to decide which section a session may enter."""
 
     def get(self):
         user_id = session.get("user_id")
 
         if not user_id:
-            return {"message": "Authorization required"}, 401
+            return {
+                "success": False,
+                "error": "Authorization required.",
+            }, 401
 
         user = db.session.get(User, user_id)
 
         if not user:
-            return {"message": "User not found"}, 404
+            return {
+                "success": False,
+                "error": "User not found.",
+            }, 404
 
         profile = user.profile
 
         return {
-            "user": {
-                "id": user.id,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "email": user.email,
-                "role": user.role,
-                "is_verified": user.is_verified,
-                "is_active": user.is_active,
-            },
-            "profile": {
-                "farm_name": profile.farm_name,
-                "location": profile.location,
-                "phone": profile.phone,
-                "description": profile.description,
-                "verification_status": profile.verification_status,
-                "rejection_reason": profile.rejection_reason,
-            }
-            if profile
-            else None,
+            "success": True,
+            "user": serialize_user(user),
+            "profile": profile_schema.dump(profile) if profile else None,
+        }, 200
+
+    def patch(self):
+        current_user_id = session.get("user_id")
+
+        if not current_user_id:
+            return {
+                "success": False,
+                "error": "Authentication required.",
+            }, 401
+
+        user = db.session.get(User, current_user_id)
+
+        if not user:
+            return {
+                "success": False,
+                "error": "User not found.",
+            }, 404
+
+        profile = Profile.query.filter_by(
+            user_id=current_user_id
+        ).first()
+
+        if not profile:
+            return {
+                "success": False,
+                "error": "Profile not found.",
+            }, 404
+
+        data = request.get_json() or {}
+
+        if "first_name" in data:
+            user.first_name = data["first_name"]
+
+        if "last_name" in data:
+            user.last_name = data["last_name"]
+
+        if "email" in data:
+            user.email = data["email"]
+
+        if "phone" in data:
+            profile.phone = data["phone"]
+
+        if "location" in data:
+            profile.location = data["location"]
+
+        if "profile_picture" in data:
+            profile.profile_picture = data["profile_picture"]
+
+        if "farm_name" in data:
+            profile.farm_name = data["farm_name"]
+
+        if "description" in data:
+            profile.description = data["description"]
+
+        if (
+            profile.verification_status == "rejected"
+            and (
+                "farm_name" in data
+                or "description" in data
+            )
+        ):
+            profile.verification_status = "pending"
+            profile.rejection_reason = None
+
+        db.session.commit()
+
+        return {
+            "success": True,
+            "user": serialize_user(user),
+            "profile": profile_schema.dump(profile),
         }, 200
 
 
 class ProfileResource(Resource):
 
     def get(self, user_id):
+        current_user_id = session.get("user_id")
+
+        if not current_user_id:
+            return {
+                "success": False,
+                "error": "Authentication required.",
+            }, 401
+
+        if (
+            current_user_id != user_id
+            and session.get("user_role") != "admin"
+        ):
+            return {
+                "success": False,
+                "error": "Access denied.",
+            }, 403
+
         profile = Profile.query.filter_by(
             user_id=user_id
         ).first()
@@ -67,10 +153,21 @@ class ProfileResource(Resource):
         }, 200
 
     def post(self, user_id):
-        if session.get("user_id") != user_id:
+        current_user_id = session.get("user_id")
+
+        if not current_user_id:
             return {
                 "success": False,
-                "error": "You can only create your own profile.",
+                "error": "Authentication required.",
+            }, 401
+
+        if (
+            current_user_id != user_id
+            and session.get("user_role") != "admin"
+        ):
+            return {
+                "success": False,
+                "error": "Access denied.",
             }, 403
 
         user = User.query.get(user_id)
@@ -97,11 +194,11 @@ class ProfileResource(Resource):
             user_id=user_id,
             phone=data.get("phone"),
             location=data.get("location"),
+            profile_picture=data.get("profile_picture"),
             farm_name=data.get("farm_name"),
+            verification_status="pending",
+            rejection_reason=None,
             description=data.get("description"),
-            profile_picture=data.get(
-                "profile_picture"
-            ),
         )
 
         db.session.add(profile)
@@ -113,11 +210,30 @@ class ProfileResource(Resource):
         }, 201
 
     def patch(self, user_id):
-        if session.get("user_id") != user_id:
+        current_user_id = session.get("user_id")
+
+        if not current_user_id:
             return {
                 "success": False,
-                "error": "You can only update your own profile.",
+                "error": "Authentication required.",
+            }, 401
+
+        if (
+            current_user_id != user_id
+            and session.get("user_role") != "admin"
+        ):
+            return {
+                "success": False,
+                "error": "Access denied.",
             }, 403
+
+        user = User.query.get(user_id)
+
+        if not user:
+            return {
+                "success": False,
+                "error": "User not found.",
+            }, 404
 
         profile = Profile.query.filter_by(
             user_id=user_id
@@ -130,6 +246,15 @@ class ProfileResource(Resource):
             }, 404
 
         data = request.get_json() or {}
+
+        if "first_name" in data:
+            user.first_name = data["first_name"]
+
+        if "last_name" in data:
+            user.last_name = data["last_name"]
+
+        if "email" in data:
+            user.email = data["email"]
 
         if "phone" in data:
             profile.phone = data["phone"]
@@ -144,12 +269,14 @@ class ProfileResource(Resource):
             profile.description = data["description"]
 
         if "profile_picture" in data:
-            profile.profile_picture = (
-                data["profile_picture"]
-            )
+            profile.profile_picture = data["profile_picture"]
 
-        if profile.verification_status == "rejected" and (
-            "farm_name" in data or "description" in data
+        if (
+            profile.verification_status == "rejected"
+            and (
+                "farm_name" in data
+                or "description" in data
+            )
         ):
             profile.verification_status = "pending"
             profile.rejection_reason = None
@@ -158,5 +285,6 @@ class ProfileResource(Resource):
 
         return {
             "success": True,
+            "user": serialize_user(user),
             "profile": profile_schema.dump(profile),
         }, 200

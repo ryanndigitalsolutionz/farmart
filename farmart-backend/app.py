@@ -36,6 +36,7 @@ from resources.wishlist_resource import WishlistResource
 from resources.profile_resource import ProfileMeResource, ProfileResource
 from resources.admin_overview_resource import AdminOverviewResource
 from resources.commission_resource import CommissionRateResource
+from resources.analytics_resource import AnalyticsResource
 
 
 def create_app():
@@ -52,6 +53,7 @@ def create_app():
         origins=[
             "http://localhost:5173",
             "http://127.0.0.1:5173",
+            "https://farmart-inc.vercel.app",
         ],
         supports_credentials=True,
     )
@@ -117,7 +119,6 @@ def create_app():
         CommissionRateResource,
         "/api/admin/commission",
     )
-
     api.add_resource(
         LivestockResource,
         "/api/livestock",
@@ -156,6 +157,10 @@ def create_app():
     api.add_resource(
         MpesaCallbackResource,
         "/payments/mpesa/callback",
+    )
+    api.add_resource(
+        AnalyticsResource,
+        "/analytics",
     )
 
     return app

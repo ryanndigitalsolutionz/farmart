@@ -1,8 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { motion, AnimatePresence, useSpring, useTransform } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 import { useAdmin } from "../../hooks/useAdmin";
-import { getBuyers, verifyFarmer, rejectFarmer } from "../../services/adminApi";
+import {
+  getUsers,
+  verifyFarmer,
+  rejectFarmer,
+} from "../../services/adminApi";
 import RejectReasonModal from "../../components/common/RejectReasonModal";
 
 export default function Dashboard() {
@@ -18,21 +27,37 @@ export default function Dashboard() {
   useEffect(() => {
     if (tab !== "buyers") return;
 
-    getBuyers()
-      .then(setBuyers)
+    setBuyersLoading(true);
+
+    getUsers()
+      .then((users) => {
+        const buyerUsers = users.filter(
+          (user) => user.role === "buyer"
+        );
+
+        setBuyers(buyerUsers);
+      })
       .catch(() => setBuyers([]))
       .finally(() => setBuyersLoading(false));
   }, [tab]);
 
   const handleApprove = async (farmerId) => {
-    await verifyFarmer(farmerId);
-    refreshOverview();
+    try {
+      await verifyFarmer(farmerId);
+      refreshOverview();
+    } catch (error) {
+      console.error("Failed to approve farmer:", error);
+    }
   };
 
   const handleRejectSubmit = async (reason) => {
-    await rejectFarmer(rejectTarget.id, reason);
-    setRejectTarget(null);
-    refreshOverview();
+    try {
+      await rejectFarmer(rejectTarget.id, reason);
+      setRejectTarget(null);
+      refreshOverview();
+    } catch (error) {
+      console.error("Failed to reject farmer:", error);
+    }
   };
 
   const metrics = {
@@ -52,7 +77,8 @@ export default function Dashboard() {
         <div style={{ marginBottom: 20 }}>
           <h1
             style={{
-              fontFamily: "var(--font-display, 'IBM Plex Serif', serif)",
+              fontFamily:
+                "var(--font-display, 'IBM Plex Serif', serif)",
               fontSize: 22,
               fontWeight: 600,
               color: "var(--green-900, #163420)",
@@ -61,25 +87,57 @@ export default function Dashboard() {
           >
             Platform overview
           </h1>
-          <p style={{ color: "var(--text-muted, #66766A)", fontSize: 13, marginTop: 4 }}>
+
+          <p
+            style={{
+              color: "var(--text-muted, #66766A)",
+              fontSize: 13,
+              marginTop: 4,
+            }}
+          >
             Snapshot of Farmart's health across all roles
           </p>
         </div>
       </motion.div>
 
-      {/* --- Metric cards --- */}
       <motion.div
         initial="hidden"
         animate="show"
         variants={{
           hidden: {},
-          show: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
+          show: {
+            transition: {
+              staggerChildren: 0.08,
+              delayChildren: 0.1,
+            },
+          },
         }}
-        style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 24 }}
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: 14,
+          marginBottom: 24,
+        }}
       >
-        <MetricCard label="Total users" value={metrics.total_users} loading={loading} />
-        <MetricCard label="Active listings" value={metrics.active_listings} loading={loading} />
-        <MetricCard label="GMV this month" value={metrics.gmv_this_month} prefix="KES " loading={loading} />
+        <MetricCard
+          label="Total users"
+          value={metrics.total_users}
+          loading={loading}
+        />
+
+        <MetricCard
+          label="Active listings"
+          value={metrics.active_listings}
+          loading={loading}
+        />
+
+        <MetricCard
+          label="GMV this month"
+          value={metrics.gmv_this_month}
+          prefix="KES "
+          loading={loading}
+        />
+
         <MetricCard
           label="Open disputes"
           value={metrics.open_disputes}
@@ -88,8 +146,14 @@ export default function Dashboard() {
         />
       </motion.div>
 
-      {/* --- Role tabs --- */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 16, position: "relative" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          marginBottom: 16,
+          position: "relative",
+        }}
+      >
         {["farmers", "buyers", "listings"].map((t) => (
           <button
             key={t}
@@ -104,40 +168,50 @@ export default function Dashboard() {
               textTransform: "capitalize",
               cursor: "pointer",
               background: "transparent",
-              color: tab === t ? "#fff" : "var(--green-700, #2F6D3F)",
+              color:
+                tab === t
+                  ? "#fff"
+                  : "var(--green-700, #2F6D3F)",
               zIndex: 1,
             }}
           >
             {tab === t && (
               <motion.span
                 layoutId="tab-pill"
-                transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 500,
+                  damping: 35,
+                }}
                 style={{
                   position: "absolute",
                   inset: 0,
                   borderRadius: 20,
-                  background: "var(--green-700, #2F6D3F)",
+                  background:
+                    "var(--green-700, #2F6D3F)",
                   zIndex: -1,
                 }}
               />
             )}
+
             {tab !== t && (
               <span
                 style={{
                   position: "absolute",
                   inset: 0,
                   borderRadius: 20,
-                  background: "var(--green-100, #EAF3E6)",
+                  background:
+                    "var(--green-100, #EAF3E6)",
                   zIndex: -1,
                 }}
               />
             )}
+
             {t}
           </button>
         ))}
       </div>
 
-      {/* --- Tab content, crossfaded --- */}
       <AnimatePresence mode="wait">
         {tab === "farmers" && (
           <motion.div
@@ -146,80 +220,133 @@ export default function Dashboard() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2 }}
-            style={{ display: "flex", flexDirection: "column", gap: 10 }}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+            }}
           >
-            {!loading && pendingFarmers.length === 0 && (
-              <p style={{ color: "var(--text-muted, #66766A)", fontSize: 13 }}>
-                No farmers waiting on verification
-              </p>
-            )}
-            <AnimatePresence>
-              {pendingFarmers.map((farmer) => (
-                <motion.div
-                  key={farmer.id}
-                  layout
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: 40, scale: 0.97 }}
-                  transition={{ duration: 0.25 }}
-                  whileHover={{ y: -2, boxShadow: "0 6px 18px rgba(22,52,32,0.08)" }}
+            {!loading &&
+              pendingFarmers.length === 0 && (
+                <p
                   style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    border: "1px solid var(--border, #DCE6D8)",
-                    borderRadius: 12,
-                    padding: "12px 16px",
+                    color:
+                      "var(--text-muted, #66766A)",
+                    fontSize: 13,
                   }}
                 >
+                  No farmers waiting on verification
+                </p>
+              )}
+
+            {pendingFarmers.map((farmer) => (
+              <motion.div
+                key={farmer.id}
+                layout
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{
+                  opacity: 0,
+                  x: 40,
+                  scale: 0.97,
+                }}
+                transition={{ duration: 0.25 }}
+                whileHover={{
+                  y: -2,
+                  boxShadow:
+                    "0 6px 18px rgba(22,52,32,0.08)",
+                }}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  border:
+                    "1px solid var(--border, #DCE6D8)",
+                  borderRadius: 12,
+                  padding: "12px 16px",
+                }}
+              >
+                <div
+                  onClick={() =>
+                    navigate(
+                      `/admin/farmers/${farmer.id}`
+                    )
+                  }
+                  style={{ cursor: "pointer" }}
+                >
                   <div
-                    onClick={() => navigate(`/admin/farmers/${farmer.id}`)}
-                    style={{ cursor: "pointer" }}
+                    style={{
+                      fontWeight: 700,
+                      fontSize: 13.5,
+                    }}
                   >
-                    <div style={{ fontWeight: 700, fontSize: 13.5 }}>{farmer.farm_name}</div>
-                    <div style={{ color: "var(--text-muted, #66766A)", fontSize: 11.5 }}>
-                      {farmer.location} · Pending verification
-                    </div>
+                    {farmer.farm_name ||
+                      "(No farm name yet)"}
                   </div>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => handleApprove(farmer.id)}
-                      style={{
-                        background: "var(--green-700, #2F6D3F)",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: 8,
-                        padding: "7px 14px",
-                        fontSize: 12,
-                        fontWeight: 700,
-                        cursor: "pointer",
-                      }}
-                    >
-                      Approve
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setRejectTarget(farmer)}
-                      style={{
-                        background: "#fff",
-                        color: "#B2503E",
-                        border: "1.4px solid #F0C9C1",
-                        borderRadius: 8,
-                        padding: "7px 14px",
-                        fontSize: 12,
-                        fontWeight: 700,
-                        cursor: "pointer",
-                      }}
-                    >
-                      Reject
-                    </motion.button>
+
+                  <div
+                    style={{
+                      color:
+                        "var(--text-muted, #66766A)",
+                      fontSize: 11.5,
+                    }}
+                  >
+                    {farmer.location ||
+                      "No location"}{" "}
+                    · Pending verification
                   </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                  }}
+                >
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() =>
+                      handleApprove(farmer.id)
+                    }
+                    style={{
+                      background:
+                        "var(--green-700, #2F6D3F)",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 8,
+                      padding: "7px 14px",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Approve
+                  </motion.button>
+
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() =>
+                      setRejectTarget(farmer)
+                    }
+                    style={{
+                      background: "#fff",
+                      color: "#B2503E",
+                      border:
+                        "1.4px solid #F0C9C1",
+                      borderRadius: 8,
+                      padding: "7px 14px",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Reject
+                  </motion.button>
+                </div>
+              </motion.div>
+            ))}
           </motion.div>
         )}
 
@@ -230,14 +357,37 @@ export default function Dashboard() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2 }}
-            style={{ display: "flex", flexDirection: "column", gap: 8 }}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}
           >
             {buyersLoading && (
-              <p style={{ color: "var(--text-muted, #66766A)", fontSize: 13 }}>Loading buyers…</p>
+              <p
+                style={{
+                  color:
+                    "var(--text-muted, #66766A)",
+                  fontSize: 13,
+                }}
+              >
+                Loading buyers…
+              </p>
             )}
-            {!buyersLoading && buyers.length === 0 && (
-              <p style={{ color: "var(--text-muted, #66766A)", fontSize: 13 }}>No buyers yet.</p>
-            )}
+
+            {!buyersLoading &&
+              buyers.length === 0 && (
+                <p
+                  style={{
+                    color:
+                      "var(--text-muted, #66766A)",
+                    fontSize: 13,
+                  }}
+                >
+                  No buyers yet.
+                </p>
+              )}
+
             {buyers.map((buyer) => (
               <Link
                 key={buyer.id}
@@ -246,16 +396,26 @@ export default function Dashboard() {
                   display: "flex",
                   justifyContent: "space-between",
                   padding: "12px 14px",
-                  border: "1px solid var(--border, #DCE6D8)",
+                  border:
+                    "1px solid var(--border, #DCE6D8)",
                   borderRadius: 10,
                   textDecoration: "none",
-                  color: "var(--text-dark, #1E2A1F)",
+                  color:
+                    "var(--text-dark, #1E2A1F)",
                 }}
               >
-                <span style={{ fontWeight: 600 }}>{buyer.full_name || buyer.email}</span>
-                <span style={{ fontSize: 12, color: "var(--text-muted, #66766A)" }}>
-                  {buyer.order_count} order{buyer.order_count === 1 ? "" : "s"} · KES{" "}
-                  {buyer.total_spent.toLocaleString()}
+                <span style={{ fontWeight: 600 }}>
+                  {buyer.first_name} {buyer.last_name}
+                </span>
+
+                <span
+                  style={{
+                    fontSize: 12,
+                    color:
+                      "var(--text-muted, #66766A)",
+                  }}
+                >
+                  {buyer.email}
                 </span>
               </Link>
             ))}
@@ -269,9 +429,13 @@ export default function Dashboard() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2 }}
-            style={{ color: "var(--text-muted, #66766A)", fontSize: 13 }}
+            style={{
+              color:
+                "var(--text-muted, #66766A)",
+              fontSize: 13,
+            }}
           >
-            See <code>Listings.jsx</code> for the full moderation queue — this tab can link there.
+            See Listings for the full moderation queue.
           </motion.p>
         )}
       </AnimatePresence>
@@ -287,25 +451,67 @@ export default function Dashboard() {
   );
 }
 
-function MetricCard({ label, value, prefix = "", loading, highlight }) {
-  const numericValue = typeof value === "number" ? value : parseFloat(value) || 0;
+function MetricCard({
+  label,
+  value,
+  prefix = "",
+  loading,
+  highlight,
+}) {
+  const numericValue =
+    typeof value === "number"
+      ? value
+      : parseFloat(value) || 0;
 
   return (
     <motion.div
       variants={{
-        hidden: { opacity: 0, y: 16, scale: 0.96 },
-        show: { opacity: 1, y: 0, scale: 1 },
+        hidden: {
+          opacity: 0,
+          y: 16,
+          scale: 0.96,
+        },
+        show: {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+        },
       }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
-      whileHover={{ y: -3, boxShadow: "0 8px 20px rgba(22,52,32,0.10)" }}
+      transition={{
+        duration: 0.35,
+        ease: "easeOut",
+      }}
+      whileHover={{
+        y: -3,
+        boxShadow:
+          "0 8px 20px rgba(22,52,32,0.10)",
+      }}
       style={{
-        background: highlight ? "var(--yellow-100, #FBF0D2)" : "var(--green-100, #EAF3E6)",
+        background: highlight
+          ? "var(--yellow-100, #FBF0D2)"
+          : "var(--green-100, #EAF3E6)",
         borderRadius: 14,
         padding: "14px 16px",
       }}
     >
-      <div style={{ fontSize: 11, color: "var(--text-muted, #66766A)" }}>{label}</div>
-      <div style={{ fontSize: 22, fontWeight: 800, color: "var(--green-900, #163420)" }}>
+      <div
+        style={{
+          fontSize: 11,
+          color:
+            "var(--text-muted, #66766A)",
+        }}
+      >
+        {label}
+      </div>
+
+      <div
+        style={{
+          fontSize: 22,
+          fontWeight: 800,
+          color:
+            "var(--green-900, #163420)",
+        }}
+      >
         {loading ? (
           "…"
         ) : (
@@ -320,8 +526,16 @@ function MetricCard({ label, value, prefix = "", loading, highlight }) {
 }
 
 function AnimatedNumber({ value }) {
-  const spring = useSpring(0, { mass: 0.8, stiffness: 75, damping: 15 });
-  const display = useTransform(spring, (v) => Math.round(v).toLocaleString());
+  const spring = useSpring(0, {
+    mass: 0.8,
+    stiffness: 75,
+    damping: 15,
+  });
+
+  const display = useTransform(
+    spring,
+    (v) => Math.round(v).toLocaleString()
+  );
 
   useEffect(() => {
     spring.set(value || 0);

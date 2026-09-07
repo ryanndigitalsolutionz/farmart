@@ -7,6 +7,7 @@ class Profile(db.Model):
 
     id = db.Column(db.Integer, primary_key=True,)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, unique=True)
+    description = db.Column(db.Text, nullable=True)
     phone = db.Column(db.String, nullable=True)
     location = db.Column(db.String, nullable=True)
     profile_picture = db.Column(db.String, nullable=True)

@@ -1,15 +1,96 @@
-import { useState } from 'react'
-import { FaUser, FaPhone, FaEnvelope, FaMapMarkerAlt, FaEdit, FaSave } from 'react-icons/fa'
+import { useEffect, useState } from 'react'
+import {
+  FaUser,
+  FaPhone,
+  FaEnvelope,
+  FaMapMarkerAlt,
+  FaEdit,
+  FaSave,
+  FaCamera,
+} from 'react-icons/fa'
+
+import API_BASE_URL from '../../api/api'
 
 function Profile() {
   const [editing, setEditing] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [profileImage, setProfileImage] = useState('')
 
   const [profile, setProfile] = useState({
-    name: 'Ryan Makori',
-    email: 'ryan@example.com',
-    phone: '+254 712 345 678',
-    location: 'Nairobi, Kenya',
+    name: '',
+    email: '',
+    phone: '',
+    location: '',
   })
+
+  const [originalProfile, setOriginalProfile] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    location: '',
+  })
+
+  useEffect(() => {
+    const savedImage = localStorage.getItem('farmartBuyerProfileImage')
+
+    if (savedImage) {
+      setProfileImage(savedImage)
+    }
+  }, [])
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        setLoading(true)
+        setError('')
+        setSuccess('')
+
+        const response = await fetch(
+          `${API_BASE_URL}/api/profile/me`,
+          {
+            credentials: 'include',
+          }
+        )
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(
+            data.error ||
+              data.message ||
+              'Unable to load your profile.'
+          )
+        }
+
+        const nextProfile = {
+          name: [
+            data.user?.first_name,
+            data.user?.last_name,
+          ]
+            .filter(Boolean)
+            .join(' '),
+          email: data.user?.email || '',
+          phone: data.profile?.phone || '',
+          location: data.profile?.location || '',
+        }
+
+        setProfile(nextProfile)
+        setOriginalProfile(nextProfile)
+      } catch (requestError) {
+        setError(
+          requestError.message ||
+            'Unable to load your profile.'
+        )
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadProfile()
+  }, [])
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -18,10 +99,154 @@ function Profile() {
       ...current,
       [name]: value,
     }))
+
+    setError('')
+    setSuccess('')
   }
 
-  const handleSave = () => {
+  const handleImageChange = (event) => {
+    const file = event.target.files?.[0]
+
+    if (!file) {
+      return
+    }
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file.')
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Profile pictures must be 5 MB or smaller.')
+      return
+    }
+
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      const imageData = reader.result
+
+      setProfileImage(imageData)
+      localStorage.setItem(
+        'farmartBuyerProfileImage',
+        imageData
+      )
+
+      setError('')
+      setSuccess('Profile picture updated.')
+    }
+
+    reader.onerror = () => {
+      setError('Unable to load that image.')
+    }
+
+    reader.readAsDataURL(file)
+  }
+
+  const handleEdit = () => {
+    setError('')
+    setSuccess('')
+    setEditing(true)
+  }
+
+  const handleCancel = () => {
+    setProfile(originalProfile)
     setEditing(false)
+    setError('')
+    setSuccess('')
+  }
+
+  const handleSave = async () => {
+    if (saving) {
+      return
+    }
+
+    setSaving(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const nameParts = profile.name
+        .trim()
+        .split(/\s+/)
+
+      const firstName = nameParts.shift() || ''
+      const lastName = nameParts.join(' ')
+
+      if (!firstName) {
+        throw new Error('Please enter your full name.')
+      }
+
+      if (!profile.email.trim()) {
+        throw new Error('Please enter your email address.')
+      }
+
+      if (!profile.phone.trim()) {
+        throw new Error('Please enter your phone number.')
+      }
+
+      if (!profile.location.trim()) {
+        throw new Error('Please enter your location.')
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/profile/me`,
+        {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            first_name: firstName,
+            last_name: lastName,
+            email: profile.email.trim(),
+            phone: profile.phone.trim(),
+            location: profile.location.trim(),
+          }),
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            data.message ||
+            'Unable to save your profile.'
+        )
+      }
+
+      const savedProfile = {
+        name: [
+          data.user?.first_name || firstName,
+          data.user?.last_name || lastName,
+        ]
+          .filter(Boolean)
+          .join(' '),
+        email:
+          data.user?.email ||
+          profile.email.trim(),
+        phone:
+          data.profile?.phone ||
+          profile.phone.trim(),
+        location:
+          data.profile?.location ||
+          profile.location.trim(),
+      }
+
+      setProfile(savedProfile)
+      setOriginalProfile(savedProfile)
+      setEditing(false)
+      setSuccess('Profile saved successfully.')
+    } catch (requestError) {
+      setError(
+        requestError.message ||
+          'Unable to save your profile.'
+      )
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -58,6 +283,26 @@ function Profile() {
           font-size: 16px;
         }
 
+        .buyer-profile-message {
+          margin-bottom: 18px;
+          padding: 13px 16px;
+          border-radius: 12px;
+          font-family: "Modern Antiqua", serif;
+          font-size: 14px;
+        }
+
+        .buyer-profile-error {
+          background: #fff0f0;
+          border: 1px solid #efc8c8;
+          color: #a33a3a;
+        }
+
+        .buyer-profile-success {
+          background: #edf7ef;
+          border: 1px solid #cde3d1;
+          color: #277a44;
+        }
+
         .buyer-profile-card {
           padding: 32px;
           border: 1px solid #d1e1d3;
@@ -76,13 +321,20 @@ function Profile() {
           border-bottom: 1px solid #d1e1d3;
         }
 
+        .buyer-profile-avatar-wrapper {
+          position: relative;
+          width: 92px;
+          height: 92px;
+          flex-shrink: 0;
+        }
+
         .buyer-profile-avatar {
-          width: 76px;
-          height: 76px;
+          width: 92px;
+          height: 92px;
           display: flex;
           align-items: center;
           justify-content: center;
-          flex-shrink: 0;
+          overflow: hidden;
           border-radius: 50%;
           background: linear-gradient(
             135deg,
@@ -94,6 +346,43 @@ function Profile() {
           box-shadow:
             5px 5px 12px rgba(45, 112, 66, 0.18),
             -4px -4px 10px rgba(255, 255, 255, 0.8);
+        }
+
+        .buyer-profile-avatar img {
+          width: 100%;
+          height: 100%;
+          display: block;
+          object-fit: cover;
+          object-position: center;
+        }
+
+        .buyer-profile-avatar-upload {
+          position: absolute;
+          right: -2px;
+          bottom: -2px;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 3px solid #ffffff;
+          border-radius: 50%;
+          background: #2d7042;
+          color: #ffffff;
+          cursor: pointer;
+          box-shadow: 3px 3px 8px rgba(45, 112, 66, 0.2);
+          transition:
+            background 180ms ease,
+            transform 180ms ease;
+        }
+
+        .buyer-profile-avatar-upload:hover {
+          background: #245d36;
+          transform: scale(1.06);
+        }
+
+        .buyer-profile-avatar-upload input {
+          display: none;
         }
 
         .buyer-profile-name {
@@ -200,7 +489,13 @@ function Profile() {
           transition:
             background 180ms ease,
             border-color 180ms ease,
-            box-shadow 180ms ease;
+            box-shadow 180ms ease,
+            opacity 180ms ease;
+        }
+
+        .buyer-profile-button:disabled {
+          opacity: 0.65;
+          cursor: default;
         }
 
         .buyer-profile-edit {
@@ -210,7 +505,7 @@ function Profile() {
           box-shadow: 4px 4px 9px rgba(45, 112, 66, 0.16);
         }
 
-        .buyer-profile-edit:hover {
+        .buyer-profile-edit:hover:not(:disabled) {
           background: #245d36;
           border-color: #245d36;
         }
@@ -226,8 +521,25 @@ function Profile() {
           box-shadow: 4px 4px 9px rgba(179, 138, 40, 0.16);
         }
 
-        .buyer-profile-save:hover {
+        .buyer-profile-save:hover:not(:disabled) {
           box-shadow: 6px 6px 12px rgba(179, 138, 40, 0.2);
+        }
+
+        .buyer-profile-cancel {
+          border-color: #c8d8ca;
+          background: #ffffff;
+          color: #5e6e64;
+        }
+
+        .buyer-profile-cancel:hover:not(:disabled) {
+          background: #eef4ee;
+        }
+
+        .buyer-profile-loading {
+          padding: 50px 20px;
+          text-align: center;
+          color: #748078;
+          font-family: "Modern Antiqua", serif;
         }
 
         @media (max-width: 650px) {
@@ -259,7 +571,6 @@ function Profile() {
 
       <main className="buyer-profile-page">
         <div className="buyer-profile-container">
-
           <header className="buyer-profile-header">
             <h1 className="buyer-profile-title">
               My Profile
@@ -270,138 +581,191 @@ function Profile() {
             </p>
           </header>
 
+          {error && (
+            <div className="buyer-profile-message buyer-profile-error">
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="buyer-profile-message buyer-profile-success">
+              {success}
+            </div>
+          )}
+
           <section className="buyer-profile-card">
-
-            <div className="buyer-profile-top">
-              <div className="buyer-profile-avatar">
-                <FaUser />
+            {loading ? (
+              <div className="buyer-profile-loading">
+                Loading profile...
               </div>
+            ) : (
+              <>
+                <div className="buyer-profile-top">
+                  <div className="buyer-profile-avatar-wrapper">
+                    <div className="buyer-profile-avatar">
+                      {profileImage ? (
+                        <img
+                          src={profileImage}
+                          alt={`${profile.name || 'Buyer'} profile`}
+                        />
+                      ) : (
+                        <FaUser />
+                      )}
+                    </div>
 
-              <div>
-                <h2 className="buyer-profile-name">
-                  {profile.name}
-                </h2>
+                    <label
+                      className="buyer-profile-avatar-upload"
+                      htmlFor="profile-image"
+                      title="Upload profile picture"
+                    >
+                      <FaCamera size={13} />
 
-                <p className="buyer-profile-role">
-                  Farmart Buyer
-                </p>
-              </div>
-            </div>
+                      <input
+                        id="profile-image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                    </label>
+                  </div>
 
-            <div className="buyer-profile-section">
-              <h3 className="buyer-profile-section-title">
-                Account Information
-              </h3>
+                  <div>
+                    <h2 className="buyer-profile-name">
+                      {profile.name || 'Farmart Buyer'}
+                    </h2>
 
-              <div className="buyer-profile-fields">
-
-                <div className="buyer-profile-field">
-                  <label
-                    className="buyer-profile-label"
-                    htmlFor="name"
-                  >
-                    <FaUser />
-                    Full Name
-                  </label>
-
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    className="buyer-profile-input"
-                    value={profile.name}
-                    onChange={handleChange}
-                    disabled={!editing}
-                  />
+                    <p className="buyer-profile-role">
+                      Farmart Buyer
+                    </p>
+                  </div>
                 </div>
 
-                <div className="buyer-profile-field">
-                  <label
-                    className="buyer-profile-label"
-                    htmlFor="email"
-                  >
-                    <FaEnvelope />
-                    Email Address
-                  </label>
+                <div className="buyer-profile-section">
+                  <h3 className="buyer-profile-section-title">
+                    Account Information
+                  </h3>
 
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    className="buyer-profile-input"
-                    value={profile.email}
-                    onChange={handleChange}
-                    disabled={!editing}
-                  />
+                  <div className="buyer-profile-fields">
+                    <div className="buyer-profile-field">
+                      <label
+                        className="buyer-profile-label"
+                        htmlFor="name"
+                      >
+                        <FaUser />
+                        Full Name
+                      </label>
+
+                      <input
+                        id="name"
+                        name="name"
+                        type="text"
+                        className="buyer-profile-input"
+                        value={profile.name}
+                        onChange={handleChange}
+                        disabled={!editing || saving}
+                      />
+                    </div>
+
+                    <div className="buyer-profile-field">
+                      <label
+                        className="buyer-profile-label"
+                        htmlFor="email"
+                      >
+                        <FaEnvelope />
+                        Email Address
+                      </label>
+
+                      <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        className="buyer-profile-input"
+                        value={profile.email}
+                        onChange={handleChange}
+                        disabled={!editing || saving}
+                      />
+                    </div>
+
+                    <div className="buyer-profile-field">
+                      <label
+                        className="buyer-profile-label"
+                        htmlFor="phone"
+                      >
+                        <FaPhone />
+                        Phone Number
+                      </label>
+
+                      <input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        className="buyer-profile-input"
+                        value={profile.phone}
+                        onChange={handleChange}
+                        disabled={!editing || saving}
+                      />
+                    </div>
+
+                    <div className="buyer-profile-field">
+                      <label
+                        className="buyer-profile-label"
+                        htmlFor="location"
+                      >
+                        <FaMapMarkerAlt />
+                        Location
+                      </label>
+
+                      <input
+                        id="location"
+                        name="location"
+                        type="text"
+                        className="buyer-profile-input"
+                        value={profile.location}
+                        onChange={handleChange}
+                        disabled={!editing || saving}
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="buyer-profile-field">
-                  <label
-                    className="buyer-profile-label"
-                    htmlFor="phone"
-                  >
-                    <FaPhone />
-                    Phone Number
-                  </label>
+                <div className="buyer-profile-actions">
+                  {editing && (
+                    <button
+                      type="button"
+                      className="buyer-profile-button buyer-profile-cancel"
+                      onClick={handleCancel}
+                      disabled={saving}
+                    >
+                      Cancel
+                    </button>
+                  )}
 
-                  <input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    className="buyer-profile-input"
-                    value={profile.phone}
-                    onChange={handleChange}
-                    disabled={!editing}
-                  />
+                  {!editing ? (
+                    <button
+                      type="button"
+                      className="buyer-profile-button buyer-profile-edit"
+                      onClick={handleEdit}
+                    >
+                      <FaEdit />
+                      Edit Profile
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="buyer-profile-button buyer-profile-save"
+                      onClick={handleSave}
+                      disabled={saving}
+                    >
+                      <FaSave />
+                      {saving
+                        ? 'Saving Changes...'
+                        : 'Save Changes'}
+                    </button>
+                  )}
                 </div>
-
-                <div className="buyer-profile-field">
-                  <label
-                    className="buyer-profile-label"
-                    htmlFor="location"
-                  >
-                    <FaMapMarkerAlt />
-                    Location
-                  </label>
-
-                  <input
-                    id="location"
-                    name="location"
-                    type="text"
-                    className="buyer-profile-input"
-                    value={profile.location}
-                    onChange={handleChange}
-                    disabled={!editing}
-                  />
-                </div>
-
-              </div>
-            </div>
-
-            <div className="buyer-profile-actions">
-              {!editing ? (
-                <button
-                  type="button"
-                  className="buyer-profile-button buyer-profile-edit"
-                  onClick={() => setEditing(true)}
-                >
-                  <FaEdit />
-                  Edit Profile
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="buyer-profile-button buyer-profile-save"
-                  onClick={handleSave}
-                >
-                  <FaSave />
-                  Save Changes
-                </button>
-              )}
-            </div>
-
+              </>
+            )}
           </section>
-
         </div>
       </main>
     </>
@@ -409,4 +773,3 @@ function Profile() {
 }
 
 export default Profile
-// commit 16

@@ -8,6 +8,7 @@ import {
   FaEyeSlash,
   FaGoogle,
 } from 'react-icons/fa'
+import API_BASE_URL from '../../api/api'
 
 function Register() {
   const navigate = useNavigate()
@@ -72,7 +73,7 @@ function Register() {
 
     try {
       const response = await fetch(
-        'http://127.0.0.1:5000/auth/register',
+`${API_BASE_URL}/auth/register`
         {
           method: 'POST',
           headers: {
@@ -98,12 +99,10 @@ function Register() {
         return
       }
 
-      /*
-       * The Flask backend has already created the account
-       * and established the session.
-       *
-       * We do NOT create a fake localStorage account here.
-       */
+      if (!data.user || !data.user.role) {
+        setError('Unable to determine your account role.')
+        return
+      }
 
       sessionStorage.setItem(
         'farmartSignupEmail',
@@ -135,7 +134,7 @@ function Register() {
     }
 
     window.location.href =
-    `http://127.0.0.1:5000/auth/google?role=${selectedRole}`
+    `${API_BASE_URL}/auth/google?role=${selectedRole}`
   }
 
   const roleLabel =
@@ -491,8 +490,6 @@ function Register() {
     text-align: center;
   }
 
-  /* AUTH THEME SURFACES */
-
   :root {
     --auth-card: #ffffff;
     --auth-logo-bg: #f4f8f2;
@@ -545,7 +542,7 @@ function Register() {
       padding: 46px 20px 36px;
     }
   }
-`}</style>
+      `}</style>
 
       <main className="register-page">
         <section className="register-card">

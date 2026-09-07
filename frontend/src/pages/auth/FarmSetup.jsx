@@ -76,6 +76,9 @@ function FarmSetup() {
 
   const handleSubmit = async (event) => {
     event.preventDefault()
+
+    if (isSaving) return
+
     setIsSaving(true)
     setError('')
 
@@ -105,40 +108,116 @@ function FarmSetup() {
   }
 
   const handleTryAgain = () => {
+    localStorage.removeItem('farmartFarmerApplication')
     setSubmitted(false)
     setRejected(false)
     setRejectionReason('')
+    setError('')
   }
 
-  // Poll for admin approval while the farmer waits, and redirect automatically.
   useEffect(() => {
     if (!submitted || rejected || !userId) return
 
-    const interval = setInterval(() => {
-      getMyProfile()
-        .then(({ profile }) => {
-          if (!profile) return
+    let active = true
 
-          if (profile.verification_status === 'verified') {
-            clearInterval(interval)
-            navigate('/farmer/dashboard')
+    const checkApplication = async () => {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/farmers/${pendingFarmerId}`,
+          {
+            method: 'GET',
+            credentials: 'include',
+          },
+        )
+
+        const data = await response.json().catch(() => ({}))
+
+        if (!response.ok) {
+          if (response.status === 403 || response.status === 404) {
+            return
           }
 
-          if (profile.verification_status === 'rejected') {
-            setRejectionReason(profile.rejection_reason || '')
-            setRejected(true)
-            clearInterval(interval)
-          }
-        })
-        .catch(() => {})
-    }, 2000)
+          throw new Error(
+            data.message ||
+              data.error ||
+              'Unable to check your verification status.',
+          )
+        }
 
-    return () => clearInterval(interval)
-  }, [submitted, rejected, userId, navigate])
+        if (!active) return
 
-  if (initializing) {
-    return null
-  }
+        const farmer = data.farmer || data
+
+        if (farmer.status === 'verified') {
+          localStorage.setItem(
+            'farmartFarmerApplication',
+            JSON.stringify({
+              farmerId: farmer.id,
+              farmName: farmer.farm_name || formData.farmName,
+              location: farmer.location || formData.location,
+              contact: farmer.phone_number || formData.contact,
+              description: farmer.description || formData.description,
+              status: 'verified',
+              rejectionReason: '',
+            }),
+          )
+
+          localStorage.setItem(
+            'farmartFarmProfile',
+            JSON.stringify({
+              farmName: farmer.farm_name || formData.farmName,
+              location: farmer.location || formData.location,
+              contact: farmer.phone_number || formData.contact,
+              description: farmer.description || formData.description,
+              verificationStatus: 'verified',
+            }),
+          )
+
+          navigate('/farmer/dashboard')
+          return
+        }
+
+        if (farmer.status === 'rejected') {
+          localStorage.setItem(
+            'farmartFarmerApplication',
+            JSON.stringify({
+              farmerId: farmer.id,
+              farmName: farmer.farm_name || formData.farmName,
+              location: farmer.location || formData.location,
+              contact: farmer.phone_number || formData.contact,
+              description: farmer.description || formData.description,
+              status: 'rejected',
+              rejectionReason: farmer.rejection_reason || '',
+            }),
+          )
+
+          setRejectionReason(farmer.rejection_reason || '')
+          setRejected(true)
+        }
+      } catch (err) {
+        if (active) {
+          setError(
+            err.message ||
+              'Unable to check your verification status.',
+          )
+        }
+      }
+    }
+
+    checkApplication()
+
+    const interval = setInterval(checkApplication, 2000)
+
+    return () => {
+      active = false
+      clearInterval(interval)
+    }
+  }, [
+    submitted,
+    pendingFarmerId,
+    navigate,
+    formData,
+  ])
 
   return (
     <>
@@ -206,8 +285,6 @@ function FarmSetup() {
           padding: 62px 60px 54px;
         }
 
-        /* Farmart logo */
-
         .farm-setup-logo {
           width: min(100%, 300px);
           min-height: 100px;
@@ -238,8 +315,6 @@ function FarmSetup() {
           display: block;
         }
 
-        /* Heading */
-
         .farm-setup-heading {
           margin: 0;
 
@@ -269,8 +344,6 @@ function FarmSetup() {
 
           transition: color 180ms ease;
         }
-
-        /* Form */
 
         .farm-setup-form {
           display: flex;
@@ -355,7 +428,6 @@ function FarmSetup() {
           padding: 0;
 
           background: transparent;
-
           color: var(--farm-text);
 
           font-family: "Modern Antiqua", serif;
@@ -373,8 +445,6 @@ function FarmSetup() {
           resize: vertical;
         }
 
-        /* Divider */
-
         .farm-setup-divider {
           width: 100%;
           height: 1px;
@@ -383,8 +453,6 @@ function FarmSetup() {
 
           background: var(--farm-green-border);
         }
-
-        /* Verification */
 
         .farm-setup-verification {
           display: flex;
@@ -439,8 +507,6 @@ function FarmSetup() {
           line-height: 1.5;
         }
 
-        /* Submit */
-
         .farm-setup-submit {
           width: 100%;
           min-height: 58px;
@@ -486,8 +552,6 @@ function FarmSetup() {
           cursor: not-allowed;
         }
 
-        /* Pending / waiting screen */
-
         .farm-setup-pending {
           display: flex;
           flex-direction: column;
@@ -529,6 +593,7 @@ function FarmSetup() {
             transform: scale(0.55);
             opacity: 0.55;
           }
+
           100% {
             transform: scale(1.7);
             opacity: 0;
@@ -551,8 +616,13 @@ function FarmSetup() {
         }
 
         @keyframes farm-pending-sway {
-          0%, 100% { transform: rotate(0deg); }
-          50% { transform: rotate(7deg); }
+          0%, 100% {
+            transform: rotate(0deg);
+          }
+
+          50% {
+            transform: rotate(7deg);
+          }
         }
 
         .farm-setup-pending-title {
@@ -596,12 +666,24 @@ function FarmSetup() {
           animation: farm-pending-dot 1.4s ease-in-out infinite both;
         }
 
-        .farm-setup-pending-dots span:nth-child(2) { animation-delay: 0.2s; }
-        .farm-setup-pending-dots span:nth-child(3) { animation-delay: 0.4s; }
+        .farm-setup-pending-dots span:nth-child(2) {
+          animation-delay: 0.2s;
+        }
+
+        .farm-setup-pending-dots span:nth-child(3) {
+          animation-delay: 0.4s;
+        }
 
         @keyframes farm-pending-dot {
-          0%, 80%, 100% { transform: scale(0.6); opacity: 0.35; }
-          40% { transform: scale(1); opacity: 1; }
+          0%, 80%, 100% {
+            transform: scale(0.6);
+            opacity: 0.35;
+          }
+
+          40% {
+            transform: scale(1);
+            opacity: 1;
+          }
         }
 
         .farm-setup-rejected-copy {
@@ -612,7 +694,17 @@ function FarmSetup() {
           margin: 10px 0 26px;
         }
 
-        /* Responsive */
+        .farm-setup-error {
+          margin: 0 0 18px;
+          padding: 12px 14px;
+          border-radius: 12px;
+          border: 1px solid #F0C9C1;
+          background: #FFF5F2;
+          color: #B2503E;
+          font-family: "Modern Antiqua", serif;
+          font-size: 13px;
+          line-height: 1.5;
+        }
 
         @media (max-width: 620px) {
           .farm-setup-page {
@@ -679,12 +771,19 @@ function FarmSetup() {
               />
             </div>
 
+            {error && (
+              <div className="farm-setup-error">
+                {error}
+              </div>
+            )}
+
             {submitted && !rejected && (
               <div className="farm-setup-pending">
                 <div className="farm-setup-pending-orb">
                   <span className="farm-setup-pending-ring" />
                   <span className="farm-setup-pending-ring" />
                   <span className="farm-setup-pending-ring" />
+
                   <span className="farm-setup-pending-icon">
                     <FiShield size={22} />
                   </span>
@@ -702,6 +801,7 @@ function FarmSetup() {
 
                 <span className="farm-setup-pending-faint">
                   The admin will approve you soon
+
                   <span className="farm-setup-pending-dots">
                     <span />
                     <span />
@@ -714,7 +814,10 @@ function FarmSetup() {
             {submitted && rejected && (
               <div className="farm-setup-pending">
                 <div className="farm-setup-pending-orb">
-                  <span className="farm-setup-pending-icon" style={{ background: '#B2503E' }}>
+                  <span
+                    className="farm-setup-pending-icon"
+                    style={{ background: '#B2503E' }}
+                  >
                     <FiShield size={22} />
                   </span>
                 </div>
@@ -725,6 +828,7 @@ function FarmSetup() {
 
                 <p className="farm-setup-rejected-copy">
                   Your farm profile wasn't approved.
+
                   {rejectionReason && (
                     <>
                       <br />
@@ -732,6 +836,7 @@ function FarmSetup() {
                       <strong>Admin's note:</strong> {rejectionReason}
                     </>
                   )}
+
                   <br />
                   <br />
                   You can update your details and submit again.
@@ -749,20 +854,27 @@ function FarmSetup() {
 
             {!submitted && (
               <>
-                <h1 className="farm-setup-heading">Set up your farm</h1>
+                <h1 className="farm-setup-heading">
+                  Set up your farm
+                </h1>
 
                 <p className="farm-setup-subtitle">
                   Tell buyers a little about your farm before you start selling.
                 </p>
 
-                <form onSubmit={handleSubmit} className="farm-setup-form">
+                <form
+                  onSubmit={handleSubmit}
+                  className="farm-setup-form"
+                >
                   <label className="farm-setup-field">
                     <span className="farm-setup-field-icon">
                       <FiHome size={18} />
                     </span>
 
                     <span className="farm-setup-field-content">
-                      <span className="farm-setup-field-label">Farm name</span>
+                      <span className="farm-setup-field-label">
+                        Farm name
+                      </span>
 
                       <input
                         type="text"
@@ -781,7 +893,9 @@ function FarmSetup() {
                     </span>
 
                     <span className="farm-setup-field-content">
-                      <span className="farm-setup-field-label">Location</span>
+                      <span className="farm-setup-field-label">
+                        Location
+                      </span>
 
                       <input
                         type="text"
@@ -845,6 +959,7 @@ function FarmSetup() {
 
                     <div className="farm-setup-verification-copy">
                       <strong>Verification pending</strong>
+
                       <span>
                         Your farm will be reviewed by Farmart admin.
                       </span>
@@ -862,7 +977,9 @@ function FarmSetup() {
                     className="farm-setup-submit"
                     disabled={isSaving}
                   >
-                    {isSaving ? 'Saving your farm...' : 'Save & continue'}
+                    {isSaving
+                      ? 'Saving your farm...'
+                      : 'Save & continue'}
                   </button>
                 </form>
               </>

@@ -9,22 +9,19 @@ from models.order import OrderStatus
 from resources.auth_utils import get_current_user
 from schemas.order_schema import OrderSchema
 
+
 order_schema = OrderSchema()
 orders_schema = OrderSchema(many=True)
 
 
 class OrderResource(Resource):
-
     def get(self, order_id=None):
         user = get_current_user()
 
         if not user:
             return {"message": "Authorization required"}, 401
 
-        user_id = user.id
-        user_role = user.role
-
-        if user_role not in ("buyer", "admin"):
+        if user.role not in ("buyer", "admin"):
             return {"message": "Access denied"}, 403
 
         if order_id:
@@ -33,15 +30,22 @@ class OrderResource(Resource):
             if not order:
                 return {"message": "Order not found"}, 404
 
-            if user_role != "admin" and order.buyer_id != user_id:
+            if user.role != "admin" and order.buyer_id != user.id:
                 return {"message": "Access denied"}, 403
 
             return order_schema.dump(order), 200
 
-        if user_role == "admin":
-            orders = Order.query.all()
+        if user.role == "admin":
+            orders = Order.query.order_by(
+                Order.created_at.desc()
+            ).all()
         else:
-            orders = Order.query.filter_by(buyer_id=user_id).all()
+            orders = (
+                Order.query
+                .filter_by(buyer_id=user.id)
+                .order_by(Order.created_at.desc())
+                .all()
+            )
 
         return orders_schema.dump(orders), 200
 
@@ -69,11 +73,15 @@ class OrderResource(Resource):
             order_items = []
 
             for item in items:
-                quantity = int(item.get("quantity", 1))
+                quantity = int(
+                    item.get("quantity", 1)
+                )
 
                 if quantity < 1:
                     return {
-                        "message": "Item quantity must be at least 1"
+                        "message": (
+                            "Item quantity must be at least 1"
+                        )
                     }, 400
 
                 livestock_id = item.get("livestock_id")
@@ -96,11 +104,14 @@ class OrderResource(Resource):
                     if not livestock:
                         return {
                             "message": (
-                                f"Livestock {livestock_id} not found"
+                                f"Livestock {livestock_id} "
+                                "not found"
                             )
                         }, 404
 
-                    price = Decimal(str(livestock.price))
+                    price = Decimal(
+                        str(livestock.price)
+                    )
 
                     order_item = OrderItem(
                         livestock_id=livestock.id,
@@ -118,13 +129,18 @@ class OrderResource(Resource):
                     if not product:
                         return {
                             "message": (
-                                f"Product {product_id} not found"
+                                f"Product {product_id} "
+                                "not found"
                             )
                         }, 404
 
-                    price = Decimal(str(product.price))
+                    price = Decimal(
+                        str(product.price)
+                    )
 
-                    if Decimal(str(product.quantity)) < quantity:
+                    if Decimal(
+                        str(product.quantity)
+                    ) < quantity:
                         return {
                             "message": (
                                 f"Insufficient quantity for "

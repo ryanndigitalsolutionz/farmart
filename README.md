@@ -1,16 +1,41 @@
-# Farmart planning
+# Farmart Checklist
 
-| Area                   | Decision                   |
-| ---------------------- | -------------------------- |
-| Frontend hosting       | Decide platform            |
-| Backend hosting        | Decide platform            |
-| Database               | Decide production DB       |
-| Environment variables  | Configure separately       |
-| CORS                   | Production frontend URL    |
-| Google OAuth           | Production callback URL    |
-| SMTP                   | Production credentials     |
-| API URL                | Production frontend config |
-| Build                  | `npm run build`            |
-| Backend start command  | Verify                     |
-| Favicon                | Add to frontend            |
-| Final integration test | **Do before submission**   |
+AUTH
+[ ] Buyer signup
+[ ] Buyer login
+[ ] Farmer signup
+[ ] Farmer login
+[ ] Google login
+[ ] Forgot password
+
+FARMER
+[ ] Farmer dashboard
+[ ] Create livestock
+[ ] Edit livestock
+[ ] Delete livestock
+[ ] Create product
+[ ] Edit product
+[ ] Delete product
+
+BUYER
+[ ] Marketplace
+[ ] Product details
+[ ] Add livestock to cart
+[ ] Add product to cart
+[ ] Checkout
+[ ] Delivery
+[ ] Create backend order
+[ ] M-Pesa payment
+[ ] Order confirmation
+
+ADMIN
+[ ] Dashboard
+[ ] Farmer approval
+[ ] Farmer rejection
+[ ] Admin routing protected
+
+INTEGRATION
+[ ] Frontend → backend
+[ ] Backend → database
+[ ] Payment → Daraja
+[ ] Callback → payment status
