@@ -46,7 +46,7 @@ function Marketplace() {
         setProductsLoading(true)
         setProductsError('')
 
-        const response = await fetch(`${API_BASE_URL}/products`, {
+        const response = await fetch(`${API_BASE_URL}/api/products`, {
           credentials: 'include',
         })
 
@@ -654,3 +654,4 @@ function Marketplace() {
 }
 
 export default Marketplace
+

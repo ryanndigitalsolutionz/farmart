@@ -12,11 +12,55 @@ from flask import (
 
 from config import Config
 from extensions import bcrypt, db
-from models import User, PasswordResetToken
-from services.email_service import send_password_reset_otp
+from models import User, PasswordResetToken, EmailVerificationToken
+from services.email_service import (
+    send_password_reset_otp,
+    send_signup_verification_otp,
+)
 
 
 auth_bp = Blueprint("auth", __name__)
+
+
+def _issue_signup_otp(user):
+    """
+    Create a fresh signup verification OTP for a user and
+    email it. Returns True if the email was sent, False if
+    sending failed (the OTP is still saved either way, so an
+    admin can verify the account manually as a fallback).
+    """
+
+    EmailVerificationToken.query.filter_by(
+        user_id=user.id
+    ).delete()
+
+    otp = f"{secrets.randbelow(1000000):06d}"
+
+    expires_at = (
+        datetime.utcnow()
+        + timedelta(minutes=10)
+    )
+
+    token = EmailVerificationToken(
+        user_id=user.id,
+        otp=otp,
+        expires_at=expires_at,
+    )
+
+    db.session.add(token)
+    db.session.commit()
+
+    try:
+        send_signup_verification_otp(
+            user_name=user.first_name,
+            user_email=user.email,
+            otp=otp,
+        )
+
+        return True
+
+    except Exception:
+        return False
 
 
 GOOGLE_AUTH_URL = (
@@ -174,6 +218,12 @@ def login():
             ),
         }), 403
 
+    if not user.is_active:
+        return jsonify({
+            "success": False,
+            "error": "This account has been suspended.",
+        }), 403
+
     session["user_id"] = user.id
     session["user_role"] = user.role
 
@@ -280,12 +330,15 @@ def register():
     session["user_id"] = user.id
     session["user_role"] = user.role
 
+    email_sent = _issue_signup_otp(user)
+
     return jsonify({
         "success": True,
         "message": (
             "Account created successfully. "
-            "Your account is awaiting verification."
+            "Check your email for a verification code."
         ),
+        "email_sent": email_sent,
         "user": {
             "id": user.id,
             "first_name": user.first_name,
@@ -296,6 +349,146 @@ def register():
         },
     }), 201
 
+
+@auth_bp.route(
+    "/verify-signup-otp",
+    methods=["POST"],
+)
+def verify_signup_otp():
+    """
+    Verify the 6-digit OTP sent at registration and
+    activate the account for normal login.
+    """
+
+    data = request.get_json()
+
+    if not data:
+        return jsonify({
+            "success": False,
+            "error": "Request data is required.",
+        }), 400
+
+    email = data.get("email")
+    otp = data.get("otp")
+
+    if not email or not otp:
+        return jsonify({
+            "success": False,
+            "error": "Email and OTP are required.",
+        }), 400
+
+    email = email.strip().lower()
+    otp = str(otp).strip()
+
+    if not otp.isdigit() or len(otp) != 6:
+        return jsonify({
+            "success": False,
+            "error": "OTP must be a 6-digit code.",
+        }), 400
+
+    user = User.query.filter_by(
+        email=email
+    ).first()
+
+    if not user:
+        return jsonify({
+            "success": False,
+            "error": "User not found.",
+        }), 404
+
+    if user.is_verified:
+        return jsonify({
+            "success": True,
+            "message": "Your account is already verified.",
+            "user": {
+                "id": user.id,
+                "role": user.role,
+            },
+        }), 200
+
+    token = EmailVerificationToken.query.filter_by(
+        user_id=user.id,
+        otp=otp,
+    ).first()
+
+    if not token:
+        return jsonify({
+            "success": False,
+            "error": "Invalid verification code.",
+        }), 400
+
+    if datetime.utcnow() > token.expires_at:
+        db.session.delete(token)
+        db.session.commit()
+
+        return jsonify({
+            "success": False,
+            "error": "Verification code has expired.",
+        }), 400
+
+    user.is_verified = True
+
+    db.session.delete(token)
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "message": "Email verified successfully.",
+        "user": {
+            "id": user.id,
+            "role": user.role,
+        },
+    }), 200
+
+@auth_bp.route(
+    "/resend-signup-otp",
+    methods=["POST"],
+)
+def resend_signup_otp():
+    """
+    Re-send the signup verification OTP.
+    """
+
+    data = request.get_json()
+
+    if not data or not data.get("email"):
+        return jsonify({
+            "success": False,
+            "error": "Email is required.",
+        }), 400
+
+    email = data["email"].strip().lower()
+
+    user = User.query.filter_by(
+        email=email
+    ).first()
+
+    if not user:
+        return jsonify({
+            "success": False,
+            "error": (
+                "No account was found with that email."
+            ),
+        }), 404
+
+    if user.is_verified:
+        return jsonify({
+            "success": False,
+            "error": "Your account is already verified.",
+        }), 400
+
+    email_sent = _issue_signup_otp(user)
+
+    if not email_sent:
+        return jsonify({
+            "success": False,
+            "error": "Failed to send verification email.",
+        }), 500
+
+    return jsonify({
+        "success": True,
+        "message": "Verification code sent successfully.",
+    }), 200
 
 @auth_bp.route(
     "/forgot-password",

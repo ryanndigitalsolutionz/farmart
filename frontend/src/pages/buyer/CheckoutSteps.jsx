@@ -11,7 +11,7 @@ function CheckoutSteps({ currentStep, onStepChange }) {
     ];
 
     const handleStepClick = (stepNumber) => {
-        if (stepNumber <= currentStep) {
+        if (stepNumber <= currentStep && onStepChange) {
             onStepChange(stepNumber);
         }
     };

@@ -85,7 +85,23 @@ export default function BuyerDetails() {
   }
 
   if (!buyer) {
-    return null;
+    return (
+      <div style={{ maxWidth: 640 }}>
+        <PageHeader
+          title="Buyer details"
+          subtitle="Buyer account details"
+        />
+
+        <p
+          style={{
+            color: "var(--text-muted, #66766A)",
+            fontSize: 13,
+          }}
+        >
+          Buyer not found.
+        </p>
+      </div>
+    );
   }
 
   const fullName =

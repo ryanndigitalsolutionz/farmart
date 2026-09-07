@@ -7,7 +7,12 @@ import {
   FiEdit3,
   FiShield,
 } from 'react-icons/fi'
-import { API_BASE_URL } from '../../api/api'
+import {
+  getMyProfile,
+  createFarmProfile,
+  updateFarmProfile,
+} from '../../services/farmProfileApi'
+import API_BASE_URL from '../../api/api'
 
 function FarmSetup() {
   const navigate = useNavigate()
@@ -19,49 +24,14 @@ function FarmSetup() {
     description: '',
   })
 
+  const [initializing, setInitializing] = useState(true)
+  const [userId, setUserId] = useState(null)
+  const [hasProfile, setHasProfile] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [submitted, setSubmitted] = useState(false)
-  const [pendingFarmerId, setPendingFarmerId] = useState(null)
   const [rejected, setRejected] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
   const [error, setError] = useState('')
-
-  useEffect(() => {
-    const storedApplication = localStorage.getItem(
-      'farmartFarmerApplication',
-    )
-
-    if (!storedApplication) return
-
-    try {
-      const application = JSON.parse(storedApplication)
-
-      if (!application || !application.farmerId) return
-
-      setFormData({
-        farmName: application.farmName || '',
-        location: application.location || '',
-        contact: application.contact || '',
-        description: application.description || '',
-      })
-
-      setPendingFarmerId(application.farmerId)
-
-      if (application.status === 'rejected') {
-        setRejected(true)
-        setRejectionReason(application.rejectionReason || '')
-      }
-
-      if (application.status === 'verified') {
-        navigate('/farmer/dashboard')
-        return
-      }
-
-      setSubmitted(true)
-    } catch {
-      localStorage.removeItem('farmartFarmerApplication')
-    }
-  }, [navigate])
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -72,6 +42,39 @@ function FarmSetup() {
     }))
   }
 
+  useEffect(() => {
+    getMyProfile()
+      .then(({ user, profile }) => {
+        setUserId(user.id)
+
+        if (!profile || !profile.farm_name) {
+          return
+        }
+
+        setHasProfile(true)
+        setFormData({
+          farmName: profile.farm_name || '',
+          location: profile.location || '',
+          contact: profile.phone || '',
+          description: profile.description || '',
+        })
+
+        if (profile.verification_status === 'verified') {
+          navigate('/farmer/dashboard')
+          return
+        }
+
+        setSubmitted(true)
+
+        if (profile.verification_status === 'rejected') {
+          setRejected(true)
+          setRejectionReason(profile.rejection_reason || '')
+        }
+      })
+      .catch(() => {})
+      .finally(() => setInitializing(false))
+  }, [navigate])
+
   const handleSubmit = async (event) => {
     event.preventDefault()
 
@@ -80,69 +83,26 @@ function FarmSetup() {
     setIsSaving(true)
     setError('')
 
+    const payload = {
+      farm_name: formData.farmName,
+      location: formData.location,
+      phone: formData.contact,
+      description: formData.description,
+    }
+
     try {
-      const response = await fetch(`${API_BASE_URL}/api/farmers`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          farm_name: formData.farmName,
-          location: formData.location,
-          phone: formData.contact,
-          description: formData.description,
-        }),
-      })
-
-      const data = await response.json().catch(() => ({}))
-
-      if (!response.ok) {
-        throw new Error(
-          data.message ||
-            data.error ||
-            'Your farm application could not be submitted.',
-        )
+      if (hasProfile) {
+        await updateFarmProfile(userId, payload)
+      } else {
+        await createFarmProfile(userId, payload)
       }
 
-      const farmer = data.farmer || data
-
-      if (!farmer.id) {
-        throw new Error(
-          'Your application was submitted, but the farmer account could not be identified.',
-        )
-      }
-
-      localStorage.setItem(
-        'farmartFarmProfile',
-        JSON.stringify({
-          ...formData,
-          verificationStatus: 'pending',
-        }),
-      )
-
-      localStorage.setItem(
-        'farmartFarmerApplication',
-        JSON.stringify({
-          farmerId: farmer.id,
-          farmName: formData.farmName,
-          location: formData.location,
-          contact: formData.contact,
-          description: formData.description,
-          status: farmer.status || 'pending',
-          rejectionReason: farmer.rejection_reason || '',
-        }),
-      )
-
-      setPendingFarmerId(farmer.id)
+      setHasProfile(true)
+      setRejected(false)
+      setRejectionReason('')
       setSubmitted(true)
-      setRejected(farmer.status === 'rejected')
-      setRejectionReason(farmer.rejection_reason || '')
     } catch (err) {
-      setError(
-        err.message ||
-          'Something went wrong while submitting your farm.',
-      )
+      setError(err.message)
     } finally {
       setIsSaving(false)
     }
@@ -152,20 +112,19 @@ function FarmSetup() {
     localStorage.removeItem('farmartFarmerApplication')
     setSubmitted(false)
     setRejected(false)
-    setPendingFarmerId(null)
     setRejectionReason('')
     setError('')
   }
 
   useEffect(() => {
-    if (!submitted || !pendingFarmerId) return
+    if (!submitted || rejected || !userId) return
 
     let active = true
 
     const checkApplication = async () => {
       try {
         const response = await fetch(
-          `${API_BASE_URL}/api/farmers/${pendingFarmerId}`,
+          `${API_BASE_URL}/api/farmers/${userId}`,
           {
             method: 'GET',
             credentials: 'include',
@@ -256,10 +215,15 @@ function FarmSetup() {
     }
   }, [
     submitted,
-    pendingFarmerId,
+    rejected,
+    userId,
     navigate,
     formData,
   ])
+
+  if (initializing) {
+    return null
+  }
 
   return (
     <>
@@ -1007,6 +971,12 @@ function FarmSetup() {
                       </span>
                     </div>
                   </div>
+
+                  {error && (
+                    <p style={{ color: '#B2503E', fontSize: 13.5, margin: 0 }}>
+                      {error}
+                    </p>
+                  )}
 
                   <button
                     type="submit"

@@ -1,10 +1,15 @@
-// TODO: replace with real authenticated user from backend/session once login is wired up
+import { useAdmin } from "../context/AdminContext";
+
 export function useAuth() {
-  const user = {
-    name: "Admin User",
-    email: "admin@farmart.co.ke",
-    role: "admin",
-  };
+  const { currentUser } = useAdmin();
+
+  const user = currentUser
+    ? {
+        name: `${currentUser.first_name} ${currentUser.last_name}`.trim(),
+        email: currentUser.email,
+        role: currentUser.role,
+      }
+    : null;
 
   return { user };
 }

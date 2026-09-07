@@ -1,12 +1,14 @@
 from decimal import Decimal
 
-from flask import request, session
+from flask import request
 from flask_restful import Resource
 
 from extensions import db
 from models import Order, OrderItem, Livestock, Product
 from models.order import OrderStatus
+from resources.auth_utils import get_current_user
 from schemas.order_schema import OrderSchema
+
 
 order_schema = OrderSchema()
 orders_schema = OrderSchema(many=True)
@@ -59,67 +61,72 @@ def _item_data(item):
 
 
 class OrderResource(Resource):
-
     def get(self, order_id=None):
-        user_id = session.get("user_id")
-        role = session.get("user_role")
+        user = get_current_user()
 
-        if not user_id:
-            return {
-                "message": "Authorization required"
-            }, 401
+        if not user:
+            return {"message": "Authorization required"}, 401
 
-        if role == "buyer":
+        if user.role == "buyer":
             if order_id:
                 order = db.session.get(Order, order_id)
 
                 if not order:
-                    return {
-                        "message": "Order not found"
-                    }, 404
+                    return {"message": "Order not found"}, 404
 
-                if order.buyer_id != user_id:
-                    return {
-                        "message": "Access denied"
-                    }, 403
+                if order.buyer_id != user.id:
+                    return {"message": "Access denied"}, 403
 
                 return order_schema.dump(order), 200
 
             orders = (
                 Order.query
-                .filter_by(buyer_id=user_id)
+                .filter_by(buyer_id=user.id)
                 .order_by(Order.created_at.desc())
                 .all()
             )
 
             return orders_schema.dump(orders), 200
 
-        if role == "farmer":
+        if user.role == "admin":
             if order_id:
                 order = db.session.get(Order, order_id)
 
                 if not order:
-                    return {
-                        "message": "Order not found"
-                    }, 404
+                    return {"message": "Order not found"}, 404
+
+                return order_schema.dump(order), 200
+
+            orders = (
+                Order.query
+                .order_by(Order.created_at.desc())
+                .all()
+            )
+
+            return orders_schema.dump(orders), 200
+
+        if user.role == "farmer":
+            if order_id:
+                order = db.session.get(Order, order_id)
+
+                if not order:
+                    return {"message": "Order not found"}, 404
 
                 farmer_items = [
                     item
                     for item in order.items
                     if (
                         item.livestock
-                        and item.livestock.farmer_id == user_id
+                        and item.livestock.farmer_id == user.id
                     )
                     or (
                         item.product
-                        and item.product.farmer_id == user_id
+                        and item.product.farmer_id == user.id
                     )
                 ]
 
                 if not farmer_items:
-                    return {
-                        "message": "Access denied"
-                    }, 403
+                    return {"message": "Access denied"}, 403
 
                 farmer_amount = sum(
                     (
@@ -152,8 +159,8 @@ class OrderResource(Resource):
                 .outerjoin(Product)
                 .filter(
                     db.or_(
-                        Livestock.farmer_id == user_id,
-                        Product.farmer_id == user_id,
+                        Livestock.farmer_id == user.id,
+                        Product.farmer_id == user.id,
                     )
                 )
                 .all()
@@ -201,22 +208,18 @@ class OrderResource(Resource):
 
             return farmer_orders, 200
 
-        return {
-            "message": "Access denied"
-        }, 403
+        return {"message": "Access denied"}, 403
 
     def post(self):
-        buyer_id = session.get("user_id")
+        user = get_current_user()
 
-        if not buyer_id:
-            return {
-                "message": "Authorization required"
-            }, 401
+        if not user:
+            return {"message": "Authorization required"}, 401
 
-        if session.get("user_role") != "buyer":
-            return {
-                "message": "Buyer access required"
-            }, 403
+        if user.role != "buyer":
+            return {"message": "Buyer access required"}, 403
+
+        buyer_id = user.id
 
         data = request.get_json() or {}
         items = data.get("items")
@@ -342,149 +345,5 @@ class OrderResource(Resource):
 
             return {
                 "message": "Unable to create order",
-                "error": str(error),
-            }, 400
-
-    def patch(self, order_id):
-        farmer_id = session.get("user_id")
-        role = session.get("user_role")
-
-        if not farmer_id:
-            return {
-                "message": "Authorization required"
-            }, 401
-
-        if role != "farmer":
-            return {
-                "message": "Farmer access required"
-            }, 403
-
-        order = db.session.get(Order, order_id)
-
-        if not order:
-            return {
-                "message": "Order not found"
-            }, 404
-
-        farmer_items = [
-            item
-            for item in order.items
-            if (
-                item.livestock
-                and item.livestock.farmer_id == farmer_id
-            )
-            or (
-                item.product
-                and item.product.farmer_id == farmer_id
-            )
-        ]
-
-        if not farmer_items:
-            return {
-                "message": "Access denied"
-            }, 403
-
-        data = request.get_json() or {}
-
-        action = data.get("action")
-        requested_status = data.get("status")
-
-        if action == "cancel":
-            if order.status != OrderStatus.PENDING:
-                return {
-                    "message": (
-                        "Only pending orders can be cancelled"
-                    )
-                }, 400
-
-            order.status = OrderStatus.CANCELLED
-
-        elif requested_status:
-            normalized_status = str(
-                requested_status
-            ).strip().lower()
-
-            status_map = {
-                "pending": OrderStatus.PENDING,
-                "confirmed": OrderStatus.CONFIRMED,
-                "cancelled": OrderStatus.CANCELLED,
-                "completed": OrderStatus.COMPLETED,
-            }
-
-            new_status = status_map.get(
-                normalized_status
-            )
-
-            if not new_status:
-                return {
-                    "message": (
-                        "Invalid order status"
-                    )
-                }, 400
-
-            current_status = order.status
-
-            if current_status == OrderStatus.CANCELLED:
-                return {
-                    "message": (
-                        "Cancelled orders cannot be updated"
-                    )
-                }, 400
-
-            if current_status == OrderStatus.COMPLETED:
-                return {
-                    "message": (
-                        "Completed orders cannot be updated"
-                    )
-                }, 400
-
-            if (
-                current_status == OrderStatus.PENDING
-                and new_status not in (
-                    OrderStatus.CONFIRMED,
-                    OrderStatus.CANCELLED,
-                )
-            ):
-                return {
-                    "message": (
-                        "Pending orders can only be "
-                        "confirmed or cancelled"
-                    )
-                }, 400
-
-            if (
-                current_status == OrderStatus.CONFIRMED
-                and new_status != OrderStatus.COMPLETED
-            ):
-                return {
-                    "message": (
-                        "Confirmed orders can only be "
-                        "completed"
-                    )
-                }, 400
-
-            order.status = new_status
-
-        else:
-            return {
-                "message": (
-                    "Provide an action or status"
-                )
-            }, 400
-
-        try:
-            db.session.commit()
-
-            return {
-                "message": "Order updated successfully",
-                "order": order_schema.dump(order),
-                "status": _status_value(order.status),
-            }, 200
-
-        except Exception as error:
-            db.session.rollback()
-
-            return {
-                "message": "Unable to update order",
                 "error": str(error),
             }, 400

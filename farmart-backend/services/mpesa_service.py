@@ -1,5 +1,6 @@
 import base64
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import requests
 from flask import current_app
@@ -26,7 +27,18 @@ class MpesaService:
 
         response.raise_for_status()
 
-        return response.json()["access_token"]
+        data = response.json()
+        access_token = data.get("access_token")
+
+        if not access_token:
+            raise RuntimeError(
+                data.get(
+                    "errorMessage",
+                    "M-Pesa access token was not returned.",
+                )
+            )
+
+        return access_token
 
     @staticmethod
     def generate_password(timestamp):
@@ -47,7 +59,10 @@ class MpesaService:
         account_reference,
         transaction_desc,
     ):
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        timestamp = datetime.now(
+            ZoneInfo("Africa/Nairobi")
+        ).strftime("%Y%m%d%H%M%S")
+
         access_token = MpesaService.get_access_token()
         password = MpesaService.generate_password(timestamp)
 
@@ -84,4 +99,19 @@ class MpesaService:
 
         response.raise_for_status()
 
-        return response.json()
+        data = response.json()
+
+        if str(data.get("ResponseCode")) != "0":
+            raise RuntimeError(
+                data.get(
+                    "ResponseDescription",
+                    "M-Pesa STK Push request was rejected.",
+                )
+            )
+
+        if not data.get("CheckoutRequestID"):
+            raise RuntimeError(
+                "M-Pesa did not return a CheckoutRequestID."
+            )
+
+        return data

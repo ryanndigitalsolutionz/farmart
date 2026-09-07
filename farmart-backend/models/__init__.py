@@ -25,7 +25,8 @@ __all__ = [
     "OrderStatus",
     "OrderItem",
     "Payment",
-    "PaymentMethod",
+    "PaymentMethod"
+    "",
     "PaymentStatus",
     "Report",
     "Review",

@@ -28,6 +28,7 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [needsVerification, setNeedsVerification] = useState(false)
 
   const handleChange = (e) => {
     setFormData({
@@ -39,6 +40,7 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setNeedsVerification(false)
 
     if (!formData.email || !formData.password) {
       setError('Please enter your email and password.')
@@ -69,6 +71,14 @@ function Login() {
         setError(
           data.error || 'Unable to log in. Please try again.',
         )
+
+        if (
+          response.status === 403 &&
+          data.error?.includes('not been verified')
+        ) {
+          setNeedsVerification(true)
+        }
+
         return
       }
 
@@ -107,6 +117,20 @@ function Login() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleGoVerify = () => {
+    sessionStorage.setItem(
+      'farmartSignupEmail',
+      formData.email.trim().toLowerCase(),
+    )
+
+    sessionStorage.setItem(
+      'farmartSignupNeedsResend',
+      'true',
+    )
+
+    navigate('/verify-account')
   }
 
   const handleGoogleLogin = () => {
@@ -730,6 +754,28 @@ function Login() {
               {error && (
                 <p className="auth-error">
                   {error}
+
+                  {needsVerification && (
+                    <>
+                      {' '}
+
+                      <button
+                        type="button"
+                        onClick={handleGoVerify}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          padding: 0,
+                          color: 'inherit',
+                          textDecoration: 'underline',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Verify now
+                      </button>
+                    </>
+                  )}
                 </p>
               )}
 
@@ -738,7 +784,9 @@ function Login() {
                 className="login-submit"
                 disabled={loading}
               >
-                {loading ? 'Logging in...' : 'Log in'}
+                {loading
+                  ? 'Logging in...'
+                  : 'Log in'}
               </button>
 
               <button
@@ -759,6 +807,7 @@ function Login() {
             {cameFromWelcome && (
               <p className="login-register">
                 New to Farmart?{' '}
+
                 <Link
                   to="/register"
                   state={{ role: selectedRole }}

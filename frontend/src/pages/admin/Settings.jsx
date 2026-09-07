@@ -1,7 +1,8 @@
 import PageHeader from "../../components/layout/PageHeader";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "../../context/ThemeContext";
 import { useAuth } from "../../hooks/useAuth";
+import { getCommissionRate, updateCommissionRate } from "../../services/adminApi";
 
 
 export default function Settings() {
@@ -12,22 +13,26 @@ export default function Settings() {
   const { theme, toggleTheme } = useTheme();
   const { user } = useAuth();
 
-  const [name, setName] = useState(user?.name || "Admin User");
-  const [email, setEmail] = useState(user?.email || "admin@farmart.co.ke");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [accountSaved, setAccountSaved] = useState(false);
+
+  useEffect(() => {
+    getCommissionRate().then((r) => setCommission(r.percentage)).catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    setName(user.name || "");
+    setEmail(user.email || "");
+  }, [user]);
 
   const handleSave = async () => {
     setSaving(true);
     setSaved(false);
     try {
-      await fetch("/api/admin/settings/commission", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
-        },
-        body: JSON.stringify({ commission_rate: commission }),
-      });
+      await updateCommissionRate(commission);
       setSaved(true);
     } catch (err) {
       console.error(err);

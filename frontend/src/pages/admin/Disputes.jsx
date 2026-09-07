@@ -1,5 +1,6 @@
 import PageHeader from "../../components/layout/PageHeader";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useAdmin } from "../../hooks/useAdmin";
 import { getDisputes, resolveDispute } from "../../services/adminApi";
 
@@ -106,10 +107,9 @@ export default function Disputes() {
           }}
         >
           <span style={{ fontSize: 12.5 }}>FAQs &amp; announcements</span>
-          {/* TODO: link to /admin/announcements once that page/route exists */}
-          <a href="/admin/announcements" style={{ color: "var(--green-700, #2F6D3F)", fontSize: 12.5, fontWeight: 700 }}>
-            Edit →
-          </a>
+          <Link to="/admin/announcements" style={{ color: "var(--green-700, #2F6D3F)", fontSize: 12.5, fontWeight: 700 }}>
+            Edit
+          </Link>
         </div>
       </div>
     </div>

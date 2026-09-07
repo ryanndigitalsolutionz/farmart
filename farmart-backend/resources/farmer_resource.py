@@ -4,6 +4,7 @@ from flask_restful import Resource
 from extensions import db
 from models.user import User
 from models.profile import Profile
+from resources.auth_utils import require_admin
 from services.email_service import (
     send_farmer_application_received,
     send_farmer_approved,
@@ -24,26 +25,10 @@ def _serialize_farmer(user):
         "location": profile.location if profile else None,
         "phone_number": profile.phone if profile else None,
         "email": user.email,
-        "description": (
-            profile.description
-            if profile and hasattr(profile, "description")
-            else ""
-        ),
-        "status": (
-            profile.verification_status
-            if profile
-            else "pending"
-        ),
-        "rejection_reason": (
-            profile.rejection_reason
-            if profile
-            else None
-        ),
-        "joined_date": (
-            user.created_at.isoformat()
-            if user.created_at
-            else None
-        ),
+        "description": profile.description if profile else "",
+        "status": profile.verification_status if profile else "pending",
+        "rejection_reason": profile.rejection_reason if profile else None,
+        "joined_date": user.created_at.isoformat() if user.created_at else None,
         "listing_count": 0,
         "animals_sold": 0,
         "rating": None,
@@ -52,8 +37,9 @@ def _serialize_farmer(user):
 
 class FarmerListResource(Resource):
     def get(self):
-        if session.get("user_role") != "admin":
-            return {"message": "Admin access required"}, 403
+        error = require_admin()
+        if error:
+            return error
 
         farmers = User.query.filter_by(role="farmer").all()
 
@@ -141,6 +127,10 @@ class FarmerResource(Resource):
         current_user_role = session.get("user_role")
 
         if current_user_role == "admin":
+            error = require_admin()
+            if error:
+                return error
+
             user = User.query.filter_by(
                 id=user_id,
                 role="farmer",
@@ -159,8 +149,9 @@ class FarmerResource(Resource):
         return _serialize_farmer(user), 200
 
     def patch(self, user_id):
-        if session.get("user_role") != "admin":
-            return {"message": "Admin access required"}, 403
+        error = require_admin()
+        if error:
+            return error
 
         user = User.query.filter_by(
             id=user_id,

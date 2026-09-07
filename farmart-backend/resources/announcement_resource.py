@@ -2,6 +2,7 @@ from flask import request
 from flask_restful import Resource
 from extensions import db
 from models.announcement import Announcement
+from resources.auth_utils import require_admin
 from schemas.announcement_schema import announcement_schema, announcements_schema
 
 
@@ -11,6 +12,10 @@ class AnnouncementListResource(Resource):
         return announcements_schema.dump(announcements), 200
 
     def post(self):
+        error = require_admin()
+        if error:
+            return error
+
         data = request.get_json()
         author_id = data.get("author_id")
         title = data.get("title")
@@ -32,6 +37,10 @@ class AnnouncementResource(Resource):
         return announcement_schema.dump(announcement), 200
 
     def delete(self, announcement_id):
+        error = require_admin()
+        if error:
+            return error
+
         announcement = Announcement.query.get_or_404(announcement_id)
         db.session.delete(announcement)
         db.session.commit()

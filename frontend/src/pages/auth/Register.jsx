@@ -104,32 +104,16 @@ function Register() {
         return
       }
 
-      localStorage.setItem(
-        'farmartUser',
-        JSON.stringify({
-          id: data.user.id,
-          first_name: data.user.first_name,
-          last_name: data.user.last_name,
-          email: data.user.email,
-          role: data.user.role,
-          is_verified: data.user.is_verified,
-          isLoggedIn: true,
-        }),
+      sessionStorage.setItem(
+        'farmartSignupEmail',
+        formData.email.trim().toLowerCase(),
       )
 
-      if (data.user.role === 'farmer') {
-        navigate('/farm-setup')
-        return
-      }
-
-      if (data.user.role === 'buyer') {
-        navigate('/buyer/marketplace')
-        return
-      }
-
-      localStorage.removeItem('farmartUser')
-      setError('Your account has an invalid role.')
+      navigate('/verify-account')
+      return
     } catch (error) {
+      console.error('Registration error:', error)
+
       setError(
         'Unable to connect to the Farmart server.',
       )
@@ -150,7 +134,7 @@ function Register() {
     }
 
     window.location.href =
-      `${API_BASE_URL}/auth/google?role=${selectedRole}`
+    `${API_BASE_URL}/auth/google?role=${selectedRole}`
   }
 
   const roleLabel =

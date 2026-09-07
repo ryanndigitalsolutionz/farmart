@@ -36,7 +36,9 @@ export default function FarmerDetails() {
         }
       } catch (err) {
         if (active) {
-          setError(err.message || "Failed to load farmer details.");
+          setError(
+            err.message || "Failed to load farmer details."
+          );
         }
       } finally {
         if (active) {
@@ -64,7 +66,9 @@ export default function FarmerDetails() {
       refreshOverview();
       navigate("/admin/dashboard");
     } catch (err) {
-      setError(err.message || "Failed to approve farmer.");
+      setError(
+        err.message || "Failed to approve farmer."
+      );
     } finally {
       setBusy(false);
     }
@@ -77,13 +81,19 @@ export default function FarmerDetails() {
     setError("");
 
     try {
-      const data = await rejectFarmer(farmerId, reason);
+      const data = await rejectFarmer(
+        farmerId,
+        reason
+      );
+
       setFarmer(data.farmer || data);
       setShowRejectModal(false);
       refreshOverview();
       navigate("/admin/dashboard");
     } catch (err) {
-      setError(err.message || "Failed to reject farmer.");
+      setError(
+        err.message || "Failed to reject farmer."
+      );
     } finally {
       setBusy(false);
     }
@@ -102,10 +112,13 @@ export default function FarmerDetails() {
     setError("");
 
     try {
-      await suspendUser(farmer.user_id);
+      const data = await suspendUser(farmer.user_id);
+      setFarmer(data.farmer || data.user || farmer);
       refreshOverview();
     } catch (err) {
-      setError(err.message || "Failed to suspend farmer.");
+      setError(
+        err.message || "Failed to suspend farmer."
+      );
     } finally {
       setBusy(false);
     }
@@ -113,7 +126,12 @@ export default function FarmerDetails() {
 
   if (loading) {
     return (
-      <div style={{ color: "var(--text-muted, #66766A)", fontSize: 13 }}>
+      <div
+        style={{
+          color: "var(--text-muted, #66766A)",
+          fontSize: 13,
+        }}
+      >
         Loading farmer…
       </div>
     );
@@ -126,7 +144,16 @@ export default function FarmerDetails() {
           title="Farmer details"
           subtitle="Unable to load this farmer"
         />
-        <p style={{ color: "#B2503E", fontSize: 13 }}>{error}</p>
+
+        <p
+          style={{
+            color: "#B2503E",
+            fontSize: 13,
+          }}
+        >
+          {error}
+        </p>
+
         <button
           onClick={() => navigate("/admin/dashboard")}
           style={secondaryBtn}
@@ -144,6 +171,7 @@ export default function FarmerDetails() {
           title="Farmer not found"
           subtitle="The requested farmer could not be found."
         />
+
         <button
           onClick={() => navigate("/admin/dashboard")}
           style={secondaryBtn}
@@ -160,7 +188,9 @@ export default function FarmerDetails() {
         title={farmer.farm_name || "(No farm name yet)"}
         subtitle={`${farmer.location || "—"} · joined ${
           farmer.joined_date
-            ? new Date(farmer.joined_date).toLocaleDateString()
+            ? new Date(
+                farmer.joined_date
+              ).toLocaleDateString()
             : "—"
         }`}
       />
@@ -216,11 +246,23 @@ export default function FarmerDetails() {
           marginBottom: 22,
         }}
       >
-        <Stat label="Listings" value={farmer.listing_count} />
-        <Stat label="Animals sold" value={farmer.animals_sold} />
+        <Stat
+          label="Listings"
+          value={farmer.listing_count}
+        />
+
+        <Stat
+          label="Animals sold"
+          value={farmer.animals_sold}
+        />
+
         <Stat
           label="Rating"
-          value={farmer.rating ? `★ ${farmer.rating}` : "—"}
+          value={
+            farmer.rating
+              ? `★ ${farmer.rating}`
+              : "—"
+          }
         />
       </div>
 
@@ -232,7 +274,13 @@ export default function FarmerDetails() {
           marginBottom: 20,
         }}
       >
-        <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>
+        <div
+          style={{
+            fontWeight: 700,
+            fontSize: 13,
+            marginBottom: 8,
+          }}
+        >
           Farmer
         </div>
 
@@ -244,11 +292,25 @@ export default function FarmerDetails() {
           }}
         >
           <div>
-            Name: {farmer.name || `${farmer.first_name || ""} ${farmer.last_name || ""}`.trim() || "—"}
+            Name:{" "}
+            {farmer.name ||
+              `${farmer.first_name || ""} ${
+                farmer.last_name || ""
+              }`.trim() ||
+              "—"}
           </div>
-          <div>Phone: {farmer.phone_number || "—"}</div>
-          <div>Email: {farmer.email || "—"}</div>
-          <div>Location: {farmer.location || "—"}</div>
+
+          <div>
+            Phone: {farmer.phone_number || "—"}
+          </div>
+
+          <div>
+            Email: {farmer.email || "—"}
+          </div>
+
+          <div>
+            Location: {farmer.location || "—"}
+          </div>
         </div>
 
         {farmer.description && (
@@ -276,31 +338,32 @@ export default function FarmerDetails() {
           </>
         )}
 
-        {farmer.status === "rejected" && farmer.rejection_reason && (
-          <>
-            <div
-              style={{
-                fontWeight: 700,
-                fontSize: 13,
-                margin: "16px 0 6px",
-                color: "#B2503E",
-              }}
-            >
-              Rejection reason
-            </div>
+        {farmer.status === "rejected" &&
+          farmer.rejection_reason && (
+            <>
+              <div
+                style={{
+                  fontWeight: 700,
+                  fontSize: 13,
+                  margin: "16px 0 6px",
+                  color: "#B2503E",
+                }}
+              >
+                Rejection reason
+              </div>
 
-            <p
-              style={{
-                fontSize: 12.5,
-                color: "var(--text-muted, #66766A)",
-                lineHeight: 1.6,
-                margin: 0,
-              }}
-            >
-              {farmer.rejection_reason}
-            </p>
-          </>
-        )}
+              <p
+                style={{
+                  fontSize: 12.5,
+                  color: "var(--text-muted, #66766A)",
+                  lineHeight: 1.6,
+                  margin: 0,
+                }}
+              >
+                {farmer.rejection_reason}
+              </p>
+            </>
+          )}
       </div>
 
       {farmer.status === "pending" && (
@@ -311,10 +374,14 @@ export default function FarmerDetails() {
             style={{
               ...primaryBtn,
               opacity: busy ? 0.6 : 1,
-              cursor: busy ? "not-allowed" : "pointer",
+              cursor: busy
+                ? "not-allowed"
+                : "pointer",
             }}
           >
-            {busy ? "Working…" : "Approve verification"}
+            {busy
+              ? "Working…"
+              : "Approve verification"}
           </button>
 
           <button
@@ -323,7 +390,9 @@ export default function FarmerDetails() {
             style={{
               ...dangerOutlineBtn,
               opacity: busy ? 0.6 : 1,
-              cursor: busy ? "not-allowed" : "pointer",
+              cursor: busy
+                ? "not-allowed"
+                : "pointer",
             }}
           >
             Reject
@@ -332,7 +401,13 @@ export default function FarmerDetails() {
       )}
 
       {farmer.status === "verified" && (
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
           <span
             style={{
               fontSize: 12.5,
@@ -349,10 +424,14 @@ export default function FarmerDetails() {
             style={{
               ...dangerOutlineBtn,
               opacity: busy ? 0.6 : 1,
-              cursor: busy ? "not-allowed" : "pointer",
+              cursor: busy
+                ? "not-allowed"
+                : "pointer",
             }}
           >
-            {busy ? "Working…" : "Suspend account"}
+            {busy
+              ? "Working…"
+              : "Suspend account"}
           </button>
         </div>
       )}
@@ -365,18 +444,26 @@ export default function FarmerDetails() {
             style={{
               ...primaryBtn,
               opacity: busy ? 0.6 : 1,
-              cursor: busy ? "not-allowed" : "pointer",
+              cursor: busy
+                ? "not-allowed"
+                : "pointer",
             }}
           >
-            {busy ? "Working…" : "Approve verification"}
+            {busy
+              ? "Working…"
+              : "Approve verification"}
           </button>
         </div>
       )}
 
       {showRejectModal && (
         <RejectReasonModal
-          farmerName={farmer.farm_name || farmer.name}
-          onCancel={() => setShowRejectModal(false)}
+          farmerName={
+            farmer.farm_name || farmer.name
+          }
+          onCancel={() =>
+            setShowRejectModal(false)
+          }
           onSubmit={handleRejectSubmit}
         />
       )}
@@ -444,4 +531,5 @@ const dangerOutlineBtn = {
   padding: "10px 18px",
   fontSize: 12.5,
   fontWeight: 700,
+  cursor: "pointer",
 };

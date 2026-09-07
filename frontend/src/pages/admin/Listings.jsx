@@ -15,14 +15,14 @@ export default function Listings() {
   const [commission, setCommission] = useState("");
   const [savingCommission, setSavingCommission] = useState(false);
 
+  const loadListings = () => {
+    getListingsForReview({ flaggedOnly: true }).then(setListings).catch(console.error);
+  };
+
   useEffect(() => {
     loadListings();
     getCommissionRate().then((r) => setCommission(r.percentage)).catch(console.error);
   }, []);
-
-  const loadListings = () => {
-    getListingsForReview({ flaggedOnly: true }).then(setListings).catch(console.error);
-  };
 
   const handleApprove = async (animalId) => {
     await approveListing(animalId);

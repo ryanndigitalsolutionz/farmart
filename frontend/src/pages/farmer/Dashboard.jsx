@@ -32,10 +32,10 @@ function Dashboard() {
 
     try {
       const [livestockResponse, ordersResponse] = await Promise.all([
-        fetch(`${API_BASE_URL}/livestock`, {
+        fetch(`${API_BASE_URL}/api/livestock`, {
           credentials: 'include',
         }),
-        fetch(`${API_BASE_URL}/orders`, {
+        fetch(`${API_BASE_URL}/api/orders`, {
           credentials: 'include',
         }),
       ])

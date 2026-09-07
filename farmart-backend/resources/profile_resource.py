@@ -18,18 +18,18 @@ def serialize_user(user):
     }
 
 
-class CurrentProfileResource(Resource):
+class ProfileMeResource(Resource):
 
     def get(self):
-        current_user_id = session.get("user_id")
+        user_id = session.get("user_id")
 
-        if not current_user_id:
+        if not user_id:
             return {
                 "success": False,
-                "error": "Authentication required.",
+                "error": "Authorization required.",
             }, 401
 
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, user_id)
 
         if not user:
             return {
@@ -37,9 +37,7 @@ class CurrentProfileResource(Resource):
                 "error": "User not found.",
             }, 404
 
-        profile = Profile.query.filter_by(
-            user_id=current_user_id
-        ).first()
+        profile = user.profile
 
         return {
             "success": True,
@@ -56,7 +54,7 @@ class CurrentProfileResource(Resource):
                 "error": "Authentication required.",
             }, 401
 
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
 
         if not user:
             return {
@@ -100,6 +98,16 @@ class CurrentProfileResource(Resource):
         if "description" in data:
             profile.description = data["description"]
 
+        if (
+            profile.verification_status == "rejected"
+            and (
+                "farm_name" in data
+                or "description" in data
+            )
+        ):
+            profile.verification_status = "pending"
+            profile.rejection_reason = None
+
         db.session.commit()
 
         return {
@@ -120,7 +128,10 @@ class ProfileResource(Resource):
                 "error": "Authentication required.",
             }, 401
 
-        if current_user_id != user_id and session.get("user_role") != "admin":
+        if (
+            current_user_id != user_id
+            and session.get("user_role") != "admin"
+        ):
             return {
                 "success": False,
                 "error": "Access denied.",
@@ -150,7 +161,10 @@ class ProfileResource(Resource):
                 "error": "Authentication required.",
             }, 401
 
-        if current_user_id != user_id and session.get("user_role") != "admin":
+        if (
+            current_user_id != user_id
+            and session.get("user_role") != "admin"
+        ):
             return {
                 "success": False,
                 "error": "Access denied.",
@@ -204,7 +218,10 @@ class ProfileResource(Resource):
                 "error": "Authentication required.",
             }, 401
 
-        if current_user_id != user_id and session.get("user_role") != "admin":
+        if (
+            current_user_id != user_id
+            and session.get("user_role") != "admin"
+        ):
             return {
                 "success": False,
                 "error": "Access denied.",
@@ -245,14 +262,24 @@ class ProfileResource(Resource):
         if "location" in data:
             profile.location = data["location"]
 
-        if "profile_picture" in data:
-            profile.profile_picture = data["profile_picture"]
-
         if "farm_name" in data:
             profile.farm_name = data["farm_name"]
 
         if "description" in data:
             profile.description = data["description"]
+
+        if "profile_picture" in data:
+            profile.profile_picture = data["profile_picture"]
+
+        if (
+            profile.verification_status == "rejected"
+            and (
+                "farm_name" in data
+                or "description" in data
+            )
+        ):
+            profile.verification_status = "pending"
+            profile.rejection_reason = None
 
         db.session.commit()
 

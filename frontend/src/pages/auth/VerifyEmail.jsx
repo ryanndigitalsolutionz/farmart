@@ -46,8 +46,7 @@ function VerifyEmail() {
     setLoading(true)
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/auth/verify-password-reset-otp`,
+      const response = await fetch(`${API_BASE_URL}/auth/verify-password-reset-otp`,
         {
           method: 'POST',
           headers: {
@@ -97,8 +96,7 @@ function VerifyEmail() {
     setResending(true)
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/auth/forgot-password`,
+      const response = await fetch(`${API_BASE_URL}/auth/forgot-password`,
         {
           method: 'POST',
           headers: {

@@ -31,14 +31,6 @@ function Header() {
               className="farmart-header-logo"
             />
           </a>
-
-          <button
-            type="button"
-            className="farmart-header-faq-link"
-            onClick={() => navigate('/faqs')}
-          >
-            FAQs
-          </button>
         </div>
 
         <div
