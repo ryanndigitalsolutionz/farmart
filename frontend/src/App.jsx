@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
+
 import { CartProvider } from './context/CartContext'
 import { LivestockProvider } from './context/LivestockContext'
 import { WishlistProvider } from './context/WishlistContext'
@@ -10,19 +11,20 @@ import SplashScreen from './components/SplashScreen'
 import Header from './components/layout/Header'
 import FarmerDashboardLayout from './components/layout/FarmerDashboardLayout'
 import DashboardLayout from './components/layout/DashboardLayout'
+
 import ProtectedRoute from './pages/routes/ProtectedRoute'
+import BuyerRoute from './pages/routes/BuyerRoute'
 
 import LandingPage from './pages/LandingPage'
-import FAQs from './pages/FAQs'
+
 import Welcome from './pages/auth/Welcome'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
-import FarmSetup from './pages/auth/FarmSetup'
 import GoogleCallback from './pages/auth/GoogleCallback'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import VerifyEmail from './pages/auth/VerifyEmail'
-import VerifySignupEmail from './pages/auth/VerifySignupEmail'
 import ResetPassword from './pages/auth/ResetPassword'
+import FarmSetup from './pages/auth/FarmSetup'
 
 import FarmerDashboard from './pages/farmer/Dashboard'
 import FarmerProfile from './pages/farmer/Profile'
@@ -31,9 +33,6 @@ import CreateListings from './pages/farmer/CreateListings'
 import FarmerOrders from './pages/farmer/Orders'
 import FarmerAnalytics from './pages/farmer/Analytics'
 import FarmerAnnouncements from './pages/farmer/Announcements'
-
-import BuyerRoute from './pages/routes/BuyerRoute'
-import RequireRole from './pages/routes/RequireRole'
 
 import AdminDashboard from './pages/admin/Dashboard'
 import Users from './pages/admin/Users'
@@ -52,7 +51,6 @@ import './App.css'
 function App() {
   const location = useLocation()
   const isBuyerRoute = location.pathname.startsWith('/buyer')
-
   const [showSplash, setShowSplash] = useState(true)
 
   useEffect(() => {
@@ -76,8 +74,6 @@ function App() {
           <CartProvider>
             <Routes>
               <Route path="/" element={<LandingPage />} />
-              <Route path="/faqs" element={<FAQs />} />
-
               <Route path="/welcome" element={<Welcome />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
@@ -85,22 +81,9 @@ function App() {
                 path="/auth/google/callback"
                 element={<GoogleCallback />}
               />
-              <Route
-                path="/forgot-password"
-                element={<ForgotPassword />}
-              />
-              <Route
-                path="/verify-email"
-                element={<VerifyEmail />}
-              />
-              <Route
-                path="/verify-account"
-                element={<VerifySignupEmail />}
-              />
-              <Route
-                path="/reset-password"
-                element={<ResetPassword />}
-              />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
               <Route
                 element={
@@ -109,51 +92,26 @@ function App() {
                   />
                 }
               >
-                <Route
-                  path="/farm-setup"
-                  element={<FarmSetup />}
-                />
+                <Route path="/farm-setup" element={<FarmSetup />} />
 
                 <Route
                   path="/farmer"
                   element={<FarmerDashboardLayout />}
                 >
-                  <Route
-                    index
-                    element={<FarmerDashboard />}
-                  />
-                  <Route
-                    path="dashboard"
-                    element={<FarmerDashboard />}
-                  />
+                  <Route index element={<FarmerDashboard />} />
+                  <Route path="dashboard" element={<FarmerDashboard />} />
                   <Route
                     path="create-listing"
                     element={<CreateListings />}
                   />
-                  <Route
-                    path="listings"
-                    element={<CreateListings />}
-                  />
-                  <Route
-                    path="orders"
-                    element={<FarmerOrders />}
-                  />
-                  <Route
-                    path="analytics"
-                    element={<FarmerAnalytics />}
-                  />
-                  <Route
-                    path="farm-profile"
-                    element={<FarmProfile />}
-                  />
+                  <Route path="orders" element={<FarmerOrders />} />
+                  <Route path="analytics" element={<FarmerAnalytics />} />
+                  <Route path="farm-profile" element={<FarmProfile />} />
                   <Route
                     path="announcements"
                     element={<FarmerAnnouncements />}
                   />
-                  <Route
-                    path="profile"
-                    element={<FarmerProfile />}
-                  />
+                  <Route path="profile" element={<FarmerProfile />} />
                 </Route>
               </Route>
 
@@ -164,19 +122,18 @@ function App() {
                   />
                 }
               >
-                <Route
-                  path="/buyer/*"
-                  element={<BuyerRoute />}
-                />
+                <Route path="/buyer/*" element={<BuyerRoute />} />
               </Route>
 
               <Route
-                path="/admin"
                 element={
-                  <RequireRole allow={['admin']} />
+                  <ProtectedRoute
+                    allowedRoles={['admin']}
+                  />
                 }
               >
                 <Route
+                  path="/admin"
                   element={
                     <AdminProvider>
                       <DashboardLayout />
@@ -185,25 +142,11 @@ function App() {
                 >
                   <Route
                     index
-                    element={
-                      <Navigate
-                        to="dashboard"
-                        replace
-                      />
-                    }
+                    element={<Navigate to="dashboard" replace />}
                   />
-                  <Route
-                    path="dashboard"
-                    element={<AdminDashboard />}
-                  />
-                  <Route
-                    path="users"
-                    element={<Users />}
-                  />
-                  <Route
-                    path="farmers"
-                    element={<Farmers />}
-                  />
+                  <Route path="dashboard" element={<AdminDashboard />} />
+                  <Route path="users" element={<Users />} />
+                  <Route path="farmers" element={<Farmers />} />
                   <Route
                     path="farmers/:farmerId"
                     element={<FarmerDetails />}
@@ -212,41 +155,24 @@ function App() {
                     path="buyers/:buyerId"
                     element={<BuyerDetails />}
                   />
-                  <Route
-                    path="listings"
-                    element={<Listings />}
-                  />
-                  <Route
-                    path="orders"
-                    element={<AdminOrders />}
-                  />
+                  <Route path="listings" element={<Listings />} />
+                  <Route path="orders" element={<AdminOrders />} />
                   <Route
                     path="transactions"
                     element={<Transactions />}
                   />
-                  <Route
-                    path="disputes"
-                    element={<Disputes />}
-                  />
+                  <Route path="disputes" element={<Disputes />} />
                   <Route
                     path="announcements"
                     element={<Announcements />}
                   />
-                  <Route
-                    path="settings"
-                    element={<Settings />}
-                  />
+                  <Route path="settings" element={<Settings />} />
                 </Route>
               </Route>
 
               <Route
                 path="*"
-                element={
-                  <Navigate
-                    to="/"
-                    replace
-                  />
-                }
+                element={<Navigate to="/" replace />}
               />
             </Routes>
           </CartProvider>

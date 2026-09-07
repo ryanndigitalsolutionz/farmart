@@ -12,6 +12,7 @@ from models.review import Review
 from models.wishlist import Wishlist
 from models.announcement import Announcement
 from models.product import Product
+from models.analytics import Analytics
 
 __all__ = [
     "db",
@@ -24,11 +25,13 @@ __all__ = [
     "OrderStatus",
     "OrderItem",
     "Payment",
-    "PaymentMethod",
+    "PaymentMethod"
+    "",
     "PaymentStatus",
     "Report",
     "Review",
     "Wishlist",
     "Announcement",
     "Product",
+    "Analytics",
 ]

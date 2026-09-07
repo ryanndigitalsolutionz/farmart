@@ -12,6 +12,7 @@ import {
   createFarmProfile,
   updateFarmProfile,
 } from '../../services/farmProfileApi'
+import API_BASE_URL from '../../api/api'
 
 function FarmSetup() {
   const navigate = useNavigate()
@@ -123,7 +124,7 @@ function FarmSetup() {
     const checkApplication = async () => {
       try {
         const response = await fetch(
-          `${API_BASE_URL}/api/farmers/${pendingFarmerId}`,
+          `${API_BASE_URL}/api/farmers/${userId}`,
           {
             method: 'GET',
             credentials: 'include',
@@ -214,10 +215,15 @@ function FarmSetup() {
     }
   }, [
     submitted,
-    pendingFarmerId,
+    rejected,
+    userId,
     navigate,
     formData,
   ])
+
+  if (initializing) {
+    return null
+  }
 
   return (
     <>

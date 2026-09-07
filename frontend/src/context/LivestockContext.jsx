@@ -1,29 +1,85 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { getLivestock } from "../api/livestockApi";
+import { createContext, useContext, useEffect, useState } from 'react'
+import API_BASE_URL from '../api/api'
 
-const Livestockcontext = createContext();
+const LivestockContext = createContext(null)
 
-export const LivestockProvider = ({ children }) => {
-    const [livestock, setLivestock] = useState([]);
-    const [loading, setLoading] = useState(true);
+export function LivestockProvider({ children }) {
+  const [livestock, setLivestock] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-    useEffect(() => {
-        const loadLivestock = async () => {
-            const data = await getLivestock(); 
-            setLivestock(data);
-            setLoading(false);
-        };
+  useEffect(() => {
+    let active = true
 
-        loadLivestock();
-    }, []);
+    const loadLivestock = async () => {
+      try {
+        setLoading(true)
+        setError(null)
 
-    return (
-        <Livestockcontext.Provider value={{ livestock, loading }}>
-            {children}
-        </Livestockcontext.Provider>
-    );
-};
+        const response = await fetch(
+          `${API_BASE_URL}/api/livestock`,
+          {
+            credentials: 'include',
+          },
+        )
 
-export const useLivestockContext = () => {
-    return useContext(Livestockcontext)
-};
+        const data = await response.json().catch(() => [])
+
+        if (!response.ok) {
+          throw new Error(
+            data.error ||
+            data.message ||
+            'Failed to load livestock.',
+          )
+        }
+
+        const items = Array.isArray(data)
+          ? data
+          : data.livestock || data.items || []
+
+        if (active) {
+          setLivestock(items)
+        }
+      } catch (err) {
+        if (active) {
+          setLivestock([])
+          setError(err.message || 'Failed to load livestock.')
+        }
+      } finally {
+        if (active) {
+          setLoading(false)
+        }
+      }
+    }
+
+    loadLivestock()
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  return (
+    <LivestockContext.Provider
+      value={{
+        livestock,
+        loading,
+        error,
+      }}
+    >
+      {children}
+    </LivestockContext.Provider>
+  )
+}
+
+export function useLivestockContext() {
+  const context = useContext(LivestockContext)
+
+  if (!context) {
+    throw new Error(
+      'useLivestockContext must be used within a LivestockProvider',
+    )
+  }
+
+  return context
+}
