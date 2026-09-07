@@ -31,7 +31,7 @@ function Orders() {
 
       try {
         const response = await fetch(
-          `${API_BASE_URL}/orders`,
+          `${API_BASE_URL}/api/orders`,
           {
             credentials: 'include',
           },
@@ -170,7 +170,7 @@ function Orders() {
 
   const refreshOrders = async () => {
     const response = await fetch(
-      `${API_BASE_URL}/orders`,
+      `${API_BASE_URL}/api/orders`,
       {
         credentials: 'include',
       },
@@ -199,7 +199,7 @@ function Orders() {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/orders/${orderId}`,
+        `${API_BASE_URL}/api/orders/${orderId}`,
         {
           method: 'PATCH',
           credentials: 'include',

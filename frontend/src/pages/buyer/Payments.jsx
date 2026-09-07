@@ -8,6 +8,161 @@ import {
 
 import API_BASE_URL from '../../api/api'
 
+function PaymentSummary({ items, total }) {
+  return (
+    <div className="space-y-4">
+      {items.length === 0 ? (
+        <p className="text-gray-500">
+          No items found for this order.
+        </p>
+      ) : (
+        items.map((item, index) => {
+          const quantity = Number(item.quantity || 1)
+          const unitPrice = Number(item.unit_price || 0)
+          const subtotal = Number(
+            item.subtotal || unitPrice * quantity
+          )
+
+          const name =
+            item.livestock?.name ||
+            item.product?.name ||
+            item.name ||
+            item.type ||
+            `Item ${index + 1}`
+
+          return (
+            <div
+              key={item.id || `${name}-${index}`}
+              className="flex items-center justify-between gap-4 border-b pb-4 last:border-b-0 last:pb-0"
+            >
+              <div>
+                <p className="font-semibold text-gray-800">
+                  {name}
+                </p>
+
+                <p className="text-sm text-gray-500 mt-1">
+                  Quantity: {quantity}
+                </p>
+
+                <p className="text-sm text-gray-500">
+                  KSh {unitPrice.toLocaleString()} each
+                </p>
+              </div>
+
+              <p className="font-semibold text-[var(--farm-green-dark)] whitespace-nowrap">
+                KSh {subtotal.toLocaleString()}
+              </p>
+            </div>
+          )
+        })
+      )}
+
+      <div className="border-t pt-4 flex items-center justify-between">
+        <span className="font-bold text-lg">
+          Total
+        </span>
+
+        <span className="font-bold text-xl text-[var(--farm-green-dark)]">
+          KSh {Number(total || 0).toLocaleString()}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function PaymentForm({
+  amount,
+  isLoading,
+  onPaymentStart,
+}) {
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [phoneError, setPhoneError] = useState('')
+
+  const handleSubmit = (event) => {
+    event.preventDefault()
+
+    setPhoneError('')
+
+    const phone = phoneNumber.trim()
+
+    const normalizedPhone = phone
+      .replace(/\s+/g, '')
+      .replace(/^\+/, '')
+
+    const isValid =
+      /^254(7|1)\d{8}$/.test(normalizedPhone) ||
+      /^(07|01)\d{8}$/.test(normalizedPhone)
+
+    if (!isValid) {
+      setPhoneError(
+        'Enter a valid Kenyan M-Pesa number, for example 0712345678.'
+      )
+      return
+    }
+
+    onPaymentStart({
+      phoneNumber: normalizedPhone,
+    })
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-5"
+    >
+      <div>
+        <label
+          htmlFor="mpesa-phone"
+          className="block text-sm font-semibold text-gray-700 mb-2"
+        >
+          M-Pesa Phone Number
+        </label>
+
+        <input
+          id="mpesa-phone"
+          type="tel"
+          value={phoneNumber}
+          onChange={(event) => {
+            setPhoneNumber(event.target.value)
+            setPhoneError('')
+          }}
+          placeholder="0712345678"
+          disabled={isLoading}
+          className="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:border-[var(--farm-green)] focus:ring-2 focus:ring-[var(--farm-green)]/20 disabled:bg-gray-100 disabled:cursor-not-allowed"
+        />
+
+        {phoneError && (
+          <p className="text-sm text-red-600 mt-2">
+            {phoneError}
+          </p>
+        )}
+      </div>
+
+      <div className="rounded-xl bg-[var(--farm-background)] p-4">
+        <div className="flex items-center justify-between">
+          <span className="text-gray-600">
+            Amount to pay
+          </span>
+
+          <span className="text-xl font-bold text-[var(--farm-green-dark)]">
+            KSh {Number(amount || 0).toLocaleString()}
+          </span>
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        disabled={isLoading}
+        className="w-full px-5 py-3 rounded-xl bg-[var(--farm-green)] text-white font-semibold hover:bg-[var(--farm-green-dark)] transition disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        {isLoading
+          ? 'Sending M-Pesa Request...'
+          : 'Pay with M-Pesa'}
+      </button>
+    </form>
+  )
+}
+
 function Payments() {
   const { id } = useParams()
 
@@ -29,7 +184,7 @@ function Payments() {
           `${API_BASE_URL}/api/orders/${id}`,
           {
             credentials: 'include',
-          },
+          }
         )
 
         const data = await response.json().catch(() => ({}))
@@ -37,8 +192,8 @@ function Payments() {
         if (!response.ok) {
           throw new Error(
             data.message ||
-            data.error ||
-            'Unable to load order.',
+              data.error ||
+              'Unable to load order.'
           )
         }
 
@@ -46,7 +201,7 @@ function Payments() {
       } catch (requestError) {
         setError(
           requestError.message ||
-          'Unable to load this order.',
+            'Unable to load this order.'
         )
       } finally {
         setIsLoading(false)
@@ -69,7 +224,7 @@ function Payments() {
           `${API_BASE_URL}/api/payments/${payment.id}`,
           {
             credentials: 'include',
-          },
+          }
         )
 
         const data = await response.json().catch(() => ({}))
@@ -87,7 +242,7 @@ function Payments() {
             `${API_BASE_URL}/api/orders/${id}`,
             {
               credentials: 'include',
-            },
+            }
           )
 
           if (orderResponse.ok) {
@@ -98,7 +253,7 @@ function Payments() {
 
         if (data.status === 'failed') {
           setPaymentMessage(
-            'The M-Pesa payment was not completed.',
+            'The M-Pesa payment was not completed.'
           )
           setIsPaying(false)
         }
@@ -132,7 +287,7 @@ function Payments() {
             order_id: Number(order.id),
             phone_number: phoneNumber,
           }),
-        },
+        }
       )
 
       const data = await response.json().catch(() => ({}))
@@ -140,14 +295,14 @@ function Payments() {
       if (!response.ok) {
         throw new Error(
           data.message ||
-          data.error ||
-          'Unable to initiate M-Pesa payment.',
+            data.error ||
+            'Unable to initiate M-Pesa payment.'
         )
       }
 
       if (!data.payment) {
         throw new Error(
-          'M-Pesa request was sent but no payment record was returned.',
+          'M-Pesa request was sent but no payment record was returned.'
         )
       }
 
@@ -155,12 +310,12 @@ function Payments() {
 
       setPaymentMessage(
         data.message ||
-        'M-Pesa payment request sent. Check your phone and enter your M-Pesa PIN.',
+          'M-Pesa payment request sent. Check your phone and enter your M-Pesa PIN.'
       )
     } catch (requestError) {
       setError(
         requestError.message ||
-        'Unable to initiate M-Pesa payment.',
+          'Unable to initiate M-Pesa payment.'
       )
     } finally {
       setIsPaying(false)
@@ -246,12 +401,16 @@ function Payments() {
             </p>
 
             <p className="text-2xl font-bold text-[var(--farm-green-dark)] mt-1">
-              KSh {Number(order.total_amount).toLocaleString()}
+              KSh{' '}
+              {Number(
+                order.total_amount
+              ).toLocaleString()}
             </p>
 
             {payment?.transaction_id && (
               <p className="text-xs text-gray-500 mt-2">
-                M-Pesa Receipt: {payment.transaction_id}
+                M-Pesa Receipt:{' '}
+                {payment.transaction_id}
               </p>
             )}
           </div>
@@ -343,7 +502,6 @@ function Payments() {
 
             <PaymentSummary
               items={order.items || []}
-              subtotal={order.total_amount}
               total={order.total_amount}
             />
           </div>
@@ -400,7 +558,10 @@ function Payments() {
               </p>
 
               <p className="font-semibold text-[var(--farm-green-dark)] mt-1">
-                KSh {Number(order.total_amount).toLocaleString()}
+                KSh{' '}
+                {Number(
+                  order.total_amount
+                ).toLocaleString()}
               </p>
             </div>
           </div>

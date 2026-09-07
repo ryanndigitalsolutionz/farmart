@@ -104,6 +104,10 @@ function App() {
                     path="create-listing"
                     element={<CreateListings />}
                   />
+                  <Route
+                    path="listings"
+                    element={<CreateListings />}
+                  />
                   <Route path="orders" element={<FarmerOrders />} />
                   <Route path="analytics" element={<FarmerAnalytics />} />
                   <Route path="farm-profile" element={<FarmProfile />} />
