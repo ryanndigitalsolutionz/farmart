@@ -1,100 +1,159 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom'
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import API_BASE_URL from "../../api/api";
 
 function Orders() {
     const [orders, setOrders] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState("");
 
     useEffect(() => {
-        const saveOrders = JSON.parse(
-            localStorage.getItem("orders") || "[]"
-        );
-        setOrders(saveOrders)
+        const loadOrders = async () => {
+            try {
+                setIsLoading(true);
+                setError("");
+
+                const response = await fetch(
+                    `${API_BASE_URL}/orders`,
+                    {
+                        credentials: "include",
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.message ||
+                        data.error ||
+                        "Unable to load orders."
+                    );
+                }
+
+                setOrders(data);
+            } catch (requestError) {
+                setError(
+                    requestError.message ||
+                    "Unable to load your orders."
+                );
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadOrders();
     }, []);
 
-  return (
-    <div className='p-4 max-w-4xl mx-auto shadow-2xl m-3 flex flex-col items-center justify-center'>
-        <div className='flex justify-between'>
-            <h1 className='font-bold text-xl'>My orders</h1>
+    if (isLoading) {
+        return (
+            <div className="p-4 max-w-4xl mx-auto text-center">
+                <p>Loading your orders...</p>
+            </div>
+        );
+    }
 
-        </div>        
-        
+    if (error) {
+        return (
+            <div className="p-4 max-w-4xl mx-auto text-center">
+                <p className="text-red-700 mb-4">{error}</p>
 
-        {orders.length === 0 ? (
-            <div className="flex flex-col gap-2 mt-3 mb-1">
-                <p className='text-red-700 text-lg  mb-3'>You have no orders yet.</p>
-
-                <Link 
+                <Link
                     to="/buyer/marketplace"
-                    className="text-green-100  font-semibold bg-green-600 border p-2 px-2  rounded-lg 
-                transition-all duration-200 hover:-translate-y-1 hover:scale-105 hover:shadow-lg "
+                    className="text-green-100 font-semibold bg-green-600 border p-2 rounded-lg"
                 >
-                    Start Shopping
+                    Back to Marketplace
                 </Link>
             </div>
+        );
+    }
 
-        ): (
-            <div className='flex flex-col gap-2 '>
-                {/* Continue Shopping */}
-            
-                {orders.map((order) => (
-                    <div key={order.id} className='border-0 shadow-xl p-2 w-150 flex justify-between mt-5 rounded-2xl'>
-                        <div className='px-3 p-1'>
-                            <h2 className='font-semibold'>{order.id}</h2>
-
-                            <p>
-                                Total: Ksh {order.total.toLocaleString()}
-                            </p>
-
-                            <p>
-                                Payment:{" "}
-                                {order.paymentStatus
-                                    ? order.paymentStatus.charAt(0).toUpperCase() + 
-                                        order.paymentStatus.slice(1) 
-                                    : "unpaid"}
-                            
-                            </p>
-
-                            <p>
-                                Date:{""}
-                                {new Date(order.createdAt).toLocaleDateString()}
-                            </p>
-                        </div>
-
-                        <div className=''>
-                            <Link 
-                                to={`/buyer/orders/${order.id}`} 
-                                className='text-green-600 font-semibold px-2 py-2 hover:underline '
-                            >
-                                View Details
-                            </Link>                            
-                        </div>
-                    </div>
-                ))}
+    return (
+        <div className="p-4 max-w-4xl mx-auto shadow-2xl m-3 flex flex-col items-center justify-center">
+            <div className="flex justify-between">
+                <h1 className="font-bold text-xl">
+                    My orders
+                </h1>
             </div>
-        )}
 
-        <div className="text-center mt-1 flex justify-center">
+            {orders.length === 0 ? (
+                <div className="flex flex-col gap-2 mt-3 mb-1">
+                    <p className="text-red-700 text-lg mb-3">
+                        You have no orders yet.
+                    </p>
 
-            <Link
-                to="/buyer/marketplace"
-                className="w-50"
-            >
-                <button
-                    type="button"
-                    className="marketplace-card-button w-full mt-[15px] p-[12px]
-                    border border-[var(--farm-green)] rounded-[11px] bg-[var(--farm-green)]
-                    text-white font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer
-                    transition-[background,transform] duration-[160ms] ease-[ease]
-                    hover:bg-[var(--farm-green-dark)] hover:translate-y-[-1px]"
+                    <Link
+                        to="/buyer/marketplace"
+                        className="text-green-100 font-semibold bg-green-600 border p-2 px-2 rounded-lg transition-all duration-200 hover:-translate-y-1 hover:scale-105 hover:shadow-lg"
+                    >
+                        Start Shopping
+                    </Link>
+                </div>
+            ) : (
+                <div className="flex flex-col gap-2">
+                    {orders.map((order) => (
+                        <div
+                            key={order.id}
+                            className="border-0 shadow-xl p-2 w-150 flex justify-between mt-5 rounded-2xl"
+                        >
+                            <div className="px-3 p-1">
+                                <h2 className="font-semibold">
+                                    #{order.id}
+                                </h2>
+
+                                <p>
+                                    Total: KSh{" "}
+                                    {Number(
+                                        order.total_amount
+                                    ).toLocaleString()}
+                                </p>
+
+                                <p>
+                                    Payment:{" "}
+                                    {order.status
+                                        ? order.status.charAt(0).toUpperCase() +
+                                          order.status.slice(1)
+                                        : "pending"}
+                                </p>
+
+                                <p>
+                                    Date:{" "}
+                                    {order.created_at
+                                        ? new Date(
+                                              order.created_at
+                                          ).toLocaleDateString()
+                                        : "N/A"}
+                                </p>
+                            </div>
+
+                            <div>
+                                <Link
+                                    to={`/buyer/orders/${order.id}`}
+                                    className="text-green-600 font-semibold px-2 py-2 hover:underline"
+                                >
+                                    View Details
+                                </Link>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            <div className="text-center mt-1 flex justify-center">
+                <Link
+                    to="/buyer/marketplace"
+                    className="w-50"
                 >
-                    Continue Shopping
-                </button>
-                
-            </Link>
+                    <button
+                        type="button"
+                        className="marketplace-card-button w-full mt-[15px] p-[12px] border border-[var(--farm-green)] rounded-[11px] bg-[var(--farm-green)] text-white font-[var(--farm-body-font)] text-[13px] font-semibold cursor-pointer transition-[background,transform] duration-[160ms] ease-[ease] hover:bg-[var(--farm-green-dark)] hover:translate-y-[-1px]"
+                    >
+                        Continue Shopping
+                    </button>
+                </Link>
+            </div>
         </div>
-
-    </div>
-  )
+    );
 }
 
 export default Orders;
+

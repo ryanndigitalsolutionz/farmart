@@ -25,26 +25,18 @@ class OrderItemSchema(Schema):
     id = fields.Integer(
         dump_only=True,
     )
-
-    order_id = fields.Integer(
-        required=True,
-        validate=validate.Range(min=1),
-    )
-
     livestock_id = fields.Integer(
         allow_none=True,
         validate=validate.Range(min=1),
     )
-
     product_id = fields.Integer(
         allow_none=True,
         validate=validate.Range(min=1),
     )
-
     quantity = fields.Integer(
         required=True,
         validate=validate.Range(min=1),
-    )
+    )  
 
     unit_price = fields.Decimal(
         required=True,
@@ -52,6 +44,17 @@ class OrderItemSchema(Schema):
         places=2,
         validate=validate.Range(min=0),
     )
+    livestock = fields.Nested(
+        "LivestockSchema",
+        allow_none=True,
+        dump_only=True,
+    )
+    product = fields.Nested(
+        "ProductSchema",
+        allow_none=True,
+        dump_only=True,
+    )
+
 
     subtotal = fields.Decimal(
         required=True,

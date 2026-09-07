@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { FiCheck, FiPrinter, FiXCircle } from 'react-icons/fi'
+import API_BASE_URL from '../../api/api'
 
 const STATUS_BADGE = {
   pending: 'bg-[#faeeda] text-[#633806]',
@@ -89,16 +90,37 @@ function OrderDetails() {
   const [notFoundChecked, setNotFoundChecked] = useState(false)
 
   useEffect(() => {
-    const savedOrders = JSON.parse(
-      localStorage.getItem('orders') || '[]',
-    )
+    const loadOrder = async () => {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/orders/${orderId}`,
+          {
+            credentials: 'include',
+          }
+        )
 
-    const foundOrder = savedOrders.find(
-      (savedOrder) => savedOrder.id === orderId,
-    )
+        const data = await response.json()
 
-    setOrder(foundOrder)
-    setNotFoundChecked(true)
+        console.log("ORDER DETAILS RESPONSE:", data)
+
+        if (!response.ok) {
+          throw new Error(
+            data.message || 'Unable to load order.'
+          )
+        }
+
+        setOrder(data)
+      } catch (error) {
+        console.error('Failed to load order:', error)
+        setOrder(null)
+      } finally {
+        setNotFoundChecked(true)
+      }
+    }
+
+    if (orderId) {
+      loadOrder()
+    }
   }, [orderId])
 
   const handleCancelOrder = () => {
@@ -153,8 +175,12 @@ function OrderDetails() {
             <h1 className="font-[var(--farm-heading-font)] text-[22px] font-semibold text-[var(--farm-text)] m-0">
               Order #{order.id}
             </h1>
+
             <p className="font-[var(--farm-body-font)] text-[13px] text-[var(--farm-muted)] mt-[4px] mb-0">
-              Placed on {new Date(order.createdAt).toLocaleDateString()}
+              Placed on{' '}
+              {order.created_at
+                ? new Date(order.created_at).toLocaleDateString()
+                : 'N/A'}
             </p>
           </div>
 
@@ -164,8 +190,9 @@ function OrderDetails() {
             >
               {status}
             </span>
+
             <span className="font-[var(--farm-heading-font)] text-[18px] font-bold text-[var(--farm-text)]">
-              KSh {Number(order.total).toLocaleString()}
+              KSh {Number(order.total_amount || 0).toLocaleString()}
             </span>
           </div>
         </div>
@@ -173,6 +200,7 @@ function OrderDetails() {
         {isCancelled ? (
           <div className="flex items-center gap-3 border border-[var(--farm-error)]/30 bg-[#fcebeb] rounded-[16px] px-5 py-4 mb-6">
             <FiXCircle size={20} className="text-[var(--farm-error)] flex-shrink-0" />
+
             <p className="font-[var(--farm-body-font)] text-[13px] text-[var(--farm-error)] m-0">
               This order was cancelled.
             </p>
@@ -186,55 +214,73 @@ function OrderDetails() {
         <div className="border border-[var(--farm-green-border)] rounded-[16px] bg-white overflow-hidden mb-5">
           <div className="px-5 py-3 border-b border-[var(--farm-green-border)] bg-[var(--farm-green-soft)]">
             <h2 className="font-[var(--farm-heading-font)] text-[14px] font-bold text-[var(--farm-text)] m-0">
-              Items ({order.items.length})
+              Items ({order.items?.length || 0})
             </h2>
           </div>
 
           <div className="divide-y divide-[var(--farm-green-border)]">
-            {order.items.map((item, index) => (
-              <div
-                key={item.id ?? index}
-                className="px-5 py-4 flex gap-4"
-              >
-                <div className="w-[56px] h-[56px] rounded-[10px] overflow-hidden bg-[var(--farm-green-soft)] flex-shrink-0">
-                  {item.image ? (
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[10px] text-[var(--farm-muted)]">
-                      No image
-                    </div>
-                  )}
-                </div>
+            {order.items?.map((item, index) => {
+              const livestock = item.livestock
+              const product = item.product
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between gap-3">
-                    <h3 className="font-[var(--farm-heading-font)] text-[14px] font-bold text-[var(--farm-text)] m-0">
-                      {item.name || `${item.breed} ${item.type}`}
-                    </h3>
-                    <span className="font-[var(--farm-heading-font)] text-[14px] font-bold text-[var(--farm-text)] whitespace-nowrap">
-                      KSh {Number(item.price).toLocaleString()}
-                    </span>
+              
+
+              const itemData = livestock || product
+
+              const itemName =
+                itemData?.name || 'Unnamed item'
+
+              const itemImage =
+                itemData?.image || null
+
+              const itemType =
+                itemData?.type || 'Item'
+
+              const itemBreed =
+                livestock?.breed || null
+
+              return (
+                <div
+                  key={item.id ?? index}
+                  className="px-5 py-4 flex gap-4"
+                >
+                  <div className="w-[56px] h-[56px] rounded-[10px] overflow-hidden bg-[var(--farm-green-soft)] flex-shrink-0">
+                    {itemImage ? (
+                      <img
+                        src={itemImage}
+                        alt={itemName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-[10px] text-[var(--farm-muted)]">
+                        No image
+                      </div>
+                    )}
                   </div>
 
-                  <p className="font-[var(--farm-body-font)] text-[12px] text-[var(--farm-muted)] mt-[3px] mb-0">
-                    {item.type}
-                    {item.breed ? ` · ${item.breed}` : ''}
-                  </p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between gap-3">
+                      <h3 className="font-[var(--farm-heading-font)] text-[14px] font-bold text-[var(--farm-text)] m-0">
+                        {itemName}
+                      </h3>
 
-                  {item.seller?.name && (
-                    <p className="font-[var(--farm-body-font)] text-[11px] text-[var(--farm-muted)] mt-[3px] mb-0">
-                      Sold by {item.seller.name}
-                      {item.seller.rating &&
-                        ` · ★ ${item.seller.rating}`}
+                      <span className="font-[var(--farm-heading-font)] text-[14px] font-bold text-[var(--farm-text)] whitespace-nowrap">
+                        KSh {Number(item.unit_price || 0).toLocaleString()}
+                      </span>
+                    </div>
+
+                    <p className="font-[var(--farm-body-font)] text-[12px] text-[var(--farm-muted)] mt-[3px] mb-0">
+                      {itemType}
+                      {itemBreed ? ` · ${itemBreed}` : ''}
                     </p>
-                  )}
+
+                    <p className="font-[var(--farm-body-font)] text-[11px] text-[var(--farm-muted)] mt-[3px] mb-0">
+                      Quantity: {item.quantity}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
 
@@ -248,24 +294,31 @@ function OrderDetails() {
           <div className="divide-y divide-[var(--farm-green-border)] font-[var(--farm-body-font)] text-[13px]">
             <div className="flex justify-between px-5 py-3">
               <span className="text-[var(--farm-muted)]">Name</span>
+
               <span className="text-[var(--farm-text)] font-medium">
-                {order.buyer?.name || 'Not provided'}
+                {order.buyer?.name || order.buyer_name || 'Not provided'}
               </span>
             </div>
+
             <div className="flex justify-between px-5 py-3">
               <span className="text-[var(--farm-muted)]">Phone</span>
+
               <span className="text-[var(--farm-text)]">
                 {order.buyer?.phone || 'Not provided'}
               </span>
             </div>
+
             <div className="flex justify-between px-5 py-3">
               <span className="text-[var(--farm-muted)]">Location</span>
+
               <span className="text-[var(--farm-text)]">
                 {order.delivery?.location || 'Not provided'}
               </span>
             </div>
+
             <div className="flex justify-between px-5 py-3">
               <span className="text-[var(--farm-muted)]">Method</span>
+
               <span className="text-[var(--farm-text)] capitalize">
                 {order.delivery?.method || 'Standard'}
               </span>
@@ -283,18 +336,21 @@ function OrderDetails() {
           <div className="font-[var(--farm-body-font)] text-[13px]">
             <div className="flex justify-between px-5 py-3 border-b border-[var(--farm-green-border)]">
               <span className="text-[var(--farm-muted)]">Status</span>
+
               <span
                 className={`${PAYMENT_BADGE[paymentStatus] || PAYMENT_BADGE.unpaid} text-[11px] font-bold px-[10px] py-[3px] rounded-full capitalize`}
               >
                 {paymentStatus}
               </span>
             </div>
+
             <div className="flex justify-between items-baseline px-5 py-4">
               <span className="font-[var(--farm-heading-font)] text-[14px] font-bold text-[var(--farm-text)]">
                 Total
               </span>
+
               <span className="font-[var(--farm-heading-font)] text-[19px] font-bold text-[var(--farm-text)]">
-                KSh {Number(order.total).toLocaleString()}
+                KSh {Number(order.total_amount || 0).toLocaleString()}
               </span>
             </div>
           </div>

@@ -1,6 +1,7 @@
 from marshmallow import RAISE, Schema, fields, validate, pre_load
 
 from models.order import OrderStatus
+from schemas.order_item_schema import OrderItemSchema
 
 
 def _convert_camel_to_snake(data):
@@ -20,38 +21,6 @@ def _convert_camel_to_snake(data):
         replacements.get(k, k): _convert_camel_to_snake(v)
         for k, v in data.items()
     }
-
-
-class OrderItemSchema(Schema):
-    class Meta:
-        unknown = RAISE
-
-    id = fields.Integer(
-        dump_only=True,
-    )
-
-    livestock_id = fields.Integer(
-        allow_none=True,
-    )
-
-    product_id = fields.Integer(
-        allow_none=True,
-    )
-
-    quantity = fields.Integer(
-        required=True,
-        validate=validate.Range(min=1),
-    )
-
-    unit_price = fields.Decimal(
-        as_string=True,
-        places=2,
-    )
-
-    subtotal = fields.Decimal(
-        as_string=True,
-        places=2,
-    )
 
 
 class BaseSchema(Schema):

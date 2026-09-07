@@ -126,7 +126,7 @@ function Payments() {
 
         try {
             const response = await fetch(
-                `${API_BASE}/payments`,
+                `${API_BASE_URL}/payments`,
                 {
                     method: "POST",
                     credentials: "include",
