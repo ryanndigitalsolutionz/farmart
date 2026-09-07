@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { useCart } from "../../context/CartContext";
 import CheckoutSteps from "./CheckoutSteps";
 import Delivery from "../delivery/Delivery";
-import API_BASE_URL from "../../api/api";
+import API_BASE_URL from '../../api/api'
+
 
 function Checkout() {
   const { cart, clearCart } = useCart();
@@ -193,6 +194,7 @@ function Checkout() {
 
   return (
     <div className="p-4 mt-3 border border-[var(--farm-green-border)] rounded-[17px] max-w-3xl mx-auto shadow-2xl m-3 items-center justify-center flex flex-col gap-4">
+
       <div>
         <h1 className="font-bold text-2xl text-center tracking-wide text-[var(--farm-green-dark)]">
           Checkout
@@ -202,13 +204,16 @@ function Checkout() {
       </div>
 
       <div className="flex flex-col justify-center items-center mt-5 w-full">
+
         {currentStep === 1 && (
           <div className="w-full max-w-2xl">
+
             <h2 className="font-bold mb-5 tracking-wide text-xl text-gray-700 text-center p-2">
               Order Summary
             </h2>
 
             <div className="border rounded-2xl p-5 space-y-4">
+
               {cart.map((item) => {
                 const quantity =
                   Number(item.quantityInCart || 1);
@@ -294,16 +299,8 @@ function Checkout() {
               </button>
             </div>
 
-            <div className="flex flex-col items-center justify-center">
-              <Link
-                to="/buyer/marketplace"
-                className="group relative mt-3 text-gray-400 hover:text-[var(--farm-green-dark)]"
-              >
-                Back to Marketplace
+            
 
-                <span className="absolute -bottom-1 left-1/2 h-[2px] w-6 -translate-x-1/2 scale-x-0 rounded-full bg-[var(--farm-green-dark)] transition-transform duration-300 group-hover:scale-x-100" />
-              </Link>
-            </div>
           </div>
         )}
 
@@ -328,6 +325,7 @@ function Checkout() {
             }}
           />
         )}
+
       </div>
     </div>
   );

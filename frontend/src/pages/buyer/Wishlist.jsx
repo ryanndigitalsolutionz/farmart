@@ -24,7 +24,7 @@ function Wishlist() {
         setIsLoading(true)
         setError('')
 
-        const response = await fetch(`${API_BASE}/wishlist`, {
+        const response = await fetch(`${API_BASE_URL}/wishlist`, {
           credentials: 'include',
         })
 
@@ -140,7 +140,7 @@ function Wishlist() {
       setError('')
 
       const response = await fetch(
-        `${API_BASE}/wishlist/${wishlistId}`,
+        `${API_BASE_URL}/wishlist/${wishlistId}`,
         {
           method: 'DELETE',
           credentials: 'include',

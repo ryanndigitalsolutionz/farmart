@@ -6,6 +6,8 @@ from marshmallow import (
     pre_load,
 )
 
+from schemas.livestock_schema import LivestockSchema
+
 def _convert_camel_to_snake(data):
     if not isinstance(data, dict):
         return data
@@ -37,6 +39,11 @@ class WishlistSchema(BaseSchema):
     livestock_id = fields.Integer(
         required=True,
         validate=validate.Range(min=1),
+    )
+
+    livestock = fields.Nested(
+        LivestockSchema,
+        dump_only=True,
     )
 
     @pre_load
