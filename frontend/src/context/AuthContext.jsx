@@ -4,6 +4,7 @@ import {
   useEffect,
   useState,
 } from 'react'
+import API_BASE_URL from '../api/api'
 
 const AuthContext = createContext(null)
 
@@ -14,7 +15,7 @@ export function AuthProvider({ children }) {
   const fetchCurrentUser = async () => {
     try {
       const response = await fetch(
-        'http://localhost:5000/auth/me',
+        `${API_BASE_URL}/auth/me`,
         {
           credentials: 'include',
         },

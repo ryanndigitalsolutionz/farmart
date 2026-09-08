@@ -69,7 +69,7 @@ function Payments() {
         const interval = setInterval(async () => {
             try {
                 const response = await fetch(
-                    `${API_BASE}/payments/${payment.id}`,
+                    `${API_BASE_URL}/payments/${payment.id}`,
                     {
                         credentials: "include",
                     }
