@@ -1,9 +1,11 @@
 import { createContext, useContext, useState, useEffect} from 'react'
 import API_BASE_URL from '../api/api'
+import { useAuth } from './AuthContext'
 
 const WishlistContext = createContext();
 
 export function WishlistProvider({ children }) {
+    const { user, loading } = useAuth()
     const [wishlist, setWishlist] = useState([])
 
     const addToWishlist = async (animal) => {
@@ -99,6 +101,10 @@ export function WishlistProvider({ children }) {
     };
 
     useEffect(() => {
+        if (loading || user?.role !== 'buyer') {
+            return;
+        }
+
         const loadWishlist = async () => {
             try {
                 const response = await fetch(`${API_BASE_URL}/wishlist`, {
@@ -121,7 +127,7 @@ export function WishlistProvider({ children }) {
         };
 
         loadWishlist();
-    }, []);
+    }, [user, loading]);
 
   return (
     <WishlistContext.Provider
