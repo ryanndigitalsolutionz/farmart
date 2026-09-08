@@ -7,7 +7,6 @@ name = "pypi"
 flask = "*"
 flask-bcrypt = "*"
 flask-cors = "*"
-flask-marshmallow = "*"
 flask-restful = "*"
 flask-sqlalchemy = "*"
 flask-migrate = "*"
@@ -16,6 +15,7 @@ marshmallow-sqlalchemy = "*"
 python-dotenv = "*"
 requests = "*"
 gunicorn = "*"
+flask-marshmallow = "*"
 
 [dev-packages]
 

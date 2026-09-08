@@ -21,7 +21,10 @@ from models import (
 
 from resources.auth_resource import auth_bp
 from resources.google_callback_resource import google_callback_bp
-from resources.announcement_resource import AnnouncementListResource, AnnouncementResource
+from resources.announcement_resource import (
+    AnnouncementListResource,
+    AnnouncementResource,
+)
 from resources.report_resource import ReportListResource, ReportResource
 from resources.user_resource import UserListResource, UserResource
 from resources.order_resource import OrderResource
@@ -34,7 +37,6 @@ from resources.review_resource import ReviewResource
 from resources.wishlist_resource import WishlistResource
 from resources.analytics_resource import AnalyticsResource
 from resources.profile_resource import ProfileResource, CurrentProfileResource
-
 
 
 def create_app():
@@ -51,7 +53,7 @@ def create_app():
         origins=[
             "http://localhost:5173",
             "http://127.0.0.1:5173",
-            "https://farmart-inc.vercel.app",
+            "https://farmart-blue.vercel.app",
         ],
         supports_credentials=True,
     )
