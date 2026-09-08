@@ -82,6 +82,9 @@ class MpesaService:
             timeout=30,
         )
 
-        response.raise_for_status()
+        if not response.ok:
+            raise requests.RequestException(
+                f"M-Pesa API {response.status_code}: {response.text}"
+        )
 
         return response.json()
