@@ -6,6 +6,11 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY")
+    
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "None"
+
     SQLALCHEMY_DATABASE_URI = "sqlite:///farmart.db"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
