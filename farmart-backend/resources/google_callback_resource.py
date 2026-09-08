@@ -18,13 +18,9 @@ google_callback_bp = Blueprint(
 )
 
 
-GOOGLE_TOKEN_URL = (
-    "https://oauth2.googleapis.com/token"
-)
+GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 
-GOOGLE_USERINFO_URL = (
-    "https://www.googleapis.com/oauth2/v2/userinfo"
-)
+GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
 
 
 @google_callback_bp.route(
@@ -35,41 +31,46 @@ def google_callback():
     error = request.args.get("error")
 
     if error:
-        return jsonify({
-            "success": False,
-            "error": error,
-        }), 400
+        return jsonify(
+            {
+                "success": False,
+                "error": error,
+            }
+        ), 400
 
     code = request.args.get("code")
     state = request.args.get("state")
 
     if not code:
-        return jsonify({
-            "success": False,
-            "error": "Missing authorization code.",
-        }), 400
+        return jsonify(
+            {
+                "success": False,
+                "error": "Missing authorization code.",
+            }
+        ), 400
 
     if not state:
-        return jsonify({
-            "success": False,
-            "error": "Missing OAuth state.",
-        }), 400
+        return jsonify(
+            {
+                "success": False,
+                "error": "Missing OAuth state.",
+            }
+        ), 400
 
     saved_state = session.get(
         "google_oauth_state",
     )
 
-    if (
-        not saved_state
-        or not secrets.compare_digest(
-            state,
-            saved_state,
-        )
+    if not saved_state or not secrets.compare_digest(
+        state,
+        saved_state,
     ):
-        return jsonify({
-            "success": False,
-            "error": "Invalid OAuth state.",
-        }), 400
+        return jsonify(
+            {
+                "success": False,
+                "error": "Invalid OAuth state.",
+            }
+        ), 400
 
     session.pop(
         "google_oauth_state",
@@ -88,10 +89,12 @@ def google_callback():
     }
 
     if role not in allowed_roles:
-        return jsonify({
-            "success": False,
-            "error": "Invalid or missing user role.",
-        }), 400
+        return jsonify(
+            {
+                "success": False,
+                "error": "Invalid or missing user role.",
+            }
+        ), 400
 
     token_data = {
         "code": code,
@@ -101,75 +104,60 @@ def google_callback():
         "grant_type": "authorization_code",
     }
 
-    encoded_token_data = urllib.parse.urlencode(
-        token_data
-    ).encode("utf-8")
+    encoded_token_data = urllib.parse.urlencode(token_data).encode("utf-8")
 
     token_request = urllib.request.Request(
         GOOGLE_TOKEN_URL,
         data=encoded_token_data,
         headers={
-            "Content-Type":
-                "application/x-www-form-urlencoded",
+            "Content-Type": "application/x-www-form-urlencoded",
         },
         method="POST",
     )
 
     try:
-        with urllib.request.urlopen(
-            token_request
-        ) as response:
-            token_response = json.loads(
-                response.read().decode("utf-8")
-            )
+        with urllib.request.urlopen(token_request) as response:
+            token_response = json.loads(response.read().decode("utf-8"))
 
     except urllib.error.HTTPError as error:
-        return jsonify({
-            "success": False,
-            "error": "Google token exchange failed.",
-            "details": error.read().decode("utf-8"),
-        }), 400
+        return jsonify(
+            {
+                "success": False,
+                "error": "Google token exchange failed.",
+                "details": error.read().decode("utf-8"),
+            }
+        ), 400
 
-    access_token = token_response.get(
-        "access_token"
-    )
+    access_token = token_response.get("access_token")
 
     if not access_token:
-        return jsonify({
-            "success": False,
-            "error": (
-                "Google did not return "
-                "an access token."
-            ),
-        }), 400
+        return jsonify(
+            {
+                "success": False,
+                "error": ("Google did not return an access token."),
+            }
+        ), 400
 
     user_request = urllib.request.Request(
         GOOGLE_USERINFO_URL,
         headers={
-            "Authorization": (
-                f"Bearer {access_token}"
-            ),
+            "Authorization": (f"Bearer {access_token}"),
         },
         method="GET",
     )
 
     try:
-        with urllib.request.urlopen(
-            user_request
-        ) as response:
-            google_user = json.loads(
-                response.read().decode("utf-8")
-            )
+        with urllib.request.urlopen(user_request) as response:
+            google_user = json.loads(response.read().decode("utf-8"))
 
     except urllib.error.HTTPError as error:
-        return jsonify({
-            "success": False,
-            "error": (
-                "Failed to retrieve "
-                "Google profile."
-            ),
-            "details": error.read().decode("utf-8"),
-        }), 400
+        return jsonify(
+            {
+                "success": False,
+                "error": ("Failed to retrieve Google profile."),
+                "details": error.read().decode("utf-8"),
+            }
+        ), 400
 
     google_id = google_user.get("id")
     email = google_user.get("email")
@@ -182,22 +170,17 @@ def google_callback():
     )
 
     if not google_id or not email:
-        return jsonify({
-            "success": False,
-            "error": (
-                "Google account information "
-                "is incomplete."
-            ),
-        }), 400
+        return jsonify(
+            {
+                "success": False,
+                "error": ("Google account information is incomplete."),
+            }
+        ), 400
 
-    user = User.query.filter_by(
-        google_id=google_id
-    ).first()
+    user = User.query.filter_by(google_id=google_id).first()
 
     if not user:
-        user = User.query.filter_by(
-            email=email
-        ).first()
+        user = User.query.filter_by(email=email).first()
 
     if not user:
         user = User(
@@ -223,9 +206,7 @@ def google_callback():
         if email_verified:
             user.is_verified = True
 
-    profile = Profile.query.filter_by(
-        user_id=user.id
-    ).first()
+    profile = Profile.query.filter_by(user_id=user.id).first()
 
     if not profile:
         profile = Profile(
@@ -244,21 +225,17 @@ def google_callback():
     session["user_role"] = user.role
 
     if user.role == "farmer":
-        return redirect(
-            "http://localhost:5173/farm-setup"
-        )
+        return redirect("https://farmart-blue.vercel.app/farm-setup")
 
     if user.role == "buyer":
-        return redirect(
-            "http://localhost:5173/buyer/marketplace"
-        )
+        return redirect("https://farmart-blue.vercel.app/buyer/marketplace")
 
     if user.role == "admin":
-        return redirect(
-            "http://localhost:5173/admin/dashboard"
-        )
+        return redirect("https://farmart-blue.vercel.app/admin/dashboard")
 
-    return jsonify({
-        "success": False,
-        "error": "Unable to determine user role.",
-    }), 400
+    return jsonify(
+        {
+            "success": False,
+            "error": "Unable to determine user role.",
+        }
+    ), 400
